@@ -2,6 +2,15 @@
 
 Versión tipo app para GitHub Pages.
 
+## Fase 0 de preparación
+
+La configuración de datos quedó centralizada y documentada antes de construir el administrador de resultados.
+
+- Contrato de datos: `docs/data-contract.md`.
+- Resumen y restauración: `docs/phase-0.md`.
+- Respaldos fechados: `data/backups/`.
+- Validación: `npm test` y `npm run validate:data`.
+
 ## Cambios V5
 
 - Pantalla de inicio simplificada: solo banner principal + banner para agregar la app al inicio.

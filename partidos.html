@@ -20,6 +20,8 @@
   <link rel="stylesheet" href="assets/css/v3.css" />
   <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
   <link rel="stylesheet" href="assets/css/v5.css?v=5" />
+  <script src="assets/js/config.js?v=6"></script>
+  <script src="assets/js/data-model.js?v=1"></script>
   <script defer src="assets/js/app.js?v=5"></script>
 </head>
 <body class="partidos-page v5-page">
@@ -561,11 +563,12 @@ td:first-child {
 </style>
 
 <script>
-const FIXTURE_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=0&single=true&output=csv";
-
-const REGISTRO_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1046180821&single=true&output=csv";
+const OPEN_TENNIS_CONFIG = window.OPEN_TENNIS_CONFIG;
+const OPEN_TENNIS_DATA = window.OPEN_TENNIS_DATA;
+const FIXTURE_URL = OPEN_TENNIS_CONFIG.FIXTURE_URL;
+const REGISTRO_URL = OPEN_TENNIS_CONFIG.REGISTRO_URL;
+const MATCH_SEASON = OPEN_TENNIS_CONFIG.SEASON;
+const MATCH_TIME_ZONE = OPEN_TENNIS_CONFIG.TIME_ZONE;
 
 const encabezados = [
   "Semana",
@@ -597,8 +600,6 @@ const RE_NBSP = /\u00a0/g;
 const RE_ZERO_WIDTH = /[\u200B-\u200D\uFEFF]/g;
 const RE_ESPACIOS = /\s+/g;
 const RE_MARCADOR = /(\d+\s*-\s*\d+(?:\s+\d+\s*-\s*\d+)*)/;
-const SANTIAGO_OFFSET_MINUTOS = -4 * 60;
-const MS_MINUTO = 60 * 1000;
 const normalizarCache = new Map();
 const limpiarCache = new Map();
 const abreviarCache = new Map();
@@ -852,18 +853,24 @@ function parseFechaProgramacionSantiago(fechaTexto) {
   return Date.UTC(anio, mes - 1, dia);
 }
 
-function inicioDiaActualSantiagoGMT4() {
-  const ahoraSantiago = new Date(Date.now() + SANTIAGO_OFFSET_MINUTOS * MS_MINUTO);
+function inicioDiaActualSantiago() {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: MATCH_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+  const valores = Object.fromEntries(partes.map(parte => [parte.type, parte.value]));
 
   return Date.UTC(
-    ahoraSantiago.getUTCFullYear(),
-    ahoraSantiago.getUTCMonth(),
-    ahoraSantiago.getUTCDate()
+    Number(valores.year),
+    Number(valores.month) - 1,
+    Number(valores.day)
   );
 }
 
 function obtenerSemanaProxima(filas) {
-  const hoySantiago = inicioDiaActualSantiagoGMT4();
+  const hoySantiago = inicioDiaActualSantiago();
   const fechasPorSemana = new Map();
 
   for (let i = 0; i < filas.length; i++) {
@@ -942,14 +949,33 @@ function parseCSV(csv) {
 }
 
 function claseEstado(estado) {
-  const e = normalizar(estado);
+  if (normalizar(estado).includes("horario libre")) return "estado-libre";
 
-  if (e.includes("jugado")) return "estado-jugado";
-  if (e.includes("pendiente")) return "estado-pendiente";
-  if (e.includes("programado")) return "estado-programado";
-  if (e.includes("horario libre")) return "estado-libre";
+  const canonico = OPEN_TENNIS_DATA.normalizeStatus(estado);
+
+  if (["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(canonico)) return "estado-jugado";
+  if (["pendiente", "reprogramado", "suspendido"].includes(canonico)) return "estado-pendiente";
+  if (canonico === "programado") return "estado-programado";
 
   return "estado-libre";
+}
+
+function estadoCanonicoRegistro(registro) {
+  if (!registro) return "programado";
+
+  const pendiente = normalizar(registro.pendiente);
+  if (["si", "sí", "pendiente"].includes(pendiente) || pendiente.includes("pendiente")) {
+    return "pendiente";
+  }
+
+  return OPEN_TENNIS_DATA.normalizeStatus(
+    registro.pendiente || registro.observaciones
+  );
+}
+
+function estadoCanonicoFixture(fila) {
+  if (!fila) return "programado";
+  return OPEN_TENNIS_DATA.normalizeStatus(fila.estadoFixture || fila.observaciones);
 }
 
 function esRegistroPendiente(registro) {
@@ -957,8 +983,10 @@ function esRegistroPendiente(registro) {
 
   const pendiente = normalizar(registro.pendiente);
   const observaciones = normalizar(registro.observaciones);
+  const estadoCanonico = estadoCanonicoRegistro(registro);
 
   return (
+    ["pendiente", "reprogramado", "suspendido"].includes(estadoCanonico) ||
     pendiente === "si" ||
     pendiente === "sí" ||
     pendiente === "pendiente" ||
@@ -973,8 +1001,10 @@ function esPendienteFixture(fila) {
 
   const estado = normalizar(fila.estadoFixture);
   const observaciones = normalizar(fila.observaciones);
+  const estadoCanonico = estadoCanonicoFixture(fila);
 
   return (
+    ["pendiente", "reprogramado", "suspendido"].includes(estadoCanonico) ||
     estado.includes("pendiente") ||
     estado.includes("posterg") ||
     observaciones.includes("pendiente") ||
@@ -983,10 +1013,13 @@ function esPendienteFixture(fila) {
 }
 
 function obtenerFilasPendientes(filas) {
-  return filas.filter(fila => (
-    !fila.esLibre &&
-    normalizar(estadoFinal(fila)) === "pendiente"
-  ));
+  return filas.filter(fila => {
+    if (fila.esLibre) return false;
+
+    return ["pendiente", "reprogramado", "suspendido"].includes(
+      OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila))
+    );
+  });
 }
 
 function crearEncabezado(thead) {
@@ -1006,7 +1039,9 @@ function estadoFinal(fila) {
   if (fila.esLibre) return "Horario libre";
 
   if (fila.registro && esRegistroPendiente(fila.registro)) {
-    return "Pendiente";
+    return OPEN_TENNIS_DATA.statusLabel(
+      estadoCanonicoRegistro(fila.registro)
+    );
   }
 
   if (fila.registro && (fila.registro.resultadoWeb || fila.registro.ganador)) {
@@ -1014,7 +1049,9 @@ function estadoFinal(fila) {
   }
 
   if (esPendienteFixture(fila)) {
-    return "Pendiente";
+    return OPEN_TENNIS_DATA.statusLabel(
+      estadoCanonicoFixture(fila)
+    );
   }
 
   return "Programado";
@@ -1439,6 +1476,7 @@ function leerFixture(csv) {
     const fechaSemana = String(cols[6] || "").trim();
     const estadoFixture = String(cols[7] || "").trim();
     const observaciones = String(cols[8] || "").trim();
+    const matchIdSheet = String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.fixtureMatchId] || "").trim();
 
     if (fechaSemana) {
       mapaSemanas[semana] = construirEtiquetaSemana(semana, fechaSemana, mapaSemanas);
@@ -1448,7 +1486,17 @@ function leerFixture(csv) {
       jugador1 === "-" &&
       jugador2 === "-";
 
+    const matchId = OPEN_TENNIS_DATA.resolveMatchId({
+      matchId: matchIdSheet,
+      season: MATCH_SEASON,
+      week: semana,
+      category: categoria,
+      player1: jugador1,
+      player2: jugador2
+    });
+
     filas.push({
+      matchId,
       semana,
       cancha,
       turno,
@@ -1461,6 +1509,14 @@ function leerFixture(csv) {
       esLibre,
       registro: null
     });
+  }
+
+  const duplicados = OPEN_TENNIS_DATA.findDuplicateMatchIds(
+    filas.filter(fila => !fila.esLibre)
+  );
+
+  if (duplicados.length) {
+    console.warn("Se detectaron IDs de partido duplicados en el fixture:", duplicados);
   }
 
   return { filas, mapaSemanas };
@@ -1479,6 +1535,8 @@ function leerRegistro(csv) {
     if (!jugador1 || !jugador2) continue;
 
     registros.push({
+      matchId: String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.registroMatchId] || "").trim(),
+      claveInterna: String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.registroLegacyKey] || "").trim(),
       fecha: String(cols[0] || "").trim(),
       jugador1,
       jugador2,
@@ -1496,6 +1554,7 @@ function leerRegistro(csv) {
 
 function cruzarDatos(filasFixture, registros) {
   const conteoFixtureOrdenado = new Map();
+  const registrosPorId = new Map();
   const registrosExactos = new Map();
   const registrosOrdenados = new Map();
 
@@ -1511,12 +1570,24 @@ function cruzarDatos(filasFixture, registros) {
   for (let i = 0; i < registros.length; i++) {
     const registro = registros[i];
 
+    if (registro.matchId) {
+      registrosPorId.set(
+        OPEN_TENNIS_DATA.resolveMatchId({ matchId: registro.matchId }),
+        registro
+      );
+    }
+
     registrosExactos.set(registro.claveExacta, registro);
     registrosOrdenados.set(registro.claveOrdenada, registro);
   }
 
   for (let i = 0; i < filasFixture.length; i++) {
     const fila = filasFixture[i];
+
+    if (fila.matchId && registrosPorId.has(fila.matchId)) {
+      fila.registro = registrosPorId.get(fila.matchId);
+      continue;
+    }
 
     if (!fila.jugador1 || !fila.jugador2 || fila.esLibre) continue;
 

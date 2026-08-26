@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v16-shell';
+const CACHE_NAME = 'open-tennis-v17-phase0';
 
 const CORE_ASSETS = [
   './',
@@ -13,6 +13,8 @@ const CORE_ASSETS = [
   './assets/css/v4.css',
   './assets/css/v5.css',
   './assets/js/app.js',
+  './assets/js/config.js',
+  './assets/js/data-model.js',
   './assets/js/pwa-install.js',
   './data/resultados-2025.json',
   './assets/img/logo-open-tennis.png',

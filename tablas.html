@@ -20,6 +20,8 @@
   <link rel="stylesheet" href="assets/css/v3.css" />
   <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
   <link rel="stylesheet" href="assets/css/v5.css?v=5" />
+  <script src="assets/js/config.js?v=6"></script>
+  <script src="assets/js/data-model.js?v=1"></script>
   <link rel="prefetch" href="resultados-2025.html" as="document" />
   <script defer src="assets/js/app.js?v=5"></script>
 </head>
@@ -674,14 +676,11 @@
 (() => {
   "use strict";
 
-  const RANKINGS_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1249404240&single=true&output=csv";
-
-  const REGISTRO_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1046180821&single=true&output=csv";
-
-  const FIXTURE_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=0&single=true&output=csv";
+  const OPEN_TENNIS_CONFIG = window.OPEN_TENNIS_CONFIG;
+  const OPEN_TENNIS_DATA = window.OPEN_TENNIS_DATA;
+  const RANKINGS_URL = OPEN_TENNIS_CONFIG.RANKINGS_URL;
+  const REGISTRO_URL = OPEN_TENNIS_CONFIG.REGISTRO_URL;
+  const FIXTURE_URL = OPEN_TENNIS_CONFIG.FIXTURE_URL;
 
   const contenedor = document.getElementById("rankingsContenedor");
 
@@ -920,6 +919,8 @@
           resultadoWeb: String(cols[16] || "").trim(),
           ptsJ1: numero(cols[17]),
           ptsJ2: numero(cols[18]),
+          matchId: String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.registroMatchId] || "").trim(),
+          claveInterna: String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.registroLegacyKey] || "").trim(),
           _j1: normalizar(jugador1),
           _j2: normalizar(jugador2),
           _ganador: normalizar(ganador),
@@ -935,12 +936,23 @@
       .map(cols => {
         const jugador1 = String(cols[4] || "").trim();
         const jugador2 = String(cols[5] || "").trim();
+        const semana = String(cols[0] || "").trim();
+        const categoria = String(cols[3] || "").trim();
+        const matchIdSheet = String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.fixtureMatchId] || "").trim();
 
         return {
-          semana: String(cols[0] || "").trim(),
+          matchId: OPEN_TENNIS_DATA.resolveMatchId({
+            matchId: matchIdSheet,
+            season: OPEN_TENNIS_CONFIG.SEASON,
+            week: semana,
+            category: categoria,
+            player1: jugador1,
+            player2: jugador2
+          }),
+          semana,
           cancha: String(cols[1] || "").trim(),
           turno: String(cols[2] || "").trim(),
-          categoria: String(cols[3] || "").trim(),
+          categoria,
           jugador1,
           jugador2,
           _j1: normalizar(jugador1),
