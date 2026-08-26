@@ -50,6 +50,8 @@ const backupDirectory = process.argv[2]
 const fixtureRows = parseCSV(path.join(backupDirectory, "fixture.csv"));
 const registroRows = parseCSV(path.join(backupDirectory, "registro.csv"));
 const rankingsRows = parseCSV(path.join(backupDirectory, "rankings.csv"));
+const registroDataRows = registroRows.slice(1)
+  .filter(columns => String(columns[1] || "").trim() && String(columns[2] || "").trim());
 const errors = [];
 const warnings = [];
 
@@ -78,7 +80,7 @@ if (duplicateFixtureIds.length) {
   errors.push(`Hay ${duplicateFixtureIds.length} ID(s) duplicado(s) en el fixture: ${duplicateFixtureIds.join(", ")}`);
 }
 
-const registroWithResult = registroRows.slice(1)
+const registroWithResult = registroDataRows
   .filter(columns => String(columns[16] || "").trim());
 const resultWithoutWinner = registroWithResult
   .filter(columns => !String(columns[13] || "").trim());
@@ -88,9 +90,9 @@ if (resultWithoutWinner.length) {
 }
 
 const legacyKeys = new Map();
-registroRows.slice(1).forEach(columns => {
+registroDataRows.forEach(columns => {
   const key = String(columns[21] || data.createLegacyPairKey(columns[1], columns[2])).trim();
-  if (!key) return;
+  if (!key || key === "|") return;
   legacyKeys.set(key, (legacyKeys.get(key) || 0) + 1);
 });
 
@@ -105,7 +107,7 @@ if (duplicateLegacyKeys.length) {
 
 console.log(`Respaldo validado: ${backupDirectory}`);
 console.log(`Partidos programados: ${fixtureMatches.length}`);
-console.log(`Registros: ${Math.max(0, registroRows.length - 1)}`);
+console.log(`Registros con jugadores: ${registroDataRows.length}`);
 console.log(`Filas de rankings: ${rankingsRows.length}`);
 
 warnings.forEach(message => console.warn(`ADVERTENCIA: ${message}`));
