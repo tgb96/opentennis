@@ -1,6 +1,15 @@
-# Open Tennis Huechuraba · V5
+# Open Tennis Huechuraba · V6
 
-Versión tipo app para GitHub Pages.
+Aplicación pública para GitHub Pages y administrador privado de resultados en Google Apps Script.
+
+## Fase 1: administrador
+
+La fase 1 agrega un panel pensado para el celular que escribe directamente en el mismo Google Sheets, calcula puntos y deja auditoría de cada cambio.
+
+- Instalación: `admin/README.md`.
+- Resumen técnico y reglas: `docs/phase-1.md`.
+- Código de Apps Script: `admin/apps-script/`.
+- Verificación: `npm test`, `npm run validate:data` y `npm run check:scripts`.
 
 ## Fase 0 de preparación
 

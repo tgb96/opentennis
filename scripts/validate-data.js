@@ -72,12 +72,73 @@ const fixtureMatches = fixtureRows.slice(1)
     week: columns[0],
     category: columns[3],
     player1: columns[4],
-    player2: columns[5]
+    player2: columns[5],
+    date: columns[6]
   }));
 
 const duplicateFixtureIds = data.findDuplicateMatchIds(fixtureMatches);
 if (duplicateFixtureIds.length) {
   errors.push(`Hay ${duplicateFixtureIds.length} ID(s) duplicado(s) en el fixture: ${duplicateFixtureIds.join(", ")}`);
+}
+
+const fixturePairCounts = new Map();
+const fixturePairDateCounts = new Map();
+function comparableDate(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  return match
+    ? `${match[3]}-${String(Number(match[2])).padStart(2, "0")}-${String(Number(match[1])).padStart(2, "0")}`
+    : "";
+}
+function pairDateKey(player1, player2, date) {
+  const normalizedDate = comparableDate(date);
+  return normalizedDate ? `${data.createLegacyPairKey(player1, player2)}|${normalizedDate}` : "";
+}
+fixtureMatches.forEach(match => {
+  const key = data.createLegacyPairKey(match.player1, match.player2);
+  fixturePairCounts.set(key, (fixturePairCounts.get(key) || 0) + 1);
+  const datedKey = pairDateKey(match.player1, match.player2, match.date);
+  if (datedKey) fixturePairDateCounts.set(datedKey, (fixturePairDateCounts.get(datedKey) || 0) + 1);
+});
+
+const registroPairCounts = new Map();
+const registroPairDateCounts = new Map();
+registroDataRows.forEach(columns => {
+  const key = data.createLegacyPairKey(columns[1], columns[2]);
+  registroPairCounts.set(key, (registroPairCounts.get(key) || 0) + 1);
+  const datedKey = pairDateKey(columns[1], columns[2], columns[0]);
+  if (datedKey) registroPairDateCounts.set(datedKey, (registroPairDateCounts.get(datedKey) || 0) + 1);
+});
+
+const migratableRegistroIds = registroDataRows.filter(columns => {
+  const key = data.createLegacyPairKey(columns[1], columns[2]);
+  const datedKey = pairDateKey(columns[1], columns[2], columns[0]);
+  const uniqueByDate = datedKey &&
+    fixturePairDateCounts.get(datedKey) === 1 && registroPairDateCounts.get(datedKey) === 1;
+  return uniqueByDate || (fixturePairCounts.get(key) === 1 && registroPairCounts.get(key) === 1);
+}).length;
+const nonMigratableRegistro = registroDataRows.map((columns, index) => {
+  const key = data.createLegacyPairKey(columns[1], columns[2]);
+  const datedKey = pairDateKey(columns[1], columns[2], columns[0]);
+  const uniqueByDate = datedKey &&
+    fixturePairDateCounts.get(datedKey) === 1 && registroPairDateCounts.get(datedKey) === 1;
+  const uniqueByPair = fixturePairCounts.get(key) === 1 && registroPairCounts.get(key) === 1;
+  return {
+    row: index + 2,
+    players: `${columns[1]} / ${columns[2]}`,
+    fixtureCount: fixturePairCounts.get(key) || 0,
+    registroCount: registroPairCounts.get(key) || 0,
+    migratable: uniqueByDate || uniqueByPair
+  };
+}).filter(item => !item.migratable);
+
+if (nonMigratableRegistro.length) {
+  warnings.push(
+    `${nonMigratableRegistro.length} registro(s) conservarán el cruce legado sin ID automático: ` +
+    nonMigratableRegistro.map(item =>
+      `fila ${item.row} ${item.players} (fixture ${item.fixtureCount}, registro ${item.registroCount})`
+    ).join("; ")
+  );
 }
 
 const registroWithResult = registroDataRows
@@ -108,6 +169,7 @@ if (duplicateLegacyKeys.length) {
 console.log(`Respaldo validado: ${backupDirectory}`);
 console.log(`Partidos programados: ${fixtureMatches.length}`);
 console.log(`Registros con jugadores: ${registroDataRows.length}`);
+console.log(`Registros con ID migrable sin ambigüedad: ${migratableRegistroIds}`);
 console.log(`Filas de rankings: ${rankingsRows.length}`);
 
 warnings.forEach(message => console.warn(`ADVERTENCIA: ${message}`));

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <?!= include("Styles"); ?>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">OT</div>
+    <div class="brand-copy">
+      <strong>Open Tennis</strong>
+      <span>Administrador de resultados</span>
+    </div>
+    <button id="refreshButton" class="icon-button" type="button" aria-label="Actualizar datos">↻</button>
+  </header>
+
+  <main class="shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">Escalerilla <span id="seasonLabel"></span></p>
+        <h1>Registro de partidos</h1>
+        <p id="updatedLabel" class="muted"></p>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="Resumen">
+      <article class="summary-card pending">
+        <span>Pendientes</span>
+        <strong id="pendingCount">0</strong>
+      </article>
+      <article class="summary-card upcoming">
+        <span>Programados</span>
+        <strong id="upcomingCount">0</strong>
+      </article>
+      <article class="summary-card played">
+        <span>Jugados</span>
+        <strong id="playedCount">0</strong>
+      </article>
+    </section>
+
+    <section class="controls" aria-label="Buscar y filtrar">
+      <label class="search-field">
+        <span class="sr-only">Buscar jugador</span>
+        <input id="searchInput" type="search" placeholder="Buscar jugador…" autocomplete="off">
+      </label>
+      <label>
+        <span class="sr-only">Filtrar categoría</span>
+        <select id="categoryFilter">
+          <option value="">Todas las categorías</option>
+          <option value="A">Categoría A</option>
+          <option value="B">Categoría B</option>
+          <option value="C">Categoría C</option>
+          <option value="D">Categoría D</option>
+        </select>
+      </label>
+    </section>
+
+    <nav class="tabs" aria-label="Vista de partidos">
+      <button type="button" data-view="pending" aria-current="page">Pendientes</button>
+      <button type="button" data-view="upcoming">Programados</button>
+      <button type="button" data-view="recent">Resultados</button>
+      <button type="button" data-view="all">Todos</button>
+    </nav>
+
+    <section id="matchList" class="match-list" aria-live="polite"></section>
+  </main>
+
+  <dialog id="matchDialog" class="match-dialog">
+    <form id="matchForm" method="dialog">
+      <header class="dialog-header">
+        <div>
+          <p id="dialogMeta" class="eyebrow"></p>
+          <h2 id="dialogTitle">Registrar partido</h2>
+        </div>
+        <button id="closeDialog" class="icon-button" type="button" aria-label="Cerrar">×</button>
+      </header>
+
+      <div class="dialog-body">
+        <input id="matchIdInput" type="hidden">
+
+        <label class="field">
+          <span>Estado</span>
+          <select id="statusInput" required>
+            <option value="jugado">Jugado</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="reprogramado">Reprogramado</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="wo_j1">W/O Jugador 1</option>
+            <option value="wo_j2">W/O Jugador 2</option>
+            <option value="wo_ambos">W/O ambos</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Fecha</span>
+          <input id="dateInput" type="date" required>
+        </label>
+
+        <section id="scoreSection" class="score-section" aria-labelledby="scoreTitle">
+          <div class="score-head">
+            <strong id="scoreTitle">Marcador</strong>
+            <span id="scoreHelp">El super tie-break solo es necesario si dividen los sets.</span>
+          </div>
+
+          <div class="score-grid score-labels" aria-hidden="true">
+            <span></span>
+            <span id="scorePlayer1">Jugador 1</span>
+            <span id="scorePlayer2">Jugador 2</span>
+          </div>
+
+          <div class="score-grid">
+            <label for="set1Player1">Set 1</label>
+            <input id="set1Player1" type="number" min="0" max="7" inputmode="numeric">
+            <input id="set1Player2" type="number" min="0" max="7" inputmode="numeric" aria-label="Set 1 jugador 2">
+
+            <label for="set2Player1">Set 2</label>
+            <input id="set2Player1" type="number" min="0" max="7" inputmode="numeric">
+            <input id="set2Player2" type="number" min="0" max="7" inputmode="numeric" aria-label="Set 2 jugador 2">
+
+            <label for="stbPlayer1">Super TB</label>
+            <input id="stbPlayer1" type="number" min="0" max="99" inputmode="numeric">
+            <input id="stbPlayer2" type="number" min="0" max="99" inputmode="numeric" aria-label="Super tie-break jugador 2">
+          </div>
+        </section>
+
+        <div id="woExplanation" class="notice" hidden></div>
+
+        <label class="field">
+          <span>Observación <small>(opcional)</small></span>
+          <textarea id="notesInput" rows="3" placeholder="Ej.: adelantado, lesionado o nueva fecha acordada"></textarea>
+        </label>
+
+        <div id="formError" class="form-error" role="alert" hidden></div>
+      </div>
+
+      <footer class="dialog-actions">
+        <button id="cancelButton" class="secondary-button" type="button">Cancelar</button>
+        <button id="saveButton" class="primary-button" type="submit">Guardar y publicar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div id="loadingOverlay" class="loading-overlay" hidden>
+    <div class="spinner" aria-hidden="true"></div>
+    <strong>Guardando resultado…</strong>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    window.__INITIAL_DATA__ = <?!= JSON.stringify(initialData).replace(/</g, "\\u003c") ?>;
+  </script>
+  <?!= include("Client"); ?>
+</body>
+</html>

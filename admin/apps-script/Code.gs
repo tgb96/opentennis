@@ -1,0 +1,571 @@
+function doGet() {
+  adminAssertAuthorized_();
+  var template = HtmlService.createTemplateFromFile("Index");
+  template.initialData = adminGetDashboard_();
+
+  return template.evaluate()
+    .setTitle("Administrador Open Tennis")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1, viewport-fit=cover");
+}
+
+function include(fileName) {
+  return HtmlService.createHtmlOutputFromFile(fileName).getContent();
+}
+
+function setupAdmin(adminEmail, spreadsheetId) {
+  var email = String(adminEmail || "").trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    throw new Error("Ingresa un correo de administrador válido.");
+  }
+
+  var spreadsheet = spreadsheetId
+    ? SpreadsheetApp.openById(String(spreadsheetId).trim())
+    : SpreadsheetApp.getActiveSpreadsheet();
+
+  if (!spreadsheet) {
+    throw new Error("Abre Apps Script desde el Sheets o entrega su ID a setupAdmin.");
+  }
+
+  adminEnsureAdminSchema_(spreadsheet);
+  var migration = adminPopulateMatchIds_(spreadsheet);
+  var properties = PropertiesService.getScriptProperties();
+  properties.setProperty(ADMIN_CONFIG.SPREADSHEET_ID_PROPERTY, spreadsheet.getId());
+  properties.setProperty(ADMIN_CONFIG.ADMIN_EMAILS_PROPERTY, email);
+  adminEnsureAuditSheet_(spreadsheet);
+
+  return {
+    ok: true,
+    spreadsheetName: spreadsheet.getName(),
+    adminEmail: email,
+    fixtureIdsCreated: migration.fixtureIdsCreated,
+    registroIdsCreated: migration.registroIdsCreated
+  };
+}
+
+function adminEnsureAdminSchema_(spreadsheet) {
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.MATCH_ID + 1, "ID partido");
+  adminEnsureHeader_(registroSheet, ADMIN_CONFIG.COLUMNS.REGISTRO.MATCH_ID + 1, "ID partido");
+}
+
+function adminEnsureHeader_(sheet, column, expectedHeader) {
+  var cell = sheet.getRange(1, column);
+  var currentHeader = String(cell.getDisplayValue() || "").trim();
+  if (currentHeader && adminNormalizeText_(currentHeader) !== adminNormalizeText_(expectedHeader)) {
+    throw new Error(
+      "La columna " + column + " de la hoja " + sheet.getName() +
+      " ya contiene el encabezado ‘" + currentHeader + "’. No se modificó."
+    );
+  }
+  if (!currentHeader) cell.setValue(expectedHeader);
+}
+
+function adminPopulateMatchIds_(spreadsheet) {
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  var matches = adminGetFixtureMatches_(fixtureSheet);
+  var records = adminGetRegistroRecords_(registroSheet);
+  var matchesById = {};
+  var matchesByPair = {};
+  var matchesByPairDate = {};
+  var recordsByPair = {};
+  var recordsByPairDate = {};
+
+  matches.forEach(function(match) {
+    if (!matchesById[match.matchId]) matchesById[match.matchId] = [];
+    matchesById[match.matchId].push(match.sourceRow);
+    if (!matchesByPair[match.pairKey]) matchesByPair[match.pairKey] = [];
+    matchesByPair[match.pairKey].push(match);
+    if (match.pairDateKey) {
+      if (!matchesByPairDate[match.pairDateKey]) matchesByPairDate[match.pairDateKey] = [];
+      matchesByPairDate[match.pairDateKey].push(match);
+    }
+  });
+
+  var duplicateFixtureIds = Object.keys(matchesById).filter(function(matchId) {
+    return matchesById[matchId].length > 1;
+  });
+  if (duplicateFixtureIds.length) {
+    var details = duplicateFixtureIds.map(function(matchId) {
+      return matchId + " (filas " + matchesById[matchId].join(", ") + ")";
+    });
+    throw new Error("Hay IDs de partido duplicados en el fixture: " + details.join("; ") + ".");
+  }
+
+  records.forEach(function(record) {
+    if (!recordsByPair[record.pairKey]) recordsByPair[record.pairKey] = [];
+    recordsByPair[record.pairKey].push(record);
+    if (record.pairDateKey) {
+      if (!recordsByPairDate[record.pairDateKey]) recordsByPairDate[record.pairDateKey] = [];
+      recordsByPairDate[record.pairDateKey].push(record);
+    }
+  });
+
+  var fixtureLastRow = fixtureSheet.getLastRow();
+  var fixtureIdValues = fixtureLastRow > 1
+    ? fixtureSheet.getRange(2, ADMIN_CONFIG.COLUMNS.FIXTURE.MATCH_ID + 1, fixtureLastRow - 1, 1).getDisplayValues()
+    : [];
+  var fixtureWrites = [];
+  var fixtureIdsCreated = 0;
+  matches.forEach(function(match) {
+    var index = match.sourceRow - 2;
+    if (!String(fixtureIdValues[index][0] || "").trim()) {
+      fixtureIdValues[index][0] = match.matchId;
+      fixtureWrites.push({ row: match.sourceRow, matchId: match.matchId });
+      fixtureIdsCreated++;
+    }
+  });
+
+  var registroLastRow = registroSheet.getLastRow();
+  var registroIdValues = registroLastRow > 1
+    ? registroSheet.getRange(2, ADMIN_CONFIG.COLUMNS.REGISTRO.MATCH_ID + 1, registroLastRow - 1, 1).getDisplayValues()
+    : [];
+  var registroWrites = [];
+  var registroIdsCreated = 0;
+  records.forEach(function(record) {
+    var candidates = matchesByPair[record.pairKey] || [];
+    var datedCandidates = record.pairDateKey ? (matchesByPairDate[record.pairDateKey] || []) : [];
+    var uniqueRecord = (recordsByPair[record.pairKey] || []).length === 1;
+    var uniqueDatedRecord = record.pairDateKey &&
+      (recordsByPairDate[record.pairDateKey] || []).length === 1;
+    var index = record.sourceRow - 2;
+    var resolvedMatch = datedCandidates.length === 1 && uniqueDatedRecord
+      ? datedCandidates[0]
+      : (candidates.length === 1 && uniqueRecord ? candidates[0] : null);
+    if (!record.matchId && resolvedMatch) {
+      registroIdValues[index][0] = resolvedMatch.matchId;
+      registroWrites.push({ row: record.sourceRow, matchId: resolvedMatch.matchId });
+      registroIdsCreated++;
+    }
+  });
+
+  var combinedIds = {};
+  registroIdValues.forEach(function(row, index) {
+    var matchId = adminCreateMatchId_({ matchId: row[0] });
+    if (!row[0]) return;
+    if (!combinedIds[matchId]) combinedIds[matchId] = [];
+    combinedIds[matchId].push(index + 2);
+  });
+  var duplicateRegistroIds = Object.keys(combinedIds).filter(function(matchId) {
+    return combinedIds[matchId].length > 1;
+  });
+  if (duplicateRegistroIds.length) {
+    var registroDetails = duplicateRegistroIds.map(function(matchId) {
+      return matchId + " (filas " + combinedIds[matchId].join(", ") + ")";
+    });
+    throw new Error("Hay IDs de partido duplicados en el registro: " + registroDetails.join("; ") + ".");
+  }
+
+  fixtureWrites.forEach(function(entry) {
+    fixtureSheet.getRange(entry.row, ADMIN_CONFIG.COLUMNS.FIXTURE.MATCH_ID + 1).setValue(entry.matchId);
+  });
+  registroWrites.forEach(function(entry) {
+    registroSheet.getRange(entry.row, ADMIN_CONFIG.COLUMNS.REGISTRO.MATCH_ID + 1).setValue(entry.matchId);
+  });
+  SpreadsheetApp.flush();
+
+  return {
+    fixtureIdsCreated: fixtureIdsCreated,
+    registroIdsCreated: registroIdsCreated
+  };
+}
+
+function addAdminEmail(adminEmail) {
+  adminAssertAuthorized_();
+  var email = String(adminEmail || "").trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error("Correo no válido.");
+
+  var properties = PropertiesService.getScriptProperties();
+  var emails = adminAllowedEmails_();
+  if (emails.indexOf(email) < 0) emails.push(email);
+  properties.setProperty(ADMIN_CONFIG.ADMIN_EMAILS_PROPERTY, emails.sort().join(","));
+  return emails;
+}
+
+function getAdminDashboard() {
+  adminAssertAuthorized_();
+  return adminGetDashboard_();
+}
+
+function saveAdminMatch(payload) {
+  adminAssertAuthorized_();
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    return adminSaveMatch_(payload || {});
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function adminAssertAuthorized_() {
+  var allowed = adminAllowedEmails_();
+  if (!allowed.length) {
+    throw new Error("El administrador no está configurado. Ejecuta setupAdmin desde Apps Script.");
+  }
+
+  var activeEmail = String(Session.getActiveUser().getEmail() || "").trim().toLowerCase();
+  if (!activeEmail) {
+    throw new Error(
+      "Google no pudo identificar tu cuenta. Implementa la aplicación para ejecutarse como el usuario que accede."
+    );
+  }
+  if (allowed.indexOf(activeEmail) < 0) {
+    throw new Error("Tu cuenta de Google no tiene acceso a este administrador.");
+  }
+  return activeEmail;
+}
+
+function adminAllowedEmails_() {
+  var raw = PropertiesService.getScriptProperties()
+    .getProperty(ADMIN_CONFIG.ADMIN_EMAILS_PROPERTY) || "";
+
+  return raw.split(",")
+    .map(function(email) { return email.trim().toLowerCase(); })
+    .filter(Boolean);
+}
+
+function adminGetSpreadsheet_() {
+  var spreadsheetId = PropertiesService.getScriptProperties()
+    .getProperty(ADMIN_CONFIG.SPREADSHEET_ID_PROPERTY);
+
+  if (!spreadsheetId) {
+    throw new Error("Falta configurar el ID del Google Sheets mediante setupAdmin.");
+  }
+  return SpreadsheetApp.openById(spreadsheetId);
+}
+
+function adminGetSheetByGid_(spreadsheet, gid) {
+  var sheet = spreadsheet.getSheets().find(function(candidate) {
+    return candidate.getSheetId() === gid;
+  });
+
+  if (!sheet) throw new Error("No se encontró la hoja con GID " + gid + ".");
+  return sheet;
+}
+
+function adminToday_() {
+  return Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy");
+}
+
+function adminGetFixtureMatches_(fixtureSheet) {
+  var rows = fixtureSheet.getDataRange().getDisplayValues();
+  var columns = ADMIN_CONFIG.COLUMNS.FIXTURE;
+
+  return rows.slice(1).map(function(row, index) {
+    var match = {
+      sourceRow: index + 2,
+      season: ADMIN_CONFIG.SEASON,
+      week: String(row[columns.WEEK] || "").trim(),
+      court: String(row[columns.COURT] || "").trim(),
+      turn: String(row[columns.TURN] || "").trim(),
+      category: String(row[columns.CATEGORY] || "").trim(),
+      player1: String(row[columns.PLAYER_1] || "").trim(),
+      player2: String(row[columns.PLAYER_2] || "").trim(),
+      date: String(row[columns.DATE] || "").trim(),
+      fixtureStatus: String(row[columns.STATUS] || "").trim(),
+      fixtureNotes: String(row[columns.NOTES] || "").trim(),
+      matchId: String(row[columns.MATCH_ID] || "").trim()
+    };
+
+    match.matchId = adminCreateMatchId_(match);
+    match.pairKey = adminOrderedPairKey_(match.player1, match.player2);
+    match.pairDateKey = adminPairDateKey_(match.player1, match.player2, match.date);
+    return match;
+  }).filter(function(match) {
+    return match.week && match.turn && match.player1 && match.player2 &&
+      match.player1 !== "-" && match.player2 !== "-";
+  });
+}
+
+function adminGetRegistroRecords_(registroSheet) {
+  var rows = registroSheet.getDataRange().getDisplayValues();
+  var columns = ADMIN_CONFIG.COLUMNS.REGISTRO;
+
+  return rows.slice(1).map(function(row, index) {
+    var record = {
+      sourceRow: index + 2,
+      date: String(row[columns.DATE] || "").trim(),
+      player1: String(row[columns.PLAYER_1] || "").trim(),
+      player2: String(row[columns.PLAYER_2] || "").trim(),
+      pending: String(row[columns.PENDING] || "").trim(),
+      notes: String(row[columns.NOTES] || "").trim(),
+      set1Player1: String(row[columns.SET_1_PLAYER_1] || "").trim(),
+      set1Player2: String(row[columns.SET_1_PLAYER_2] || "").trim(),
+      set2Player1: String(row[columns.SET_2_PLAYER_1] || "").trim(),
+      set2Player2: String(row[columns.SET_2_PLAYER_2] || "").trim(),
+      stbPlayer1: String(row[columns.STB_PLAYER_1] || "").trim(),
+      stbPlayer2: String(row[columns.STB_PLAYER_2] || "").trim(),
+      winner: String(row[columns.WINNER] || "").trim(),
+      loser: String(row[columns.LOSER] || "").trim(),
+      resultType: String(row[columns.RESULT_TYPE] || "").trim(),
+      resultWeb: String(row[columns.RESULT_WEB] || "").trim(),
+      legacyKey: String(row[columns.LEGACY_KEY] || "").trim(),
+      matchId: String(row[columns.MATCH_ID] || "").trim()
+    };
+
+    record.matchId = record.matchId ? adminCreateMatchId_({ matchId: record.matchId }) : "";
+    record.pairKey = adminOrderedPairKey_(record.player1, record.player2);
+    record.pairDateKey = adminPairDateKey_(record.player1, record.player2, record.date);
+    record.status = adminRecordStatus_(record);
+    return record;
+  }).filter(function(record) {
+    return record.player1 && record.player2;
+  });
+}
+
+function adminRecordStatus_(record) {
+  if (record.resultWeb || record.winner) {
+    if (adminNormalizeText_(record.resultType).indexOf("w/o") >= 0 ||
+        adminNormalizeText_(record.resultType).indexOf("wo") >= 0) {
+      if (!record.winner) return ADMIN_STATUSES.WO_AMBOS;
+      return adminNormalizeText_(record.winner) === adminNormalizeText_(record.player2)
+        ? ADMIN_STATUSES.WO_J1
+        : ADMIN_STATUSES.WO_J2;
+    }
+    return ADMIN_STATUSES.JUGADO;
+  }
+
+  var pendingMarker = adminNormalizeText_(record.pending);
+  if (["si", "yes", "pendiente", "reprogramado", "postergado", "suspendido"].indexOf(pendingMarker) >= 0) {
+    var normalizedNotes = adminNormalizeStatus_(record.notes);
+    return normalizedNotes === ADMIN_STATUSES.PROGRAMADO
+      ? ADMIN_STATUSES.PENDIENTE
+      : normalizedNotes;
+  }
+  return ADMIN_STATUSES.PROGRAMADO;
+}
+
+function adminGetDashboard_() {
+  var spreadsheet = adminGetSpreadsheet_();
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  var matches = adminGetFixtureMatches_(fixtureSheet);
+  var records = adminGetRegistroRecords_(registroSheet);
+  var pairCounts = {};
+  var pairDateCounts = {};
+  var recordPairDateCounts = {};
+  var recordsById = {};
+  var recordsByPair = {};
+  var recordsByPairDate = {};
+
+  matches.forEach(function(match) {
+    pairCounts[match.pairKey] = (pairCounts[match.pairKey] || 0) + 1;
+    if (match.pairDateKey) {
+      pairDateCounts[match.pairDateKey] = (pairDateCounts[match.pairDateKey] || 0) + 1;
+    }
+  });
+
+  records.forEach(function(record) {
+    if (record.matchId) recordsById[record.matchId] = record;
+    recordsByPair[record.pairKey] = record;
+    if (record.pairDateKey) {
+      recordsByPairDate[record.pairDateKey] = record;
+      recordPairDateCounts[record.pairDateKey] = (recordPairDateCounts[record.pairDateKey] || 0) + 1;
+    }
+  });
+
+  var publicMatches = matches.map(function(match) {
+    var record = recordsById[match.matchId] || null;
+    if (!record && match.pairDateKey && pairDateCounts[match.pairDateKey] === 1 &&
+        recordPairDateCounts[match.pairDateKey] === 1) {
+      record = recordsByPairDate[match.pairDateKey] || null;
+    }
+    if (!record && pairCounts[match.pairKey] === 1) record = recordsByPair[match.pairKey] || null;
+
+    var fallbackStatus = adminNormalizeStatus_(match.fixtureStatus || match.fixtureNotes);
+    var status = record ? record.status : fallbackStatus;
+
+    return {
+      matchId: match.matchId,
+      week: match.week,
+      court: match.court,
+      turn: match.turn,
+      category: match.category,
+      player1: match.player1,
+      player2: match.player2,
+      date: match.date,
+      status: status,
+      statusLabel: adminStatusLabel_(status),
+      notes: record ? record.notes : match.fixtureNotes,
+      resultWeb: record ? record.resultWeb : "",
+      record: record ? {
+        sourceRow: record.sourceRow,
+        date: record.date,
+        set1Player1: record.set1Player1,
+        set1Player2: record.set1Player2,
+        set2Player1: record.set2Player1,
+        set2Player2: record.set2Player2,
+        stbPlayer1: record.stbPlayer1,
+        stbPlayer2: record.stbPlayer2
+      } : null
+    };
+  });
+
+  publicMatches.sort(function(a, b) {
+    return Number(a.week) - Number(b.week) ||
+      Number(a.court) - Number(b.court) ||
+      String(a.turn).localeCompare(String(b.turn), "es");
+  });
+
+  var summary = {
+    total: publicMatches.length,
+    played: 0,
+    pending: 0,
+    upcoming: 0
+  };
+
+  publicMatches.forEach(function(match) {
+    if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
+      summary.played++;
+    } else if ([ADMIN_STATUSES.PENDIENTE, ADMIN_STATUSES.REPROGRAMADO, ADMIN_STATUSES.SUSPENDIDO].indexOf(match.status) >= 0) {
+      summary.pending++;
+    } else {
+      summary.upcoming++;
+    }
+  });
+
+  return {
+    season: ADMIN_CONFIG.SEASON,
+    spreadsheetName: spreadsheet.getName(),
+    generatedAt: Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy HH:mm"),
+    today: adminToday_(),
+    summary: summary,
+    matches: publicMatches
+  };
+}
+
+function adminSaveMatch_(payload) {
+  var spreadsheet = adminGetSpreadsheet_();
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  var matchId = adminCreateMatchId_({ matchId: payload.matchId });
+  var fixtureMatches = adminGetFixtureMatches_(fixtureSheet);
+  var match = fixtureMatches.find(function(candidate) {
+    return candidate.matchId === matchId;
+  });
+
+  if (!match) throw new Error("No se encontró el partido seleccionado en el fixture.");
+
+  var allowedStatuses = Object.keys(ADMIN_STATUSES).map(function(key) {
+    return ADMIN_STATUSES[key];
+  });
+  if (allowedStatuses.indexOf(payload.status) < 0 || payload.status === ADMIN_STATUSES.PROGRAMADO) {
+    throw new Error("Selecciona un estado válido para registrar.");
+  }
+
+  var input = Object.assign({}, payload, {
+    date: adminNormalizeDate_(payload.date || adminToday_())
+  });
+  var newRow = adminBuildRegistroRow_(match, input);
+  var target = adminFindRegistroTarget_(registroSheet, match, fixtureMatches);
+  var before = target.existing
+    ? registroSheet.getRange(target.row, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).getDisplayValues()[0]
+    : [];
+
+  var targetRange = registroSheet.getRange(target.row, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT);
+  try {
+    targetRange.setValues([newRow]);
+    adminWriteAudit_(spreadsheet, {
+      action: target.existing ? "ACTUALIZAR" : "CREAR",
+      matchId: match.matchId,
+      targetRow: target.row,
+      before: before,
+      after: newRow
+    });
+  } catch (error) {
+    targetRange.setValues([target.existing ? before : new Array(ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).fill("")]);
+    SpreadsheetApp.flush();
+    throw error;
+  }
+
+  SpreadsheetApp.flush();
+  return adminGetDashboard_();
+}
+
+function adminFindRegistroTarget_(registroSheet, match, fixtureMatches) {
+  var values = registroSheet.getDataRange().getDisplayValues();
+  var columns = ADMIN_CONFIG.COLUMNS.REGISTRO;
+  var byId = [];
+  var byPairDate = [];
+  var byPair = [];
+  var firstEmptyRow = 0;
+
+  for (var index = 1; index < values.length; index++) {
+    var row = values[index];
+    var player1 = String(row[columns.PLAYER_1] || "").trim();
+    var player2 = String(row[columns.PLAYER_2] || "").trim();
+
+    if (!player1 && !player2 && !firstEmptyRow) firstEmptyRow = index + 1;
+    if (!player1 || !player2) continue;
+
+    var rowMatchId = adminCreateMatchId_({ matchId: row[columns.MATCH_ID] });
+    if (row[columns.MATCH_ID] && rowMatchId === match.matchId) byId.push(index + 1);
+    if (adminOrderedPairKey_(player1, player2) === match.pairKey) byPair.push(index + 1);
+    if (match.pairDateKey && adminPairDateKey_(player1, player2, row[columns.DATE]) === match.pairDateKey) {
+      byPairDate.push(index + 1);
+    }
+  }
+
+  if (byId.length > 1) {
+    throw new Error("Hay más de un registro con el mismo ID de partido: filas " + byId.join(", ") + ".");
+  }
+  if (byId.length === 1) return { row: byId[0], existing: true };
+
+  if (byPairDate.length > 1) {
+    throw new Error("Hay más de un registro para esta pareja y fecha: filas " + byPairDate.join(", ") + ".");
+  }
+  if (byPairDate.length === 1) return { row: byPairDate[0], existing: true };
+
+  var fixturePairCount = (fixtureMatches || []).filter(function(candidate) {
+    return candidate.pairKey === match.pairKey;
+  }).length;
+  if (fixturePairCount > 1) {
+    return { row: firstEmptyRow || registroSheet.getLastRow() + 1, existing: false };
+  }
+
+  if (byPair.length > 1) {
+    throw new Error("Hay más de un registro legado para esta pareja: filas " + byPair.join(", ") + ".");
+  }
+  if (byPair.length === 1) return { row: byPair[0], existing: true };
+
+  return {
+    row: firstEmptyRow || registroSheet.getLastRow() + 1,
+    existing: false
+  };
+}
+
+function adminEnsureAuditSheet_(spreadsheet) {
+  var sheet = spreadsheet.getSheetByName(ADMIN_CONFIG.AUDIT_SHEET_NAME);
+  if (!sheet) sheet = spreadsheet.insertSheet(ADMIN_CONFIG.AUDIT_SHEET_NAME);
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      "Fecha y hora",
+      "Usuario",
+      "Acción",
+      "ID partido",
+      "Fila registro",
+      "Valor anterior",
+      "Valor nuevo"
+    ]);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function adminWriteAudit_(spreadsheet, entry) {
+  var sheet = adminEnsureAuditSheet_(spreadsheet);
+  sheet.appendRow([
+    new Date(),
+    String(Session.getActiveUser().getEmail() || ""),
+    entry.action,
+    entry.matchId,
+    entry.targetRow,
+    JSON.stringify(entry.before || []),
+    JSON.stringify(entry.after || [])
+  ]);
+}
