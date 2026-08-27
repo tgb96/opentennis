@@ -54,7 +54,7 @@ img, svg, canvas, video, iframe { max-width: 100% !important; height: auto !impo
   height: 74px !important;
   z-index: 2147483000 !important;
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 7px !important;
   padding: 8px !important;
   margin: 0 !important;

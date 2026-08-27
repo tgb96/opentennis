@@ -164,7 +164,6 @@
             <p>${next ? `Semana ${next.week} · ${next.date} · Cancha ${next.court} · ${next.turn}` : "Puedes revisar tus partidos por coordinar."}</p>
             <div class="personal-actions">
               <a href="partidos.html?jugador=${encodeURIComponent(player)}">Ver mis partidos</a>
-              ${next ? `<a class="primary" href="${markerUrl(next)}">Abrir marcador</a>` : ""}
             </div>
           </article>`;
       }

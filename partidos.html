@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="assets/css/v3.css" />
   <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
   <link rel="stylesheet" href="assets/css/v5.css?v=5" />
-  <link rel="stylesheet" href="assets/css/v6.css?v=6" />
+  <link rel="stylesheet" href="assets/css/v6.css?v=6.1" />
   <script src="assets/js/config.js?v=6"></script>
   <script src="assets/js/data-model.js?v=1"></script>
   <script defer src="assets/js/app.js?v=5"></script>
@@ -1110,6 +1110,13 @@ function observacionFinal(fila) {
     return "Adelantado el " + fecha;
   }
 
+  if (
+    OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)) === "por_coordinar" &&
+    ["pendiente", "postergado", "reprogramado"].includes(normalizar(obs))
+  ) {
+    return "Nueva fecha por coordinar";
+  }
+
   return obs;
 }
 
@@ -1245,10 +1252,7 @@ function etiquetaTipoProgramacion(fila) {
 function accionesPartidoHTML(fila) {
   if (!fila || fila.esLibre) return "";
   const status = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
-  const finished = ["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(status);
-  const marker = `marcador.html?categoria=${encodeURIComponent(fila.categoria)}&j1=${encodeURIComponent(fila.jugador1)}&j2=${encodeURIComponent(fila.jugador2)}&partido=${encodeURIComponent(fila.matchId)}`;
   return `<div class="match-actions">
-    ${finished ? "" : `<a class="primary" href="${escapeHTML(marker)}">Abrir marcador</a>`}
     ${status === "programado" && fila.fechaSemana ? `<button type="button" data-match-action="calendar" data-match-id="${escapeHTML(fila.matchId)}">Agregar al calendario</button>` : ""}
     <button type="button" data-match-action="share" data-match-id="${escapeHTML(fila.matchId)}">Compartir</button>
   </div>`;
@@ -1902,7 +1906,6 @@ iniciar();
     <a href="partidos.html" data-page="partidos.html"><span class="nav-icon" aria-hidden="true">🎾</span><span class="nav-label">Partidos</span></a>
     <a href="tablas.html" data-page="tablas.html"><span class="nav-icon" aria-hidden="true">📊</span><span class="nav-label">Tablas</span></a>
     <a href="reglas.html" data-page="reglas.html"><span class="nav-icon" aria-hidden="true">📘</span><span class="nav-label">Reglas</span></a>
-    <a href="marcador.html" data-page="marcador.html"><span class="nav-icon" aria-hidden="true">🔢</span><span class="nav-label">Marcador</span></a>
   </nav>
 </body>
 </html>
