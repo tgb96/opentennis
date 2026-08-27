@@ -65,6 +65,13 @@
         .trim();
     }
 
+    function visibleNotes(match) {
+      var notes = String(match.notes || "").trim();
+      var legacyStatusNotes = ["pendiente", "postergado", "reprogramado"];
+      if (match.status === "por_coordinar" && legacyStatusNotes.indexOf(normalize(notes)) >= 0) return "";
+      return notes;
+    }
+
     function setText(element, value) {
       element.textContent = String(value == null ? "" : value);
     }
@@ -153,7 +160,11 @@
           card.appendChild(createElement("span", "schedule-badge", match.scheduleTypeLabel));
         }
 
-        var detail = match.resultWeb || match.notes || (match.date ? "Fecha: " + match.date : "Toca para registrar");
+        var detail = match.resultWeb || visibleNotes(match) || (
+          match.status === "por_coordinar"
+            ? "Nueva fecha por coordinar"
+            : (match.date ? "Fecha: " + match.date : "Toca para registrar")
+        );
         if (detail) card.appendChild(createElement("div", "match-result", detail));
         card.addEventListener("click", function () { openMatch(match.matchId); });
         fragment.appendChild(card);
@@ -218,7 +229,7 @@
       elements.scheduleType.value = match.scheduleType || "oficial";
       elements.court.value = match.court || "";
       elements.turn.value = match.turn || "";
-      elements.notes.value = match.notes || "";
+      elements.notes.value = visibleNotes(match);
       setText(elements.originalSchedule, [
         "Programación oficial",
         match.originalDate || match.date,
