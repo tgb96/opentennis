@@ -1252,9 +1252,9 @@ function etiquetaTipoProgramacion(fila) {
 function accionesPartidoHTML(fila) {
   if (!fila || fila.esLibre) return "";
   const status = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
+  if (status !== "programado" || !fila.fechaSemana) return "";
   return `<div class="match-actions">
-    ${status === "programado" && fila.fechaSemana ? `<button type="button" data-match-action="calendar" data-match-id="${escapeHTML(fila.matchId)}">Agregar al calendario</button>` : ""}
-    <button type="button" data-match-action="share" data-match-id="${escapeHTML(fila.matchId)}">Compartir</button>
+    <button type="button" data-match-action="calendar" data-match-id="${escapeHTML(fila.matchId)}">Agregar al calendario</button>
   </div>`;
 }
 
@@ -1804,21 +1804,12 @@ function descargarCalendario(fila) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function compartirPartido(fila) {
-  const text = `${fila.jugador1} vs ${fila.jugador2}\n${fila.fechaSemana || "Fecha por coordinar"} · Cancha ${fila.cancha} · ${fila.turno}\nOpen Tennis Huechuraba`;
-  if (navigator.share) {
-    try { await navigator.share({ title: "Partido Open Tennis", text, url: location.href }); return; } catch (error) { if (error.name === "AbortError") return; }
-  }
-  window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n" + location.href)}`, "_blank", "noopener");
-}
-
 document.addEventListener("click", event => {
   const button = event.target.closest("[data-match-action]");
   if (!button) return;
   const fila = publicRowsById.get(button.dataset.matchId);
   if (!fila) return;
   if (button.dataset.matchAction === "calendar") descargarCalendario(fila);
-  if (button.dataset.matchAction === "share") compartirPartido(fila);
 });
 
 async function textoFetch(url) {

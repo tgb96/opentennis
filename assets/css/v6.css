@@ -21,8 +21,7 @@
 .personal-actions a.primary { border-color:#d86636; background:#d86636; }
 .personal-empty { margin:0; color:#59645e; }
 .match-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
-.match-actions a,.match-actions button { min-height:40px; padding:8px 10px; border:1px solid #c6d0c9; border-radius:11px; color:#173f31; background:#fff; font:800 12px/1.1 Inter,sans-serif; text-decoration:none; cursor:pointer; }
-.match-actions a.primary { color:white; border-color:#bd592f; background:#bd592f; }
+.match-actions button { min-height:40px; padding:8px 10px; border:1px solid #c6d0c9; border-radius:11px; color:#173f31; background:#fff; font:800 12px/1.1 Inter,sans-serif; cursor:pointer; }
 .schedule-kind { display:inline-flex; margin-left:6px; padding:3px 7px; border-radius:999px; background:#e8f0ea; color:#275541; font-size:11px; font-weight:800; }
 .match-experience { padding:16px; border-radius:20px; background:#fffaf0; box-shadow:0 10px 28px rgba(11,47,37,.08); }
 .public-view-tabs { display:flex; gap:7px; overflow:auto; padding:2px 0 5px; scrollbar-width:none; }
