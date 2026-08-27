@@ -12,8 +12,9 @@
   const MATCH_STATUSES = Object.freeze({
     PROGRAMADO: "programado",
     JUGADO: "jugado",
-    PENDIENTE: "pendiente",
-    REPROGRAMADO: "reprogramado",
+    POR_COORDINAR: "por_coordinar",
+    // Alias de compatibilidad para integraciones antiguas.
+    PENDIENTE: "por_coordinar",
     WO_J1: "wo_j1",
     WO_J2: "wo_j2",
     WO_AMBOS: "wo_ambos",
@@ -23,8 +24,7 @@
   const STATUS_LABELS = Object.freeze({
     [MATCH_STATUSES.PROGRAMADO]: "Programado",
     [MATCH_STATUSES.JUGADO]: "Jugado",
-    [MATCH_STATUSES.PENDIENTE]: "Pendiente",
-    [MATCH_STATUSES.REPROGRAMADO]: "Reprogramado",
+    [MATCH_STATUSES.POR_COORDINAR]: "Por coordinar",
     [MATCH_STATUSES.WO_J1]: "W/O Jugador 1",
     [MATCH_STATUSES.WO_J2]: "W/O Jugador 2",
     [MATCH_STATUSES.WO_AMBOS]: "W/O ambos",
@@ -91,8 +91,9 @@
 
     if (!status) return MATCH_STATUSES.PROGRAMADO;
     if (status.includes("jugado") || status.includes("finalizado")) return MATCH_STATUSES.JUGADO;
-    if (status.includes("reprogram") || status.includes("posterg")) return MATCH_STATUSES.REPROGRAMADO;
-    if (status.includes("pendiente")) return MATCH_STATUSES.PENDIENTE;
+    if (status.includes("por_coordinar")) return MATCH_STATUSES.POR_COORDINAR;
+    if (status.includes("reprogram") || status.includes("posterg")) return MATCH_STATUSES.POR_COORDINAR;
+    if (status.includes("pendiente")) return MATCH_STATUSES.POR_COORDINAR;
     if (status.includes("suspend")) return MATCH_STATUSES.SUSPENDIDO;
     if (status.includes("wo_ambos") || status.includes("w_o_ambos")) return MATCH_STATUSES.WO_AMBOS;
     if (status.includes("wo_j1") || status.includes("w_o_j1")) return MATCH_STATUSES.WO_J1;

@@ -4,9 +4,9 @@
 
 - Aplicación web móvil en Google Apps Script.
 - Acceso cerrado al correo configurado.
-- Resumen de pendientes, programados y jugados.
+- Resumen de partidos por coordinar, programados y jugados.
 - Búsqueda por jugador y filtro por categoría.
-- Formulario para resultado, pendiente, reprogramado, suspendido y W/O.
+- Formulario para resultado, por coordinar, nueva fecha acordada, suspendido y W/O.
 - Motor centralizado de validación y puntaje.
 - Escritura compatible con las 23 columnas del registro.
 - ID estable por partido con compatibilidad para filas legadas.

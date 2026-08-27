@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v17-phase0';
+const CACHE_NAME = 'open-tennis-v18-phase3';
 
 const CORE_ASSETS = [
   './',
@@ -12,10 +12,12 @@ const CORE_ASSETS = [
   './assets/css/v3.css',
   './assets/css/v4.css',
   './assets/css/v5.css',
+  './assets/css/v6.css',
   './assets/js/app.js',
   './assets/js/config.js',
   './assets/js/data-model.js',
   './assets/js/pwa-install.js',
+  './assets/js/personalization.js',
   './data/resultados-2025.json',
   './assets/img/logo-open-tennis.png',
   './assets/icons/icon-192.png',
@@ -56,7 +58,18 @@ self.addEventListener('fetch', event => {
 
   if (url.origin !== self.location.origin) {
     event.respondWith(
-      fetch(request).catch(() => caches.match(request))
+      caches.open(CACHE_NAME).then(async cache => {
+        const cached = await cache.match(request);
+        const network = fetch(request).then(response => {
+          if (response.ok || response.type === 'opaque') cache.put(request, response.clone());
+          return response;
+        });
+        if (cached) {
+          network.catch(() => null);
+          return cached;
+        }
+        return network;
+      })
     );
     return;
   }

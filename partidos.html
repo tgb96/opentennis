@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="assets/css/v3.css" />
   <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
   <link rel="stylesheet" href="assets/css/v5.css?v=5" />
+  <link rel="stylesheet" href="assets/css/v6.css?v=6" />
   <script src="assets/js/config.js?v=6"></script>
   <script src="assets/js/data-model.js?v=1"></script>
   <script defer src="assets/js/app.js?v=5"></script>
@@ -33,8 +34,27 @@
       <h1 class="page-title">Partidos y resultados</h1>
 <div class="programacion-app">
 
+  <section class="bloque match-experience" aria-labelledby="experienceTitle">
+    <div class="personal-heading">
+      <div>
+        <p class="v5-eyebrow">Calendario personalizado</p>
+        <h2 id="experienceTitle">Mis partidos</h2>
+      </div>
+      <label>Mi jugador
+        <select id="publicPlayerSelect"><option value="">Elige tu nombre</option></select>
+      </label>
+    </div>
+    <nav class="public-view-tabs" aria-label="Vistas de partidos">
+      <button type="button" data-public-view="mine" aria-current="page">Mi calendario</button>
+      <button type="button" data-public-view="next">Próxima fecha</button>
+      <button type="button" data-public-view="pending">Por coordinar</button>
+      <button type="button" data-public-view="results">Resultados</button>
+      <button type="button" data-public-view="all">Todo</button>
+    </nav>
+  </section>
+
   <section class="bloque">
-    <h2>Buscar partidos por jugador</h2>
+    <h2 id="searchResultsTitle">Buscar partidos por jugador</h2>
     <input id="buscador" type="text" placeholder="Buscar jugador..." autocomplete="off">
 
     <div class="desktop-view">
@@ -594,6 +614,14 @@ const accordionPendientes = document.getElementById("accordionPendientes");
 const tablaCompletaHead = document.querySelector("#tablaCompleta thead");
 const tablaCompletaBody = document.querySelector("#tablaCompleta tbody");
 const accordionSemanas = document.getElementById("accordionSemanas");
+const publicPlayerSelect = document.getElementById("publicPlayerSelect");
+const publicViewTabs = Array.from(document.querySelectorAll("[data-public-view]"));
+const searchResultsTitle = document.getElementById("searchResultsTitle");
+const PERSONAL_PLAYER_KEY = "openTennisPlayerV1";
+let publicRows = [];
+let publicWeeks = {};
+let publicView = "mine";
+let publicRowsById = new Map();
 
 const RE_TILDES = /[\u0300-\u036f]/g;
 const RE_NBSP = /\u00a0/g;
@@ -954,7 +982,7 @@ function claseEstado(estado) {
   const canonico = OPEN_TENNIS_DATA.normalizeStatus(estado);
 
   if (["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(canonico)) return "estado-jugado";
-  if (["pendiente", "reprogramado", "suspendido"].includes(canonico)) return "estado-pendiente";
+  if (["por_coordinar", "suspendido"].includes(canonico)) return "estado-pendiente";
   if (canonico === "programado") return "estado-programado";
 
   return "estado-libre";
@@ -964,8 +992,10 @@ function estadoCanonicoRegistro(registro) {
   if (!registro) return "programado";
 
   const pendiente = normalizar(registro.pendiente);
+  const estadoObservacion = OPEN_TENNIS_DATA.normalizeStatus(registro.observaciones);
+  if (estadoObservacion === "suspendido") return "suspendido";
   if (["si", "sí", "pendiente"].includes(pendiente) || pendiente.includes("pendiente")) {
-    return "pendiente";
+    return "por_coordinar";
   }
 
   return OPEN_TENNIS_DATA.normalizeStatus(
@@ -986,7 +1016,7 @@ function esRegistroPendiente(registro) {
   const estadoCanonico = estadoCanonicoRegistro(registro);
 
   return (
-    ["pendiente", "reprogramado", "suspendido"].includes(estadoCanonico) ||
+    ["por_coordinar", "suspendido"].includes(estadoCanonico) ||
     pendiente === "si" ||
     pendiente === "sí" ||
     pendiente === "pendiente" ||
@@ -1004,7 +1034,7 @@ function esPendienteFixture(fila) {
   const estadoCanonico = estadoCanonicoFixture(fila);
 
   return (
-    ["pendiente", "reprogramado", "suspendido"].includes(estadoCanonico) ||
+    ["por_coordinar", "suspendido"].includes(estadoCanonico) ||
     estado.includes("pendiente") ||
     estado.includes("posterg") ||
     observaciones.includes("pendiente") ||
@@ -1016,7 +1046,7 @@ function obtenerFilasPendientes(filas) {
   return filas.filter(fila => {
     if (fila.esLibre) return false;
 
-    return ["pendiente", "reprogramado", "suspendido"].includes(
+    return ["por_coordinar", "suspendido"].includes(
       OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila))
     );
   });
@@ -1206,16 +1236,35 @@ function jugadoresHTML(j1, j2) {
   return `<span class="jugador-nombre">${escapeHTML(j1)}</span> vs <span class="jugador-nombre">${escapeHTML(j2)}</span>`;
 }
 
+function etiquetaTipoProgramacion(fila) {
+  const labels = { oficial: "Oficial", adelantado: "Adelantado", reprogramado: "Reprogramado", recuperacion: "Recuperación" };
+  const type = String(fila.tipoProgramacion || "oficial").trim().toLowerCase();
+  return type !== "oficial" ? `<span class="schedule-kind">${escapeHTML(labels[type] || type)}</span>` : "";
+}
+
+function accionesPartidoHTML(fila) {
+  if (!fila || fila.esLibre) return "";
+  const status = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
+  const finished = ["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(status);
+  const marker = `marcador.html?categoria=${encodeURIComponent(fila.categoria)}&j1=${encodeURIComponent(fila.jugador1)}&j2=${encodeURIComponent(fila.jugador2)}&partido=${encodeURIComponent(fila.matchId)}`;
+  return `<div class="match-actions">
+    ${finished ? "" : `<a class="primary" href="${escapeHTML(marker)}">Abrir marcador</a>`}
+    ${status === "programado" && fila.fechaSemana ? `<button type="button" data-match-action="calendar" data-match-id="${escapeHTML(fila.matchId)}">Agregar al calendario</button>` : ""}
+    <button type="button" data-match-action="share" data-match-id="${escapeHTML(fila.matchId)}">Compartir</button>
+  </div>`;
+}
+
 function crearCardBusquedaHTML(fila, mapaSemanas) {
   return `
     <div class="card-partido${fila._esSemanaProxima ? " semana-proxima-card" : ""}">
       <div class="card-top">${escapeHTML(fila._semanaLabel || etiquetaSemana(fila.semana, mapaSemanas))} · Cancha ${escapeHTML(fila.cancha)}</div>
       <div class="card-meta">Turno ${escapeHTML(fila.turno)} · Categoría ${escapeHTML(fila.categoria)}</div>
       <div class="card-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
-      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>
+      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
       ${fila._resultadoBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
+      ${accionesPartidoHTML(fila)}
     </div>
   `;
 }
@@ -1234,10 +1283,11 @@ function crearPartidoMovilHTML(fila) {
     <div class="partido-linea${fila._esSemanaProxima ? " semana-proxima-linea" : ""}">
       <div class="partido-turno">Turno ${escapeHTML(fila.turno)} · Categoría ${escapeHTML(fila.categoria)}</div>
       <div class="partido-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
-      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>
+      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
       ${fila._resultadoBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
+      ${accionesPartidoHTML(fila)}
     </div>
   `;
 }
@@ -1252,10 +1302,11 @@ function crearPartidoPendienteMovilHTML(fila, mapaSemanas) {
         Categoría ${escapeHTML(fila.categoria)}
       </div>
       <div class="partido-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
-      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>
+      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
       ${fila._resultadoBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
+      ${accionesPartidoHTML(fila)}
     </div>
   `;
 }
@@ -1279,10 +1330,10 @@ function mensajeTabla(texto, tbody, contenedorMovil) {
   contenedorMovil.innerHTML = `<div class="mensaje">${escapeHTML(texto)}</div>`;
 }
 
-function renderBusqueda(filas, mapaSemanas, filtro = "") {
+function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
   const busqueda = normalizar(String(filtro || "").trim());
 
-  if (busqueda === "") {
+  if (busqueda === "" && vista === "mine") {
     tablaBusquedaHead.innerHTML = "";
     tablaBusquedaBody.innerHTML = "";
     cardsBusqueda.innerHTML = "";
@@ -1297,7 +1348,10 @@ function renderBusqueda(filas, mapaSemanas, filtro = "") {
   for (let i = 0; i < filas.length; i++) {
     const fila = filas[i];
 
-    if (!fila._busqueda.includes(busqueda)) continue;
+    if (busqueda && !fila._busqueda.includes(busqueda)) continue;
+    if (vista === "next" && !fila._esSemanaProxima) continue;
+    if (vista === "pending" && !["por_coordinar", "suspendido"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
+    if (vista === "results" && !["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
 
     if (semanaAnterior && fila.semana !== semanaAnterior) {
       filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, fila._esSemanaProxima);
@@ -1477,6 +1531,11 @@ function leerFixture(csv) {
     const estadoFixture = String(cols[7] || "").trim();
     const observaciones = String(cols[8] || "").trim();
     const matchIdSheet = String(cols[OPEN_TENNIS_CONFIG.SHEET_COLUMNS.fixtureMatchId] || "").trim();
+    const fechaOficial = String(cols[10] || fechaSemana).trim();
+    const canchaOficial = String(cols[11] || cancha).trim();
+    const turnoOficial = String(cols[12] || turno).trim();
+    const tipoProgramacion = String(cols[13] || "oficial").trim().toLowerCase();
+    const ronda = String(cols[14] || "").trim();
 
     if (fechaSemana) {
       mapaSemanas[semana] = construirEtiquetaSemana(semana, fechaSemana, mapaSemanas);
@@ -1504,6 +1563,11 @@ function leerFixture(csv) {
       jugador1,
       jugador2,
       fechaSemana,
+      fechaOficial,
+      canchaOficial,
+      turnoOficial,
+      tipoProgramacion,
+      ronda,
       estadoFixture,
       observaciones,
       esLibre,
@@ -1660,11 +1724,98 @@ function activarBuscador(filas, mapaSemanas) {
     }
 
     rafId = requestAnimationFrame(() => {
-      renderBusqueda(filas, mapaSemanas, ultimoValor);
+      publicView = "mine";
+      actualizarTabsPublicas();
+      renderBusqueda(filas, mapaSemanas, ultimoValor, publicView);
       rafId = 0;
     });
   });
 }
+
+function actualizarTabsPublicas() {
+  publicViewTabs.forEach(button => {
+    if (button.dataset.publicView === publicView) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
+  const labels = { mine: "Mi calendario", next: "Próxima fecha", pending: "Partidos por coordinar", results: "Resultados", all: "Todos los partidos" };
+  searchResultsTitle.textContent = labels[publicView] || "Partidos";
+}
+
+function configurarExperienciaPersonal(filas, mapaSemanas) {
+  publicRows = filas;
+  publicWeeks = mapaSemanas;
+  publicRowsById = new Map(filas.map(fila => [fila.matchId, fila]));
+  const players = Array.from(new Set(filas.flatMap(fila => [fila.jugador1, fila.jugador2]).filter(name => name && name !== "-")))
+    .sort((a, b) => a.localeCompare(b, "es"));
+  publicPlayerSelect.innerHTML = '<option value="">Elige tu nombre</option>' + players
+    .map(player => `<option value="${escapeHTML(player)}">${escapeHTML(player)}</option>`).join("");
+
+  const requested = new URLSearchParams(location.search).get("jugador") || localStorage.getItem(PERSONAL_PLAYER_KEY) || "";
+  if (players.includes(requested)) {
+    publicPlayerSelect.value = requested;
+    buscador.value = requested;
+  }
+
+  publicPlayerSelect.addEventListener("change", () => {
+    const player = publicPlayerSelect.value;
+    if (player) localStorage.setItem(PERSONAL_PLAYER_KEY, player);
+    buscador.value = player;
+    publicView = "mine";
+    actualizarTabsPublicas();
+    renderBusqueda(filas, mapaSemanas, player, publicView);
+  });
+
+  publicViewTabs.forEach(button => button.addEventListener("click", () => {
+    publicView = button.dataset.publicView;
+    actualizarTabsPublicas();
+    const player = publicView === "mine" ? publicPlayerSelect.value : "";
+    renderBusqueda(filas, mapaSemanas, player, publicView);
+    document.getElementById("tablaBusqueda").closest(".bloque").scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+
+  actualizarTabsPublicas();
+  renderBusqueda(filas, mapaSemanas, publicPlayerSelect.value, publicView);
+}
+
+function fechaCalendario(fecha, hora) {
+  const date = String(fecha || "").match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  const time = String(hora || "").match(/(\d{1,2}):(\d{2})/);
+  if (!date || !time) return "";
+  return `${date[3]}${date[2].padStart(2, "0")}${date[1].padStart(2, "0")}T${time[1].padStart(2, "0")}${time[2]}00`;
+}
+
+function descargarCalendario(fila) {
+  const times = String(fila.turno || "").match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+  const start = fechaCalendario(fila.fechaSemana, times && times[1]);
+  const end = fechaCalendario(fila.fechaSemana, times && times[2]);
+  if (!start || !end) { alert("Este partido todavía no tiene fecha y horario confirmados."); return; }
+  const clean = value => String(value || "").replace(/[\\,;]/g, " ").replace(/\r?\n/g, " ");
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Open Tennis Huechuraba//ES", "BEGIN:VEVENT",
+    `UID:${clean(fila.matchId)}@opentennis.cl`, `DTSTART;TZID=America/Santiago:${start}`, `DTEND;TZID=America/Santiago:${end}`,
+    `SUMMARY:${clean(fila.jugador1)} vs ${clean(fila.jugador2)}`, `LOCATION:Cancha ${clean(fila.cancha)}`,
+    `DESCRIPTION:Categoría ${clean(fila.categoria)} · Semana ${clean(fila.semana)}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url; link.download = `open-tennis-${fila.matchId}.ics`; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function compartirPartido(fila) {
+  const text = `${fila.jugador1} vs ${fila.jugador2}\n${fila.fechaSemana || "Fecha por coordinar"} · Cancha ${fila.cancha} · ${fila.turno}\nOpen Tennis Huechuraba`;
+  if (navigator.share) {
+    try { await navigator.share({ title: "Partido Open Tennis", text, url: location.href }); return; } catch (error) { if (error.name === "AbortError") return; }
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n" + location.href)}`, "_blank", "noopener");
+}
+
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-match-action]");
+  if (!button) return;
+  const fila = publicRowsById.get(button.dataset.matchId);
+  if (!fila) return;
+  if (button.dataset.matchAction === "calendar") descargarCalendario(fila);
+  if (button.dataset.matchAction === "share") compartirPartido(fila);
+});
 
 async function textoFetch(url) {
   const response = await fetch(url);
@@ -1711,7 +1862,7 @@ async function iniciar() {
     marcarSemanaProxima(filas, obtenerSemanaProxima(filas));
     prepararFilas(filas, mapaSemanas);
 
-    renderBusqueda(filas, mapaSemanas, "");
+    configurarExperienciaPersonal(filas, mapaSemanas);
     renderPendientesDesktop(filas, mapaSemanas);
     renderPendientesMobile(filas, mapaSemanas);
     renderCompletaDesktop(filas, mapaSemanas);

@@ -8,6 +8,12 @@ var ADMIN_CONFIG = Object.freeze({
   SPREADSHEET_ID_PROPERTY: "SPREADSHEET_ID",
   ADMIN_EMAILS_PROPERTY: "ADMIN_EMAILS",
   REGISTRO_COLUMN_COUNT: 23,
+  SCHEDULE_TYPES: Object.freeze({
+    OFICIAL: "oficial",
+    ADELANTADO: "adelantado",
+    REPROGRAMADO: "reprogramado",
+    RECUPERACION: "recuperacion"
+  }),
   COLUMNS: Object.freeze({
     FIXTURE: Object.freeze({
       WEEK: 0,
@@ -19,7 +25,12 @@ var ADMIN_CONFIG = Object.freeze({
       DATE: 6,
       STATUS: 7,
       NOTES: 8,
-      MATCH_ID: 9
+      MATCH_ID: 9,
+      ORIGINAL_DATE: 10,
+      ORIGINAL_COURT: 11,
+      ORIGINAL_TURN: 12,
+      SCHEDULE_TYPE: 13,
+      ROUND: 14
     }),
     REGISTRO: Object.freeze({
       DATE: 0,

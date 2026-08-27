@@ -2234,6 +2234,7 @@
     let savedMatchExpiredOnLoad = false;
     let wakeLock = null;
     let wakeLockWanted = false;
+    let prefilledMatchId = "";
 
     function clone(obj) {
       return JSON.parse(JSON.stringify(obj));
@@ -2910,6 +2911,7 @@
       const state = createInitialState();
       state.category = category;
       state.players = [pA, pB];
+      state.matchId = prefilledMatchId;
       state.log = [{ text: `Partido iniciado: ${pA} vs ${pB}`, type: "info" }];
 
       return state;
@@ -3672,9 +3674,20 @@
     }
 
     function boot() {
-      populatePlayers("A");
+      const params = new URLSearchParams(window.location.search);
+      const requestedCategory = String(params.get("categoria") || "").toUpperCase();
+      const requestedPlayer1 = params.get("j1") || "";
+      const requestedPlayer2 = params.get("j2") || "";
+      const hasRequestedMatch = CLUB_PLAYERS[requestedCategory] &&
+        CLUB_PLAYERS[requestedCategory].includes(requestedPlayer1) &&
+        CLUB_PLAYERS[requestedCategory].includes(requestedPlayer2) &&
+        requestedPlayer1 !== requestedPlayer2;
 
-      const savedHistory = loadSavedMatch();
+      document.getElementById("categorySelect").value = hasRequestedMatch ? requestedCategory : "A";
+      populatePlayers(hasRequestedMatch ? requestedCategory : "A", requestedPlayer1, requestedPlayer2);
+      prefilledMatchId = hasRequestedMatch ? String(params.get("partido") || "") : "";
+
+      const savedHistory = hasRequestedMatch ? null : loadSavedMatch();
 
       if (savedHistory) {
         history = savedHistory;
@@ -3685,6 +3698,7 @@
       } else {
         history = [createMatchFromSetup()];
         setMatchActive(false);
+        if (hasRequestedMatch) showToast("Partido preparado desde la programación");
       }
 
       setupEvents();

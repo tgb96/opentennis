@@ -1,6 +1,16 @@
 # Open Tennis Huechuraba · V6
 
-Aplicación pública para GitHub Pages y administrador privado de resultados en Google Apps Script.
+Aplicación pública personalizada para GitHub Pages y administrador privado de resultados en Google Apps Script.
+
+## Fases 2 y 3
+
+- `Mi Open Tennis`: jugador guardado en el teléfono, posición, puntos, próximo partido y pendientes.
+- Vistas rápidas de calendario personal, próxima fecha, por coordinar y resultados.
+- Agregar partidos al calendario, compartir y abrir el marcador precargado.
+- Modelo claro de estado (`Por coordinar`) y tipo de programación (`Oficial`, `Adelantado`, `Reprogramado`, `Recuperación`).
+- Última copia de los datos disponible sin conexión.
+
+Detalles: `docs/phase-2.md` y `docs/phase-3.md`.
 
 ## Fase 1: administrador
 

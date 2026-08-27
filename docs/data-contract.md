@@ -24,6 +24,11 @@ Las tres URLs publicadas se definen solamente en `assets/js/config.js`:
 | H | Estado | Opcional; estado administrativo |
 | I | Observaciones | Opcional |
 | J | ID partido | Nuevo y opcional durante la migración |
+| K | Fecha oficial | Fecha originalmente enviada en la programación semanal |
+| L | Cancha oficial | Cancha original, nunca se reemplaza |
+| M | Turno oficial | Bloque original, nunca se reemplaza |
+| N | Tipo programación | `oficial`, `adelantado`, `reprogramado` o `recuperacion` |
+| O | Ronda | `Única`, `Ida` o `Vuelta` |
 
 ## Registro
 
@@ -68,14 +73,13 @@ Durante la migración:
 | --- | --- |
 | `programado` | Programado |
 | `jugado` | Jugado |
-| `pendiente` | Pendiente |
-| `reprogramado` | Reprogramado |
+| `por_coordinar` | Por coordinar |
 | `wo_j1` | W/O Jugador 1 |
 | `wo_j2` | W/O Jugador 2 |
 | `wo_ambos` | W/O ambos |
 | `suspendido` | Suspendido |
 
-El módulo `assets/js/data-model.js` normaliza variantes antiguas como "postergado" o "partido jugado".
+`Reprogramado` ya no es un estado: es un tipo de programación que exige una nueva fecha. El módulo `assets/js/data-model.js` convierte variantes antiguas como "pendiente" y "postergado" en `por_coordinar` para mantener compatibilidad.
 
 ## Zona horaria
 

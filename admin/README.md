@@ -4,11 +4,12 @@ Este módulo es una aplicación privada de Google Apps Script conectada al mismo
 
 ## Qué resuelve
 
-- Lista partidos pendientes, programados y jugados.
+- Lista partidos por coordinar, programados y jugados.
 - Busca por jugador y filtra por categoría.
 - Registra resultados normales y super tie-breaks.
 - Calcula ganador, sets, texto público y puntos `3–0` o `2–1`.
-- Registra pendientes, reprogramaciones, suspensiones y W/O.
+- Registra partidos por coordinar, nuevas fechas, suspensiones y W/O.
+- Conserva la programación oficial y separa el tipo Oficial, Adelantado, Reprogramado o Recuperación.
 - Actualiza la fila existente en vez de crear un duplicado.
 - Guarda cada creación o corrección en `Admin Auditoría`.
 - Bloquea guardados simultáneos y valida todos los datos en el servidor.
@@ -25,7 +26,7 @@ Este módulo es una aplicación privada de Google Apps Script conectada al mismo
    setupAdmin("TU_CORREO_DE_GOOGLE")
    ```
 
-6. Acepta los permisos solicitados. Esa función verifica o crea los encabezados J/W, asigna IDs solamente a coincidencias inequívocas y crea `Admin Auditoría`.
+6. Acepta los permisos solicitados. Esa función verifica o crea los encabezados J–O/W, asigna IDs solamente a coincidencias inequívocas, conserva la programación oficial y crea `Admin Auditoría`.
 7. Selecciona **Implementar → Nueva implementación → Aplicación web**.
 8. Configura **Ejecutar como: usuario que accede a la aplicación web** y **Quién tiene acceso: solo yo**.
 9. Guarda la URL de la aplicación web en la pantalla de inicio del celular.

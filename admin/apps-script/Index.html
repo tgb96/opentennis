@@ -25,7 +25,7 @@
 
     <section class="summary" aria-label="Resumen">
       <article class="summary-card pending">
-        <span>Pendientes</span>
+        <span>Por coordinar</span>
         <strong id="pendingCount">0</strong>
       </article>
       <article class="summary-card upcoming">
@@ -56,7 +56,7 @@
     </section>
 
     <nav class="tabs" aria-label="Vista de partidos">
-      <button type="button" data-view="pending" aria-current="page">Pendientes</button>
+      <button type="button" data-view="pending" aria-current="page">Por coordinar</button>
       <button type="button" data-view="upcoming">Programados</button>
       <button type="button" data-view="recent">Resultados</button>
       <button type="button" data-view="all">Todos</button>
@@ -79,20 +79,45 @@
         <input id="matchIdInput" type="hidden">
 
         <label class="field">
-          <span>Estado</span>
+          <span>¿Qué ocurrió?</span>
           <select id="statusInput" required>
-            <option value="jugado">Jugado</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="reprogramado">Reprogramado</option>
-            <option value="suspendido">Suspendido</option>
+            <option value="jugado">Registrar resultado</option>
+            <option value="por_coordinar">Quedó por coordinar</option>
+            <option value="programado">Ya acordaron una nueva fecha</option>
+            <option value="suspendido">Se inició y quedó suspendido</option>
             <option value="wo_j1">W/O Jugador 1</option>
             <option value="wo_j2">W/O Jugador 2</option>
             <option value="wo_ambos">W/O ambos</option>
           </select>
         </label>
 
+        <div id="originalSchedule" class="notice"></div>
+
+        <section id="scheduleSection">
+          <label class="field">
+            <span>Tipo de programación</span>
+            <select id="scheduleTypeInput">
+              <option value="reprogramado">Reprogramado</option>
+              <option value="adelantado">Adelantado</option>
+              <option value="recuperacion">Recuperación en un bloque libre</option>
+              <option value="oficial">Oficial</option>
+            </select>
+          </label>
+
+          <div class="schedule-grid">
+            <label class="field">
+              <span>Cancha</span>
+              <input id="courtInput" type="text" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Turno</span>
+              <input id="turnInput" type="text" autocomplete="off">
+            </label>
+          </div>
+        </section>
+
         <label class="field">
-          <span>Fecha</span>
+          <span id="dateLabel">Fecha del partido</span>
           <input id="dateInput" type="date" required>
         </label>
 

@@ -76,7 +76,7 @@ test("construye exactamente las 23 columnas del registro", () => {
     date: "26/8/2026",
     matchId: "2026-s1-a-jugador-dos-jugador-uno"
   }, {
-    status: "pendiente",
+    status: "por_coordinar",
     date: "2026-08-27",
     notes: "Nueva fecha por confirmar"
   });
@@ -87,6 +87,12 @@ test("construye exactamente las 23 columnas del registro", () => {
   assert.equal(row[4], "Nueva fecha por confirmar");
   assert.equal(row[21], "jugadoruno|jugadordos");
   assert.equal(row[22], "2026-s1-a-jugador-dos-jugador-uno");
+});
+
+test("separa por coordinar del tipo reprogramado", () => {
+  assert.equal(context.adminNormalizeStatus_("Pendiente"), "por_coordinar");
+  assert.equal(context.adminStatusLabel_("por_coordinar"), "Por coordinar");
+  assert.equal(context.adminScheduleTypeLabel_("reprogramado"), "Reprogramado");
 });
 
 test("rechaza fechas inexistentes", () => {

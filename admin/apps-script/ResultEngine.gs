@@ -1,8 +1,7 @@
 var ADMIN_STATUSES = Object.freeze({
   PROGRAMADO: "programado",
   JUGADO: "jugado",
-  PENDIENTE: "pendiente",
-  REPROGRAMADO: "reprogramado",
+  POR_COORDINAR: "por_coordinar",
   WO_J1: "wo_j1",
   WO_J2: "wo_j2",
   WO_AMBOS: "wo_ambos",
@@ -68,8 +67,9 @@ function adminNormalizeStatus_(value) {
   }
 
   if (text.indexOf("jugado") >= 0 || text.indexOf("finalizado") >= 0) return ADMIN_STATUSES.JUGADO;
-  if (text.indexOf("reprogram") >= 0 || text.indexOf("posterg") >= 0) return ADMIN_STATUSES.REPROGRAMADO;
-  if (text.indexOf("pendiente") >= 0 || text === "si") return ADMIN_STATUSES.PENDIENTE;
+  if (text.indexOf("por coordinar") >= 0 || text.indexOf("por_coordinar") >= 0) return ADMIN_STATUSES.POR_COORDINAR;
+  if (text.indexOf("reprogram") >= 0 || text.indexOf("posterg") >= 0) return ADMIN_STATUSES.POR_COORDINAR;
+  if (text.indexOf("pendiente") >= 0 || text === "si") return ADMIN_STATUSES.POR_COORDINAR;
   if (text.indexOf("suspend") >= 0) return ADMIN_STATUSES.SUSPENDIDO;
   return ADMIN_STATUSES.PROGRAMADO;
 }
@@ -78,13 +78,21 @@ function adminStatusLabel_(status) {
   var labels = {};
   labels[ADMIN_STATUSES.PROGRAMADO] = "Programado";
   labels[ADMIN_STATUSES.JUGADO] = "Jugado";
-  labels[ADMIN_STATUSES.PENDIENTE] = "Pendiente";
-  labels[ADMIN_STATUSES.REPROGRAMADO] = "Reprogramado";
+  labels[ADMIN_STATUSES.POR_COORDINAR] = "Por coordinar";
   labels[ADMIN_STATUSES.WO_J1] = "W/O Jugador 1";
   labels[ADMIN_STATUSES.WO_J2] = "W/O Jugador 2";
   labels[ADMIN_STATUSES.WO_AMBOS] = "W/O ambos";
   labels[ADMIN_STATUSES.SUSPENDIDO] = "Suspendido";
   return labels[status] || labels[ADMIN_STATUSES.PROGRAMADO];
+}
+
+function adminScheduleTypeLabel_(type) {
+  var labels = {};
+  labels[ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL] = "Oficial";
+  labels[ADMIN_CONFIG.SCHEDULE_TYPES.ADELANTADO] = "Adelantado";
+  labels[ADMIN_CONFIG.SCHEDULE_TYPES.REPROGRAMADO] = "Reprogramado";
+  labels[ADMIN_CONFIG.SCHEDULE_TYPES.RECUPERACION] = "Recuperación";
+  return labels[type] || labels[ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL];
 }
 
 function adminNormalizeDate_(value) {

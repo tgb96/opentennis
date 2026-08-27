@@ -30,7 +30,8 @@ test("respeta un ID explícito y lo normaliza", () => {
 
 test("normaliza los estados admitidos", () => {
   assert.equal(data.normalizeStatus("Partido jugado"), data.MATCH_STATUSES.JUGADO);
-  assert.equal(data.normalizeStatus("Postergado"), data.MATCH_STATUSES.REPROGRAMADO);
+  assert.equal(data.normalizeStatus("Postergado"), data.MATCH_STATUSES.POR_COORDINAR);
+  assert.equal(data.statusLabel("pendiente"), "Por coordinar");
   assert.equal(data.normalizeStatus("W/O Jugador 1"), data.MATCH_STATUSES.WO_J1);
   assert.equal(data.normalizeStatus("W.O. ambos"), data.MATCH_STATUSES.WO_AMBOS);
   assert.equal(data.normalizeStatus(""), data.MATCH_STATUSES.PROGRAMADO);

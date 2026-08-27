@@ -28,6 +28,7 @@ function setupAdmin(adminEmail, spreadsheetId) {
 
   adminEnsureAdminSchema_(spreadsheet);
   var migration = adminPopulateMatchIds_(spreadsheet);
+  var scheduling = adminPopulateSchedulingMetadata_(spreadsheet);
   var properties = PropertiesService.getScriptProperties();
   properties.setProperty(ADMIN_CONFIG.SPREADSHEET_ID_PROPERTY, spreadsheet.getId());
   properties.setProperty(ADMIN_CONFIG.ADMIN_EMAILS_PROPERTY, email);
@@ -38,15 +39,84 @@ function setupAdmin(adminEmail, spreadsheetId) {
     spreadsheetName: spreadsheet.getName(),
     adminEmail: email,
     fixtureIdsCreated: migration.fixtureIdsCreated,
-    registroIdsCreated: migration.registroIdsCreated
+    registroIdsCreated: migration.registroIdsCreated,
+    schedulingRowsInitialized: scheduling.rowsInitialized
   };
+}
+
+function setupSchedulingModel() {
+  adminAssertAuthorized_();
+  var spreadsheet = adminGetSpreadsheet_();
+  adminEnsureAdminSchema_(spreadsheet);
+  return adminPopulateSchedulingMetadata_(spreadsheet);
 }
 
 function adminEnsureAdminSchema_(spreadsheet) {
   var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
   var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
   adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.MATCH_ID + 1, "ID partido");
+  adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.ORIGINAL_DATE + 1, "Fecha oficial");
+  adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.ORIGINAL_COURT + 1, "Cancha oficial");
+  adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.ORIGINAL_TURN + 1, "Turno oficial");
+  adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.SCHEDULE_TYPE + 1, "Tipo programación");
+  adminEnsureHeader_(fixtureSheet, ADMIN_CONFIG.COLUMNS.FIXTURE.ROUND + 1, "Ronda");
   adminEnsureHeader_(registroSheet, ADMIN_CONFIG.COLUMNS.REGISTRO.MATCH_ID + 1, "ID partido");
+}
+
+function adminScheduleTypeFromText_(value) {
+  var text = adminNormalizeText_(value);
+  if (text.indexOf("adelant") >= 0) return ADMIN_CONFIG.SCHEDULE_TYPES.ADELANTADO;
+  if (text.indexOf("recuper") >= 0) return ADMIN_CONFIG.SCHEDULE_TYPES.RECUPERACION;
+  if (text.indexOf("reprogram") >= 0 || text.indexOf("posterg") >= 0) {
+    return ADMIN_CONFIG.SCHEDULE_TYPES.REPROGRAMADO;
+  }
+  return ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL;
+}
+
+function adminPopulateSchedulingMetadata_(spreadsheet) {
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var columns = ADMIN_CONFIG.COLUMNS.FIXTURE;
+  var rows = fixtureSheet.getDataRange().getDisplayValues();
+  var pairOccurrences = {};
+  var rowsInitialized = 0;
+
+  rows.slice(1).forEach(function(row) {
+    var player1 = String(row[columns.PLAYER_1] || "").trim();
+    var player2 = String(row[columns.PLAYER_2] || "").trim();
+    if (!player1 || !player2 || player1 === "-" || player2 === "-") return;
+    var isDoublesRound = adminNormalizeText_(row[columns.CATEGORY]) === "d";
+    var key = adminOrderedPairKey_(player1, player2);
+    if (isDoublesRound) pairOccurrences[key] = (pairOccurrences[key] || 0) + 1;
+  });
+
+  var pairSeen = {};
+  rows.slice(1).forEach(function(row, index) {
+    var player1 = String(row[columns.PLAYER_1] || "").trim();
+    var player2 = String(row[columns.PLAYER_2] || "").trim();
+    if (!player1 || !player2 || player1 === "-" || player2 === "-") return;
+
+    var key = adminOrderedPairKey_(player1, player2);
+    var isDoublesRound = adminNormalizeText_(row[columns.CATEGORY]) === "d";
+    if (isDoublesRound) pairSeen[key] = (pairSeen[key] || 0) + 1;
+    var values = [
+      row[columns.ORIGINAL_DATE] || row[columns.DATE],
+      row[columns.ORIGINAL_COURT] || row[columns.COURT],
+      row[columns.ORIGINAL_TURN] || row[columns.TURN],
+      row[columns.SCHEDULE_TYPE] || adminScheduleTypeFromText_(row[columns.NOTES]),
+      row[columns.ROUND] || (isDoublesRound && pairOccurrences[key] > 1
+        ? (pairSeen[key] === 1 ? "Ida" : "Vuelta")
+        : "Única")
+    ];
+    var changed = values.some(function(value, offset) {
+      return !String(row[columns.ORIGINAL_DATE + offset] || "").trim() && String(value || "").trim();
+    });
+    if (!changed) return;
+    fixtureSheet.getRange(index + 2, columns.ORIGINAL_DATE + 1, 1, values.length).setValues([values]);
+    rowsInitialized++;
+  });
+
+  SpreadsheetApp.flush();
+  return { ok: true, rowsInitialized: rowsInitialized };
 }
 
 function adminEnsureHeader_(sheet, column, expectedHeader) {
@@ -268,7 +338,12 @@ function adminGetFixtureMatches_(fixtureSheet) {
       date: String(row[columns.DATE] || "").trim(),
       fixtureStatus: String(row[columns.STATUS] || "").trim(),
       fixtureNotes: String(row[columns.NOTES] || "").trim(),
-      matchId: String(row[columns.MATCH_ID] || "").trim()
+      matchId: String(row[columns.MATCH_ID] || "").trim(),
+      originalDate: String(row[columns.ORIGINAL_DATE] || row[columns.DATE] || "").trim(),
+      originalCourt: String(row[columns.ORIGINAL_COURT] || row[columns.COURT] || "").trim(),
+      originalTurn: String(row[columns.ORIGINAL_TURN] || row[columns.TURN] || "").trim(),
+      scheduleType: String(row[columns.SCHEDULE_TYPE] || "").trim() || adminScheduleTypeFromText_(row[columns.NOTES]),
+      round: String(row[columns.ROUND] || "").trim() || "Única"
     };
 
     match.matchId = adminCreateMatchId_(match);
@@ -333,7 +408,7 @@ function adminRecordStatus_(record) {
   if (["si", "yes", "pendiente", "reprogramado", "postergado", "suspendido"].indexOf(pendingMarker) >= 0) {
     var normalizedNotes = adminNormalizeStatus_(record.notes);
     return normalizedNotes === ADMIN_STATUSES.PROGRAMADO
-      ? ADMIN_STATUSES.PENDIENTE
+      ? ADMIN_STATUSES.POR_COORDINAR
       : normalizedNotes;
   }
   return ADMIN_STATUSES.PROGRAMADO;
@@ -388,6 +463,12 @@ function adminGetDashboard_() {
       player1: match.player1,
       player2: match.player2,
       date: match.date,
+      originalDate: match.originalDate,
+      originalCourt: match.originalCourt,
+      originalTurn: match.originalTurn,
+      scheduleType: match.scheduleType,
+      scheduleTypeLabel: adminScheduleTypeLabel_(match.scheduleType),
+      round: match.round,
       status: status,
       statusLabel: adminStatusLabel_(status),
       notes: record ? record.notes : match.fixtureNotes,
@@ -421,7 +502,7 @@ function adminGetDashboard_() {
   publicMatches.forEach(function(match) {
     if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
       summary.played++;
-    } else if ([ADMIN_STATUSES.PENDIENTE, ADMIN_STATUSES.REPROGRAMADO, ADMIN_STATUSES.SUSPENDIDO].indexOf(match.status) >= 0) {
+    } else if ([ADMIN_STATUSES.POR_COORDINAR, ADMIN_STATUSES.SUSPENDIDO].indexOf(match.status) >= 0) {
       summary.pending++;
     } else {
       summary.upcoming++;
@@ -453,31 +534,64 @@ function adminSaveMatch_(payload) {
   var allowedStatuses = Object.keys(ADMIN_STATUSES).map(function(key) {
     return ADMIN_STATUSES[key];
   });
-  if (allowedStatuses.indexOf(payload.status) < 0 || payload.status === ADMIN_STATUSES.PROGRAMADO) {
+  if (allowedStatuses.indexOf(payload.status) < 0) {
     throw new Error("Selecciona un estado válido para registrar.");
   }
 
-  var input = Object.assign({}, payload, {
-    date: adminNormalizeDate_(payload.date || adminToday_())
+  var allowedScheduleTypes = Object.keys(ADMIN_CONFIG.SCHEDULE_TYPES).map(function(key) {
+    return ADMIN_CONFIG.SCHEDULE_TYPES[key];
   });
-  var newRow = adminBuildRegistroRow_(match, input);
-  var target = adminFindRegistroTarget_(registroSheet, match, fixtureMatches);
-  var before = target.existing
+  var scheduleType = String(payload.scheduleType || match.scheduleType || ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL);
+  if (allowedScheduleTypes.indexOf(scheduleType) < 0) throw new Error("Tipo de programación no válido.");
+
+  if (payload.status === ADMIN_STATUSES.PROGRAMADO && scheduleType === ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL) {
+    throw new Error("Para cambiar la programación selecciona adelantado, reprogramado o recuperación.");
+  }
+
+  var input = Object.assign({}, payload, {
+    date: adminNormalizeDate_(payload.date || match.date || adminToday_())
+  });
+  var newRow = payload.status === ADMIN_STATUSES.PROGRAMADO ? null : adminBuildRegistroRow_(match, input);
+  var target = newRow
+    ? adminFindRegistroTarget_(registroSheet, match, fixtureMatches)
+    : { row: 0, existing: false };
+  var before = newRow && target.existing
     ? registroSheet.getRange(target.row, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).getDisplayValues()[0]
     : [];
+  var fixtureColumns = ADMIN_CONFIG.COLUMNS.FIXTURE;
+  var fixtureBefore = fixtureSheet.getRange(match.sourceRow, 1, 1, fixtureColumns.ROUND + 1).getDisplayValues()[0];
+  var fixtureAfter = fixtureBefore.slice();
+  fixtureAfter[fixtureColumns.STATUS] = adminStatusLabel_(payload.status);
+  fixtureAfter[fixtureColumns.NOTES] = String(payload.notes || "").trim();
+  fixtureAfter[fixtureColumns.SCHEDULE_TYPE] = scheduleType;
 
-  var targetRange = registroSheet.getRange(target.row, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT);
+  if (payload.status === ADMIN_STATUSES.PROGRAMADO) {
+    fixtureAfter[fixtureColumns.DATE] = input.date;
+    fixtureAfter[fixtureColumns.COURT] = String(payload.court || match.court || "").trim();
+    fixtureAfter[fixtureColumns.TURN] = String(payload.turn || match.turn || "").trim();
+  }
+
+  var targetRange = newRow
+    ? registroSheet.getRange(target.row, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT)
+    : null;
+  var fixtureRange = fixtureSheet.getRange(match.sourceRow, 1, 1, fixtureColumns.ROUND + 1);
   try {
-    targetRange.setValues([newRow]);
+    fixtureRange.setValues([fixtureAfter]);
+    if (targetRange) targetRange.setValues([newRow]);
     adminWriteAudit_(spreadsheet, {
-      action: target.existing ? "ACTUALIZAR" : "CREAR",
+      action: payload.status === ADMIN_STATUSES.PROGRAMADO
+        ? "REPROGRAMAR"
+        : (target.existing ? "ACTUALIZAR" : "CREAR"),
       matchId: match.matchId,
-      targetRow: target.row,
-      before: before,
-      after: newRow
+      targetRow: targetRange ? target.row : match.sourceRow,
+      before: { fixture: fixtureBefore, registro: before },
+      after: { fixture: fixtureAfter, registro: newRow || [] }
     });
   } catch (error) {
-    targetRange.setValues([target.existing ? before : new Array(ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).fill("")]);
+    fixtureRange.setValues([fixtureBefore]);
+    if (targetRange) {
+      targetRange.setValues([target.existing ? before : new Array(ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).fill("")]);
+    }
     SpreadsheetApp.flush();
     throw error;
   }

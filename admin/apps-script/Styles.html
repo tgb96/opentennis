@@ -14,6 +14,7 @@
     --danger: #a92f25;
     --shadow: 0 14px 38px rgba(47, 32, 18, .12);
   }
+  [hidden] { display: none !important; }
 
   * { box-sizing: border-box; }
   html { background: #ead3ae; }
@@ -152,7 +153,9 @@
   .match-meta { color: var(--muted); font-size: 12px; font-weight: 800; }
   .status-pill { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: 11px; font-weight: 900; background: #eef1ed; }
   .status-pill.jugado, .status-pill.wo_j1, .status-pill.wo_j2, .status-pill.wo_ambos { color: #0b5d42; background: #dceee7; }
-  .status-pill.pendiente, .status-pill.reprogramado, .status-pill.suspendido { color: #873819; background: #fbe4d8; }
+  .status-pill.por_coordinar, .status-pill.pendiente, .status-pill.suspendido { color: #873819; background: #fbe4d8; }
+  .schedule-badge { display: inline-flex; margin-top: 8px; padding: 4px 8px; border-radius: 999px; color: #315b45; background: #e7f0e9; font-size: 11px; font-weight: 850; }
+  .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .match-players { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; font-size: 17px; font-weight: 900; }
   .match-players span:last-child { text-align: right; }
   .versus { color: var(--clay-500); font-size: 11px; }

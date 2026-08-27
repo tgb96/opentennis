@@ -3,7 +3,7 @@
     "use strict";
 
     var PLAYED_STATUSES = ["jugado", "wo_j1", "wo_j2", "wo_ambos"];
-    var PENDING_STATUSES = ["pendiente", "reprogramado", "suspendido"];
+    var PENDING_STATUSES = ["por_coordinar", "suspendido"];
     var state = {
       dashboard: window.__INITIAL_DATA__ || { summary: {}, matches: [] },
       view: "pending",
@@ -30,7 +30,13 @@
       dialogTitle: document.getElementById("dialogTitle"),
       matchId: document.getElementById("matchIdInput"),
       status: document.getElementById("statusInput"),
+      originalSchedule: document.getElementById("originalSchedule"),
+      scheduleSection: document.getElementById("scheduleSection"),
+      scheduleType: document.getElementById("scheduleTypeInput"),
+      court: document.getElementById("courtInput"),
+      turn: document.getElementById("turnInput"),
       date: document.getElementById("dateInput"),
+      dateLabel: document.getElementById("dateLabel"),
       scoreSection: document.getElementById("scoreSection"),
       scorePlayer1: document.getElementById("scorePlayer1"),
       scorePlayer2: document.getElementById("scorePlayer2"),
@@ -143,6 +149,10 @@
         card.appendChild(top);
         card.appendChild(players);
 
+        if (match.scheduleType && match.scheduleType !== "oficial") {
+          card.appendChild(createElement("span", "schedule-badge", match.scheduleTypeLabel));
+        }
+
         var detail = match.resultWeb || match.notes || (match.date ? "Fecha: " + match.date : "Toca para registrar");
         if (detail) card.appendChild(createElement("div", "match-result", detail));
         card.addEventListener("click", function () { openMatch(match.matchId); });
@@ -205,7 +215,17 @@
       elements.matchId.value = match.matchId;
       elements.status.value = match.status === "programado" ? "jugado" : match.status;
       elements.date.value = dateForInput((match.record && match.record.date) || match.date || state.dashboard.today);
+      elements.scheduleType.value = match.scheduleType || "oficial";
+      elements.court.value = match.court || "";
+      elements.turn.value = match.turn || "";
       elements.notes.value = match.notes || "";
+      setText(elements.originalSchedule, [
+        "Programación oficial",
+        match.originalDate || match.date,
+        match.originalCourt ? "Cancha " + match.originalCourt : "",
+        match.originalTurn || "",
+        match.round || ""
+      ].filter(Boolean).join(" · "));
       updatePlayerLabels(match);
 
       var record = match.record || {};
@@ -223,8 +243,18 @@
       var status = elements.status.value;
       var isPlayed = status === "jugado";
       var isWo = status.indexOf("wo_") === 0;
+      var isScheduling = status === "programado";
+      var needsDate = isPlayed || isWo || isScheduling || status === "suspendido";
       elements.scoreSection.hidden = !isPlayed;
       elements.woExplanation.hidden = !isWo;
+      elements.scheduleSection.hidden = !isScheduling;
+      elements.date.closest("label").hidden = !needsDate;
+      elements.date.required = needsDate;
+      setText(elements.dateLabel, isScheduling ? "Nueva fecha acordada" : "Fecha del partido");
+
+      if (isScheduling && elements.scheduleType.value === "oficial") {
+        elements.scheduleType.value = "reprogramado";
+      }
 
       [elements.set1Player1, elements.set1Player2, elements.set2Player1, elements.set2Player2].forEach(function (input) {
         input.required = isPlayed;
@@ -247,6 +277,9 @@
         matchId: elements.matchId.value,
         status: elements.status.value,
         date: dateForSheet(elements.date.value),
+        scheduleType: elements.scheduleType.value,
+        court: elements.court.value.trim(),
+        turn: elements.turn.value.trim(),
         notes: elements.notes.value.trim(),
         set1Player1: elements.set1Player1.value,
         set1Player2: elements.set1Player2.value,

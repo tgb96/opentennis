@@ -134,6 +134,21 @@ test("setup crea encabezados y migra solo IDs inequívocos", () => {
   assert.equal(registro.rows[2][22], "2026-s1-b-carla-diana");
 });
 
+test("inicializa programación oficial y distingue ida y vuelta", () => {
+  const context = createContext();
+  const { fixture, spreadsheet } = baseSheets();
+  fixture.rows[2][3] = "D";
+  fixture.rows[3][3] = "D";
+  context.adminEnsureAdminSchema_(spreadsheet);
+  const result = context.adminPopulateSchedulingMetadata_(spreadsheet);
+
+  assert.equal(result.rowsInitialized, 3);
+  assert.deepEqual(fixture.rows[0].slice(10, 15), ["Fecha oficial", "Cancha oficial", "Turno oficial", "Tipo programación", "Ronda"]);
+  assert.deepEqual(fixture.rows[1].slice(10, 15), ["1/1/2026", "1", "Turno 1", "oficial", "Única"]);
+  assert.equal(fixture.rows[2][14], "Ida");
+  assert.equal(fixture.rows[3][14], "Vuelta");
+});
+
 test("la migración se detiene antes de escribir IDs duplicados", () => {
   const context = createContext();
   const { fixture, spreadsheet } = baseSheets();
@@ -192,6 +207,7 @@ test("los 56 registros reales se relacionan sin ambigüedad con el fixture", () 
 
   context.adminEnsureAdminSchema_(spreadsheet);
   const migration = context.adminPopulateMatchIds_(spreadsheet);
+  const scheduling = context.adminPopulateSchedulingMetadata_(spreadsheet);
   context.PropertiesService = {
     getScriptProperties() {
       return { getProperty() { return "spreadsheet-test"; } };
@@ -208,6 +224,7 @@ test("los 56 registros reales se relacionan sin ambigüedad con el fixture", () 
 
   assert.equal(migration.fixtureIdsCreated, 129);
   assert.equal(migration.registroIdsCreated, 56);
+  assert.equal(scheduling.rowsInitialized, 129);
   assert.equal(dashboard.matches.length, 129);
   assert.deepEqual(
     {

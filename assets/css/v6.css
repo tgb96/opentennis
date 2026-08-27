@@ -1,0 +1,37 @@
+.v6-home-main { width: min(100% - 24px, 920px); margin: 0 auto; padding: 18px 0 110px; }
+.v6-home-main .v5-hero-card { padding: 20px; }
+.v6-home-main .v5-hero-logo-wrap { width: 80px; height: 80px; }
+.v6-home-main .v5-hero-text { text-align: left; }
+.my-open-tennis { margin-top: 14px; padding: 18px; border-radius: 24px; background: #fffaf0; box-shadow: 0 12px 34px rgba(11,47,37,.12); }
+.personal-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.personal-heading h2 { margin:0; color:#0b2f25; font:700 26px/1.1 Oswald, sans-serif; }
+.personal-heading label { display:grid; gap:5px; color:#536158; font-size:12px; font-weight:800; }
+.personal-heading select { max-width:220px; padding:10px 12px; border:1px solid #b8c4bc; border-radius:12px; background:white; font:inherit; }
+.personal-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.personal-stats div { padding:12px; border-radius:16px; background:#edf3ee; text-align:center; }
+.personal-stats span { display:block; color:#5c6c61; font-size:11px; font-weight:800; }
+.personal-stats strong { display:block; margin-top:3px; color:#0b2f25; font-size:23px; }
+.next-match-card { padding:16px; border-radius:18px; color:white; background:linear-gradient(135deg,#0b2f25,#1b5a43); }
+.next-match-card h2 { margin:5px 0; font-size:22px; }
+.next-match-card p { margin:0; color:#e4eee7; }
+.personal-kicker { color:#efb080; font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.personal-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.personal-actions a { padding:10px 12px; border:1px solid rgba(255,255,255,.45); border-radius:12px; color:white; font-size:13px; font-weight:850; text-decoration:none; }
+.personal-actions a.primary { border-color:#d86636; background:#d86636; }
+.personal-empty { margin:0; color:#59645e; }
+.match-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+.match-actions a,.match-actions button { min-height:40px; padding:8px 10px; border:1px solid #c6d0c9; border-radius:11px; color:#173f31; background:#fff; font:800 12px/1.1 Inter,sans-serif; text-decoration:none; cursor:pointer; }
+.match-actions a.primary { color:white; border-color:#bd592f; background:#bd592f; }
+.schedule-kind { display:inline-flex; margin-left:6px; padding:3px 7px; border-radius:999px; background:#e8f0ea; color:#275541; font-size:11px; font-weight:800; }
+.match-experience { padding:16px; border-radius:20px; background:#fffaf0; box-shadow:0 10px 28px rgba(11,47,37,.08); }
+.public-view-tabs { display:flex; gap:7px; overflow:auto; padding:2px 0 5px; scrollbar-width:none; }
+.public-view-tabs button { flex:0 0 auto; min-height:42px; padding:9px 12px; border:1px solid #c8d2cb; border-radius:999px; color:#214c3a; background:white; font:800 12px Inter,sans-serif; }
+.public-view-tabs button[aria-current="page"] { color:white; border-color:#0b2f25; background:#0b2f25; }
+@media (max-width:640px) {
+  .personal-heading { align-items:stretch; flex-direction:column; }
+  .personal-heading select { max-width:none; width:100%; }
+  body.index-page .v6-home-main .v5-hero-card { display:none !important; }
+  body.index-page .v6-home-main { display:block !important; height:auto !important; min-height:0 !important; }
+  .my-open-tennis { margin-top:0; }
+  .v6-home-main .v5-install-card { margin-top:12px; }
+}
