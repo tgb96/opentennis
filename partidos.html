@@ -329,7 +329,7 @@ td:first-child {
 }
 
 .card-partido.semana-proxima-card::before {
-  content: "Este sábado";
+  content: "Próximo partido";
   display: inline-block;
   margin-bottom: 7px;
   padding: 3px 9px;
@@ -340,6 +340,10 @@ td:first-child {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.card-partido.semana-proxima-card.este-sabado-card::before {
+  content: "Este sábado";
 }
 
 .card-top {
@@ -930,8 +934,16 @@ function obtenerSemanaProxima(filas) {
 }
 
 function marcarSemanaProxima(filas, semanaProxima) {
+  const hoySantiago = inicioDiaActualSantiago();
+  const diaSemana = new Date(hoySantiago).getUTCDay();
+  const proximoSabado = hoySantiago + ((6 - diaSemana + 7) % 7) * 86400000;
+
   for (let i = 0; i < filas.length; i++) {
     filas[i]._esSemanaProxima = Boolean(semanaProxima && filas[i].semana === semanaProxima);
+    filas[i]._esEsteSabado = Boolean(
+      filas[i]._esSemanaProxima &&
+      parseFechaProgramacionSantiago(filas[i].fechaSemana) === proximoSabado
+    );
   }
 }
 
@@ -943,6 +955,16 @@ function semanaProximaEnCanchas(canchas) {
   }
 
   return false;
+}
+
+function etiquetaSemanaProximaEnCanchas(canchas) {
+  for (const filasCancha of canchas.values()) {
+    for (let i = 0; i < filasCancha.length; i++) {
+      if (filasCancha[i]._esEsteSabado) return "Este sábado";
+    }
+  }
+
+  return "Próxima fecha";
 }
 
 function parseCSVLine(line) {
@@ -1217,22 +1239,22 @@ function crearFilaTabla(fila, mapaSemanas) {
   return tr;
 }
 
-function crearSeparadorHTML(textoSemana, tipo, mapaSemanas, esSemanaProxima = false) {
+function crearSeparadorHTML(textoSemana, tipo, mapaSemanas, esSemanaProxima = false, esEsteSabado = false) {
   const claseBase = tipo === "verde" ? "separador-verde" : "separador-naranja";
   const clase = `${claseBase}${esSemanaProxima ? " separador-semana-proxima" : ""}`;
   const badge = esSemanaProxima
-    ? `<span class="semana-label-destacada">Este sábado</span>`
+    ? `<span class="semana-label-destacada">${esEsteSabado ? "Este sábado" : "Próxima fecha"}</span>`
     : "";
 
   return `<tr class="${clase}"><td colspan="8">${escapeHTML(etiquetaSemana(textoSemana, mapaSemanas))}${badge}</td></tr>`;
 }
 
-function crearSeparador(textoSemana, tipo, mapaSemanas, esSemanaProxima = false) {
+function crearSeparador(textoSemana, tipo, mapaSemanas, esSemanaProxima = false, esEsteSabado = false) {
   const tr = document.createElement("tr");
   tr.className = `${tipo === "verde" ? "separador-verde" : "separador-naranja"}${esSemanaProxima ? " separador-semana-proxima" : ""}`;
 
   const badge = esSemanaProxima
-    ? `<span class="semana-label-destacada">Este sábado</span>`
+    ? `<span class="semana-label-destacada">${esEsteSabado ? "Este sábado" : "Próxima fecha"}</span>`
     : "";
 
   tr.innerHTML = `<td colspan="8">${escapeHTML(etiquetaSemana(textoSemana, mapaSemanas))}${badge}</td>`;
@@ -1260,7 +1282,7 @@ function accionesPartidoHTML(fila) {
 
 function crearCardBusquedaHTML(fila, mapaSemanas) {
   return `
-    <div class="card-partido${fila._esSemanaProxima ? " semana-proxima-card" : ""}">
+    <div class="card-partido${fila._esSemanaProxima ? " semana-proxima-card" : ""}${fila._esEsteSabado ? " este-sabado-card" : ""}">
       <div class="card-top">${escapeHTML(fila._semanaLabel || etiquetaSemana(fila.semana, mapaSemanas))} · Cancha ${escapeHTML(fila.cancha)}</div>
       <div class="card-meta">Turno ${escapeHTML(fila.turno)} · Categoría ${escapeHTML(fila.categoria)}</div>
       <div class="card-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
@@ -1277,7 +1299,7 @@ function crearCardBusqueda(fila, mapaSemanas) {
   const card = document.createElement("div");
   card.className = "card-partido";
   card.innerHTML = crearCardBusquedaHTML(fila, mapaSemanas)
-    .replace(/^<div class="card-partido(?: semana-proxima-card)?">/, "")
+    .replace(/^<div class="card-partido(?: semana-proxima-card)?(?: este-sabado-card)?">/, "")
     .replace(/<\/div>\s*$/, "");
   return card;
 }
@@ -1358,7 +1380,7 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
     if (vista === "results" && !["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
 
     if (semanaAnterior && fila.semana !== semanaAnterior) {
-      filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, fila._esSemanaProxima);
+      filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, fila._esSemanaProxima, fila._esEsteSabado);
     }
 
     filasHTML += crearFilaTablaHTML(fila, mapaSemanas);
@@ -1409,7 +1431,8 @@ function renderCompletaDesktop(filas, mapaSemanas) {
         fila.semana,
         contadorSeparador % 2 === 0 ? "verde" : "naranja",
         mapaSemanas,
-        fila._esSemanaProxima
+        fila._esSemanaProxima,
+        fila._esEsteSabado
       );
     }
 
@@ -1470,12 +1493,13 @@ function renderCompletaMobile(filas, mapaSemanas) {
 
   semanas.forEach((canchas, semana) => {
     const esSemanaProxima = semanaProximaEnCanchas(canchas);
+    const etiquetaProxima = etiquetaSemanaProximaEnCanchas(canchas);
 
     html += `
       <div class="semana-box${esSemanaProxima ? " semana-proxima-box activa" : ""}">
         <button class="semana-btn" type="button">
           <span class="semana-btn-text">${escapeHTML(etiquetaSemana(semana, mapaSemanas))}</span>
-          ${esSemanaProxima ? `<span class="semana-pill">Este sábado</span>` : ""}
+          ${esSemanaProxima ? `<span class="semana-pill">${etiquetaProxima}</span>` : ""}
           <span class="semana-toggle">${esSemanaProxima ? "–" : "+"}</span>
         </button>
 
