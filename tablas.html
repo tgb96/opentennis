@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/app.css?v=7" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -17,9 +17,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
-  <link rel="stylesheet" href="assets/css/v3.css" />
-  <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
-  <link rel="stylesheet" href="assets/css/v5.css?v=5" />
   <script src="assets/js/config.js?v=6"></script>
   <script src="assets/js/data-model.js?v=1"></script>
   <link rel="prefetch" href="resultados-2025.html" as="document" />
@@ -28,7 +25,7 @@
 <body class="tablas-page v5-page">
   <div class="layout app-shell">
     <aside class="sidebar app-topbar">
-      <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/img/logo-open-tennis.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span></a>
+      <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/icons/icon-512.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span></a>
     </aside>
     <main class="main app-main">
       <h1 class="page-title">Tablas de posiciones</h1>
@@ -43,7 +40,31 @@
   </section>
 
   <section class="rankings-header single-subtitle">
-    <p>Toca una categoría y luego un jugador para ver el detalle.</p>
+    <p>Revisa tu rendimiento, compárate con un rival o toca cualquier jugador de la tabla para abrir su perfil.</p>
+  </section>
+
+  <section class="player-lab" aria-labelledby="player-lab-title">
+    <div class="player-lab-heading">
+      <div>
+        <span class="player-lab-kicker">TEMPORADA 2026</span>
+        <h2 id="player-lab-title">Mi rendimiento</h2>
+      </div>
+      <a id="playerMatchesLink" class="player-matches-link" href="partidos.html">Ver mis partidos</a>
+    </div>
+
+    <div class="player-lab-controls">
+      <label>
+        Mi jugador
+        <select id="rankingPlayerSelect"><option value="">Elige tu nombre</option></select>
+      </label>
+      <label>
+        Comparar con
+        <select id="rankingRivalSelect" disabled><option value="">Elige primero tu jugador</option></select>
+      </label>
+    </div>
+
+    <div id="playerProfile" class="player-profile-empty">Elige tu nombre para ver tu perfil deportivo.</div>
+    <div id="headToHeadProfile" class="head-to-head" hidden></div>
   </section>
 
   <div id="rankingsContenedor"></div>
@@ -165,6 +186,181 @@
   font-size: 14px;
   color: #666;
 }
+
+.player-lab {
+  margin: 0 0 22px;
+  padding: 18px;
+  border: 1px solid #d5e0dc;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fff 0%, #f6faf8 100%);
+  box-shadow: 0 10px 28px rgba(11, 47, 37, 0.10);
+}
+
+.player-lab-heading,
+.player-lab-controls,
+.profile-main,
+.profile-stats,
+.progress-lines,
+.head-to-head-score { display: grid; }
+
+.player-lab-heading {
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.player-lab-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: #b44b25;
+  font: 800 11px/1.1 Inter, Arial, sans-serif;
+  letter-spacing: .13em;
+}
+
+.player-lab h2 {
+  margin: 0;
+  color: #0b2f25;
+  font: 700 25px/1.1 Oswald, Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.player-matches-link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border: 1px solid #174f49;
+  border-radius: 12px;
+  color: #174f49;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.player-lab-controls {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.player-lab-controls label {
+  color: #405852;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.player-lab-controls select {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 6px;
+  padding: 0 12px;
+  border: 1px solid #cbd8d3;
+  border-radius: 12px;
+  background: #fff;
+  color: #173f39;
+  font: 700 14px/1 Inter, Arial, sans-serif;
+}
+
+.player-profile-empty {
+  padding: 18px;
+  border: 1px dashed #a9bdb6;
+  border-radius: 14px;
+  color: #59706a;
+  text-align: center;
+}
+
+.profile-main {
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr);
+  gap: 14px;
+}
+
+.profile-identity,
+.profile-progress,
+.head-to-head {
+  padding: 16px;
+  border: 1px solid #d7e2de;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.profile-name {
+  margin: 0 0 4px;
+  color: #0b2f25;
+  font: 800 22px/1.15 Inter, Arial, sans-serif;
+}
+
+.profile-category {
+  margin-bottom: 14px;
+  color: #64736f;
+  font-size: 13px;
+}
+
+.profile-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.profile-stat {
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: #edf4f1;
+  text-align: center;
+}
+
+.profile-stat span,
+.progress-line span,
+.head-to-head-label {
+  display: block;
+  color: #687a74;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.profile-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: #0b2f25;
+  font-size: 20px;
+}
+
+.profile-progress h3,
+.head-to-head h3 {
+  margin: 0 0 12px;
+  color: #173f39;
+  font-size: 15px;
+}
+
+.progress-lines { gap: 10px; }
+
+.progress-line {
+  padding-bottom: 9px;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.progress-line:last-child { border-bottom: 0; padding-bottom: 0; }
+.progress-line strong { display: block; margin-top: 3px; color: #263d37; font-size: 13px; }
+.ranking-move-up { color: #207346 !important; }
+.ranking-move-down { color: #b33c2e !important; }
+
+.head-to-head {
+  margin-top: 14px;
+  background: #0b3b30;
+  color: #fff;
+}
+
+.head-to-head h3 { color: #fff; text-align: center; }
+.head-to-head-score { grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; text-align: center; }
+.head-to-head-player { min-width: 0; }
+.head-to-head-player strong { display: block; margin-top: 4px; overflow-wrap: anywhere; font-size: 15px; }
+.head-to-head-wins { display: block; margin-top: 6px; color: #f4c29f; font-size: 30px; font-weight: 900; }
+.head-to-head-vs { color: #bed0c9; font-size: 12px; font-weight: 900; }
+.head-to-head-note { margin: 14px 0 0; color: #d7e5df; font-size: 12px; line-height: 1.45; text-align: center; }
+
+.fila-jugador.is-selected { background: #e8f3ee; box-shadow: inset 4px 0 #174f49; }
+.card-jugador.is-selected { box-shadow: inset 4px 0 #174f49; background: #f1f7f4; }
 
 .categoria-ranking {
   margin-bottom: 16px;
@@ -669,6 +865,14 @@
   .detalle-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .player-lab { padding: 14px; border-radius: 18px; }
+  .player-lab-heading { grid-template-columns: 1fr; gap: 10px; }
+  .player-matches-link { width: 100%; }
+  .player-lab-controls,
+  .profile-main { grid-template-columns: 1fr; }
+  .profile-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .head-to-head-score { gap: 8px; }
 }
 </style>
 
@@ -683,6 +887,13 @@
   const FIXTURE_URL = OPEN_TENNIS_CONFIG.FIXTURE_URL;
 
   const contenedor = document.getElementById("rankingsContenedor");
+  const rankingPlayerSelect = document.getElementById("rankingPlayerSelect");
+  const rankingRivalSelect = document.getElementById("rankingRivalSelect");
+  const playerProfile = document.getElementById("playerProfile");
+  const headToHeadProfile = document.getElementById("headToHeadProfile");
+  const playerMatchesLink = document.getElementById("playerMatchesLink");
+  const PERSONAL_PLAYER_KEY = "openTennisPlayerV1";
+  const RANKING_SNAPSHOT_KEY = "openTennisRankingSnapshotV1";
 
   const normalizarCache = new Map();
   const nombreCortoCache = new Map();
@@ -691,8 +902,15 @@
   let registrosPorJugador = new Map();
   let fixturePorJugador = new Map();
   let partidosRegistradosClave = new Set();
+  let partidosRegistradosId = new Set();
+  let cantidadFixturePorPareja = new Map();
   let statsCache = new Map();
   let eventosInstalados = false;
+  let categoriasActuales = [];
+  let registrosActuales = [];
+  let fixtureActual = [];
+  let rankingPorJugador = new Map();
+  let snapshotAnterior = {};
 
   function escaparHTML(valor) {
     return String(valor ?? "")
@@ -953,6 +1171,9 @@
           cancha: String(cols[1] || "").trim(),
           turno: String(cols[2] || "").trim(),
           categoria,
+          fechaSemana: String(cols[6] || "").trim(),
+          estadoFixture: String(cols[7] || "").trim(),
+          tipoProgramacion: String(cols[13] || "oficial").trim().toLowerCase(),
           jugador1,
           jugador2,
           _j1: normalizar(jugador1),
@@ -983,6 +1204,8 @@
     registrosPorJugador = new Map();
     fixturePorJugador = new Map();
     partidosRegistradosClave = new Set();
+    partidosRegistradosId = new Set();
+    cantidadFixturePorPareja = new Map();
     statsCache = new Map();
 
     for (const r of registros) {
@@ -990,12 +1213,21 @@
       agregarAMapaLista(registrosPorJugador, r._j2, r);
       partidosRegistradosClave.add(`${r._j1}|${r._j2}`);
       partidosRegistradosClave.add(`${r._j2}|${r._j1}`);
+      if (r.matchId) partidosRegistradosId.add(OPEN_TENNIS_DATA.resolveMatchId({ matchId: r.matchId }));
     }
 
     for (const f of fixture) {
       agregarAMapaLista(fixturePorJugador, f._j1, f);
       agregarAMapaLista(fixturePorJugador, f._j2, f);
+      const pareja = [f._j1, f._j2].sort().join("|");
+      cantidadFixturePorPareja.set(pareja, (cantidadFixturePorPareja.get(pareja) || 0) + 1);
     }
+  }
+
+  function fixtureYaRegistrado(partido) {
+    if (partido.matchId && partidosRegistradosId.has(partido.matchId)) return true;
+    const pareja = [partido._j1, partido._j2].sort().join("|");
+    return cantidadFixturePorPareja.get(pareja) === 1 && partidosRegistradosClave.has(`${partido._j1}|${partido._j2}`);
   }
 
   function jugadorEnRegistro(jugador, r) {
@@ -1119,12 +1351,16 @@
     let gamesGanados = 0;
     let gamesPerdidos = 0;
     let puntos = 0;
+    let ganados = 0;
+    let perdidos = 0;
 
     for (const r of registrosJugador) {
       if (r._pendiente === "si") pendientes++;
       if (!r.resultadoWeb || !r.ganador) continue;
 
       jugados.push(r);
+      if (r._ganador === jugadorKey) ganados++;
+      else perdidos++;
 
       const esJ1 = r._j1 === jugadorKey;
 
@@ -1155,9 +1391,9 @@
       ? `${ultimo._ganador === jugadorKey ? "Ganó" : "Perdió"} vs ${rivalDe(jugador, ultimo)} · ${ultimo.resultadoWeb}`
       : "Sin resultados registrados";
 
-    const proximo = fixtureJugador.find(f => !partidosRegistradosClave.has(`${f._j1}|${f._j2}`));
+    const proximo = fixtureJugador.find(f => !fixtureYaRegistrado(f));
     const proximoTexto = proximo
-      ? `vs ${nombreCorto(rivalDe(jugador, proximo))} · Semana ${proximo.semana} · Cancha ${proximo.cancha} · Turno ${proximo.turno}`
+      ? `vs ${nombreCorto(rivalDe(jugador, proximo))} · Semana ${proximo.semana}${proximo.fechaSemana ? ` · ${proximo.fechaSemana}` : ""} · Cancha ${proximo.cancha} · Turno ${proximo.turno}`
       : "Sin próximos partidos programados";
 
     const historial = jugados.map(r => historialPartidoTexto(jugador, r));
@@ -1173,7 +1409,9 @@
       pendientes,
       proximo: proximoTexto,
       historial,
-      jugados: jugados.length
+      jugados: jugados.length,
+      ganados,
+      perdidos
     };
 
     statsCache.set(jugadorKey, stats);
@@ -1287,6 +1525,195 @@
     `;
   }
 
+  function construirIndiceRankings(categorias) {
+    rankingPorJugador = new Map();
+
+    categorias.forEach(categoria => {
+      categoria.jugadores.forEach((jugador, index) => {
+        rankingPorJugador.set(jugador._jugadorKey, {
+          ...jugador,
+          categoria: categoria.nombre,
+          total: categoria.jugadores.length,
+          zona: zonaJugador(categoria.nombre, jugador.posicion, categoria.jugadores.length),
+          arriba: index > 0 ? categoria.jugadores[index - 1] : null,
+          abajo: index < categoria.jugadores.length - 1 ? categoria.jugadores[index + 1] : null
+        });
+      });
+    });
+  }
+
+  function leerSnapshotRanking() {
+    try {
+      const guardado = JSON.parse(localStorage.getItem(RANKING_SNAPSHOT_KEY) || "{}");
+      return guardado && typeof guardado === "object" ? guardado : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function guardarSnapshotRanking() {
+    const snapshot = {};
+    rankingPorJugador.forEach((ranking, key) => {
+      snapshot[key] = Number(ranking.posicion);
+    });
+    localStorage.setItem(RANKING_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  }
+
+  function movimientoRanking(jugadorKey, posicionActual) {
+    const anterior = Number(snapshotAnterior[jugadorKey]);
+    const actual = Number(posicionActual);
+
+    if (!anterior || !actual) return { texto: "Primera referencia guardada", clase: "" };
+    const cambio = anterior - actual;
+    if (cambio > 0) return { texto: `▲ Subió ${cambio} ${cambio === 1 ? "puesto" : "puestos"}`, clase: "ranking-move-up" };
+    if (cambio < 0) return { texto: `▼ Bajó ${Math.abs(cambio)} ${Math.abs(cambio) === 1 ? "puesto" : "puestos"}`, clase: "ranking-move-down" };
+    return { texto: "— Sin cambio desde tu última visita", clase: "" };
+  }
+
+  function distanciaSiguientePosicion(ranking) {
+    if (!ranking.arriba) return "Está liderando su categoría";
+    const diferencia = Math.max(0, numero(ranking.arriba.puntos) - numero(ranking.puntos));
+    if (diferencia === 0) return `Igualado en puntos con ${nombreCorto(ranking.arriba.jugador)}`;
+    return `${diferencia} ${diferencia === 1 ? "punto" : "puntos"} para igualar a ${nombreCorto(ranking.arriba.jugador)}`;
+  }
+
+  function actualizarSeleccionEnTablas(jugadorKey) {
+    contenedor.querySelectorAll("[data-player-key]").forEach(elemento => {
+      elemento.classList.toggle("is-selected", elemento.dataset.playerKey === jugadorKey);
+    });
+  }
+
+  function actualizarRivales(ranking) {
+    const categoria = categoriasActuales.find(cat => cat.nombre === ranking.categoria);
+    const rivales = categoria
+      ? categoria.jugadores.filter(j => j._jugadorKey !== ranking._jugadorKey)
+      : [];
+
+    rankingRivalSelect.disabled = false;
+    rankingRivalSelect.innerHTML = '<option value="">Elige un rival</option>' + rivales
+      .map(rival => `<option value="${escaparHTML(rival.jugador)}">${escaparHTML(rival.jugador)}</option>`)
+      .join("");
+  }
+
+  function calcularCaraACara(jugadorA, jugadorB) {
+    const keyA = normalizar(jugadorA);
+    const keyB = normalizar(jugadorB);
+    const duelos = registrosActuales.filter(registro => {
+      const mismaPareja = (registro._j1 === keyA && registro._j2 === keyB) || (registro._j1 === keyB && registro._j2 === keyA);
+      return mismaPareja && registro.resultadoWeb && registro.ganador;
+    });
+    const ganadosA = duelos.filter(registro => registro._ganador === keyA).length;
+    const ganadosB = duelos.filter(registro => registro._ganador === keyB).length;
+    const ultimo = duelos.length ? duelos[duelos.length - 1] : null;
+    const proximo = fixtureActual.find(partido => {
+      const mismaPareja = (partido._j1 === keyA && partido._j2 === keyB) || (partido._j1 === keyB && partido._j2 === keyA);
+      return mismaPareja && !fixtureYaRegistrado(partido);
+    });
+
+    return { duelos, ganadosA, ganadosB, ultimo, proximo };
+  }
+
+  function renderCaraACara() {
+    const jugadorA = rankingPlayerSelect.value;
+    const jugadorB = rankingRivalSelect.value;
+
+    if (!jugadorA || !jugadorB) {
+      headToHeadProfile.hidden = true;
+      headToHeadProfile.innerHTML = "";
+      return;
+    }
+
+    const h2h = calcularCaraACara(jugadorA, jugadorB);
+    const notaUltimo = h2h.ultimo
+      ? `Último duelo: ${escaparHTML(h2h.ultimo.resultadoWeb)}`
+      : "Todavía no tienen un resultado registrado entre ellos.";
+    const notaProximo = h2h.proximo
+      ? ` Próximo cruce: semana ${escaparHTML(h2h.proximo.semana)}${h2h.proximo.fechaSemana ? ` · ${escaparHTML(h2h.proximo.fechaSemana)}` : ""}.`
+      : "";
+
+    headToHeadProfile.innerHTML = `
+      <h3>Cara a cara · ${h2h.duelos.length} ${h2h.duelos.length === 1 ? "partido" : "partidos"}</h3>
+      <div class="head-to-head-score">
+        <div class="head-to-head-player"><span class="head-to-head-label">Jugador</span><strong>${escaparHTML(jugadorA)}</strong><span class="head-to-head-wins">${h2h.ganadosA}</span></div>
+        <span class="head-to-head-vs">VS</span>
+        <div class="head-to-head-player"><span class="head-to-head-label">Rival</span><strong>${escaparHTML(jugadorB)}</strong><span class="head-to-head-wins">${h2h.ganadosB}</span></div>
+      </div>
+      <p class="head-to-head-note">${notaUltimo}${notaProximo}</p>`;
+    headToHeadProfile.hidden = false;
+  }
+
+  function renderPerfilJugador() {
+    const jugador = rankingPlayerSelect.value;
+    const jugadorKey = normalizar(jugador);
+    const ranking = rankingPorJugador.get(jugadorKey);
+
+    if (!ranking) {
+      playerProfile.className = "player-profile-empty";
+      playerProfile.textContent = "Elige tu nombre para ver tu perfil deportivo.";
+      rankingRivalSelect.disabled = true;
+      rankingRivalSelect.innerHTML = '<option value="">Elige primero tu jugador</option>';
+      playerMatchesLink.href = "partidos.html";
+      actualizarSeleccionEnTablas("");
+      renderCaraACara();
+      return;
+    }
+
+    localStorage.setItem(PERSONAL_PLAYER_KEY, jugador);
+    playerMatchesLink.href = `partidos.html?jugador=${encodeURIComponent(jugador)}`;
+    const stats = calcularStatsJugador(jugador, registrosActuales, fixtureActual);
+    const movimiento = movimientoRanking(jugadorKey, ranking.posicion);
+    const zona = ranking.zona ? zonaHTML(ranking.zona) : "En zona media";
+
+    playerProfile.className = "player-profile";
+    playerProfile.innerHTML = `
+      <div class="profile-main">
+        <div class="profile-identity">
+          <h3 class="profile-name">${escaparHTML(jugador)}</h3>
+          <div class="profile-category">${escaparHTML(ranking.categoria)} · ${zona}</div>
+          <div class="profile-stats">
+            <div class="profile-stat"><span>Posición</span><strong>#${escaparHTML(ranking.posicion)}</strong></div>
+            <div class="profile-stat"><span>Puntos</span><strong>${escaparHTML(ranking.puntos)}</strong></div>
+            <div class="profile-stat"><span>Récord</span><strong>${stats.ganados}-${stats.perdidos}</strong></div>
+            <div class="profile-stat"><span>Rendimiento</span><strong>${escaparHTML(stats.rendimiento)}</strong></div>
+          </div>
+        </div>
+        <div class="profile-progress">
+          <h3>Progresión</h3>
+          <div class="progress-lines">
+            <div class="progress-line"><span>Movimiento</span><strong class="${movimiento.clase}">${escaparHTML(movimiento.texto)}</strong></div>
+            <div class="progress-line"><span>Siguiente posición</span><strong>${escaparHTML(distanciaSiguientePosicion(ranking))}</strong></div>
+            <div class="progress-line"><span>Racha reciente</span><strong>${escaparHTML(stats.racha)}</strong></div>
+            <div class="progress-line"><span>Próximo partido</span><strong>${escaparHTML(stats.proximo)}</strong></div>
+          </div>
+        </div>
+      </div>`;
+
+    actualizarRivales(ranking);
+    actualizarSeleccionEnTablas(jugadorKey);
+    renderCaraACara();
+  }
+
+  function configurarPanelJugadores(categorias, registros, fixture) {
+    categoriasActuales = categorias;
+    registrosActuales = registros;
+    fixtureActual = fixture;
+    construirIndiceRankings(categorias);
+    snapshotAnterior = leerSnapshotRanking();
+
+    const jugadores = Array.from(rankingPorJugador.values())
+      .map(ranking => ranking.jugador)
+      .sort((a, b) => a.localeCompare(b, "es"));
+    rankingPlayerSelect.innerHTML = '<option value="">Elige tu nombre</option>' + jugadores
+      .map(jugador => `<option value="${escaparHTML(jugador)}">${escaparHTML(jugador)}</option>`)
+      .join("");
+
+    const solicitado = new URLSearchParams(location.search).get("jugador") || localStorage.getItem(PERSONAL_PLAYER_KEY) || "";
+    if (jugadores.includes(solicitado)) rankingPlayerSelect.value = solicitado;
+
+    renderPerfilJugador();
+    guardarSnapshotRanking();
+  }
+
   function crearTablaCategoria(categoria, registros, fixture) {
     const total = categoria.jugadores.length;
     const claseCat = claseCategoria(categoria.nombre);
@@ -1302,7 +1729,7 @@
     });
 
     const filasDesktop = jugadores.map(j => `
-      <tr class="fila-jugador" data-detalle="${escaparHTML(j.detalleId)}">
+      <tr class="fila-jugador" data-detalle="${escaparHTML(j.detalleId)}" data-player-key="${escaparHTML(j._jugadorKey)}">
         <td class="posicion">${escaparHTML(j.posicion)}</td>
         <td>${escaparHTML(j.jugador)}</td>
         <td class="puntos">${escaparHTML(j.puntos)}</td>
@@ -1318,7 +1745,7 @@
     `).join("");
 
     const cardsMobile = jugadores.map(j => `
-      <div class="card-jugador">
+      <div class="card-jugador" data-player-key="${escaparHTML(j._jugadorKey)}">
         <div class="card-jugador-main">
           <div class="card-posicion">${escaparHTML(j.posicion)}</div>
 
@@ -1394,6 +1821,9 @@
   function instalarEventos() {
     if (eventosInstalados) return;
     eventosInstalados = true;
+
+    rankingPlayerSelect.addEventListener("change", renderPerfilJugador);
+    rankingRivalSelect.addEventListener("change", renderCaraACara);
 
     contenedor.addEventListener("click", event => {
       const titulo = event.target.closest(".categoria-titulo");
@@ -1484,6 +1914,7 @@
       contenedor.innerHTML = categorias
         .map(categoria => crearTablaCategoria(categoria, registros, fixture))
         .join("");
+      configurarPanelJugadores(categorias, registros, fixture);
 
     } catch (error) {
       contenedor.innerHTML = `

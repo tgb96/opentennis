@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/app.css?v=7" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -17,10 +17,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
-  <link rel="stylesheet" href="assets/css/v3.css" />
-  <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
-  <link rel="stylesheet" href="assets/css/v5.css?v=5" />
-  <link rel="stylesheet" href="assets/css/v6.css?v=6.1" />
   <script src="assets/js/config.js?v=6"></script>
   <script src="assets/js/data-model.js?v=1"></script>
   <script defer src="assets/js/app.js?v=5"></script>
@@ -28,7 +24,7 @@
 <body class="partidos-page v5-page">
   <div class="layout app-shell">
     <aside class="sidebar app-topbar">
-      <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/img/logo-open-tennis.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span></a>
+      <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/icons/icon-512.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span></a>
     </aside>
     <main class="main app-main">
       <h1 class="page-title">Partidos y resultados</h1>
@@ -947,6 +943,30 @@ function marcarSemanaProxima(filas, semanaProxima) {
   }
 }
 
+function filaCorrespondeJugador(fila, jugadorNormalizado) {
+  if (!fila || !jugadorNormalizado) return false;
+  return normalizar(fila.jugador1) === jugadorNormalizado || normalizar(fila.jugador2) === jugadorNormalizado;
+}
+
+function obtenerFechaProximaJugador(filas, jugadorNormalizado) {
+  if (!jugadorNormalizado) return null;
+
+  const hoySantiago = inicioDiaActualSantiago();
+  let fechaMasCercana = Infinity;
+
+  for (let i = 0; i < filas.length; i++) {
+    const fila = filas[i];
+    if (!filaCorrespondeJugador(fila, jugadorNormalizado)) continue;
+    if (OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)) !== "programado") continue;
+
+    const fechaProgramada = parseFechaProgramacionSantiago(fila.fechaSemana);
+    if (fechaProgramada === null || fechaProgramada < hoySantiago) continue;
+    if (fechaProgramada < fechaMasCercana) fechaMasCercana = fechaProgramada;
+  }
+
+  return Number.isFinite(fechaMasCercana) ? fechaMasCercana : null;
+}
+
 function semanaProximaEnCanchas(canchas) {
   for (const filasCancha of canchas.values()) {
     for (let i = 0; i < filasCancha.length; i++) {
@@ -1090,14 +1110,27 @@ function estadoFinal(fila) {
   if (fila._estado !== undefined) return fila._estado;
   if (fila.esLibre) return "Horario libre";
 
+  if (fila.registro && (fila.registro.resultadoWeb || fila.registro.ganador)) {
+    return "Jugado";
+  }
+
+  const tipoProgramacion = normalizar(fila.tipoProgramacion || "oficial");
+  const estadoFixtureExplicito = normalizar(fila.estadoFixture);
+  const tieneNuevaProgramacion = Boolean(
+    fila.fechaSemana &&
+    tipoProgramacion !== "oficial" &&
+    estadoFixtureExplicito &&
+    OPEN_TENNIS_DATA.normalizeStatus(fila.estadoFixture) === "programado"
+  );
+
+  if (tieneNuevaProgramacion) {
+    return "Programado";
+  }
+
   if (fila.registro && esRegistroPendiente(fila.registro)) {
     return OPEN_TENNIS_DATA.statusLabel(
       estadoCanonicoRegistro(fila.registro)
     );
-  }
-
-  if (fila.registro && (fila.registro.resultadoWeb || fila.registro.ganador)) {
-    return "Jugado";
   }
 
   if (esPendienteFixture(fila)) {
@@ -1194,9 +1227,9 @@ function prepararFila(fila, mapaSemanas) {
   return fila;
 }
 
-function crearFilaTablaHTML(fila, mapaSemanas) {
+function crearFilaTablaHTML(fila, mapaSemanas, destacarProximo = fila._esSemanaProxima) {
   return `
-    <tr class="${fila._esSemanaProxima ? "fila-semana-proxima" : ""}">
+    <tr class="${destacarProximo ? "fila-semana-proxima" : ""}">
       <td>${escapeHTML(fila.semana)}</td>
       <td>${escapeHTML(fila.cancha)}</td>
       <td>${escapeHTML(fila.turno)}</td>
@@ -1280,9 +1313,14 @@ function accionesPartidoHTML(fila) {
   </div>`;
 }
 
-function crearCardBusquedaHTML(fila, mapaSemanas) {
+function crearCardBusquedaHTML(
+  fila,
+  mapaSemanas,
+  destacarProximo = fila._esSemanaProxima,
+  esEsteSabado = fila._esEsteSabado
+) {
   return `
-    <div class="card-partido${fila._esSemanaProxima ? " semana-proxima-card" : ""}${fila._esEsteSabado ? " este-sabado-card" : ""}">
+    <div class="card-partido${destacarProximo ? " semana-proxima-card" : ""}${esEsteSabado ? " este-sabado-card" : ""}">
       <div class="card-top">${escapeHTML(fila._semanaLabel || etiquetaSemana(fila.semana, mapaSemanas))} · Cancha ${escapeHTML(fila.cancha)}</div>
       <div class="card-meta">Turno ${escapeHTML(fila.turno)} · Categoría ${escapeHTML(fila.categoria)}</div>
       <div class="card-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
@@ -1358,13 +1396,19 @@ function mensajeTabla(texto, tbody, contenedorMovil) {
 
 function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
   const busqueda = normalizar(String(filtro || "").trim());
+  const vistaPersonal = vista !== "all";
 
-  if (busqueda === "" && vista === "mine") {
-    tablaBusquedaHead.innerHTML = "";
-    tablaBusquedaBody.innerHTML = "";
-    cardsBusqueda.innerHTML = "";
+  if (vistaPersonal && busqueda === "") {
+    mensajeTabla("Elige tu nombre para ver tus partidos.", tablaBusquedaBody, cardsBusqueda);
     return;
   }
+
+  const fechaProximaJugador = vistaPersonal
+    ? obtenerFechaProximaJugador(filas, busqueda)
+    : null;
+  const hoySantiago = inicioDiaActualSantiago();
+  const diaSemana = new Date(hoySantiago).getUTCDay();
+  const proximoSabado = hoySantiago + ((6 - diaSemana + 7) % 7) * 86400000;
 
   let filasHTML = "";
   let cardsHTML = "";
@@ -1374,17 +1418,28 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
   for (let i = 0; i < filas.length; i++) {
     const fila = filas[i];
 
-    if (busqueda && !fila._busqueda.includes(busqueda)) continue;
-    if (vista === "next" && !fila._esSemanaProxima) continue;
+    const fechaFila = parseFechaProgramacionSantiago(fila.fechaSemana);
+    const esProximoJugador = Boolean(
+      vistaPersonal &&
+      fechaProximaJugador !== null &&
+      fechaFila === fechaProximaJugador &&
+      OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)) === "programado"
+    );
+    const esEsteSabadoJugador = esProximoJugador && fechaFila === proximoSabado;
+
+    const usaJugadorSeleccionado = normalizar(publicPlayerSelect.value) === busqueda;
+    if (vistaPersonal && usaJugadorSeleccionado && !filaCorrespondeJugador(fila, busqueda)) continue;
+    if (vistaPersonal && !usaJugadorSeleccionado && !fila._busqueda.includes(busqueda)) continue;
+    if (vista === "next" && !esProximoJugador) continue;
     if (vista === "pending" && !["por_coordinar", "suspendido"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
     if (vista === "results" && !["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
 
     if (semanaAnterior && fila.semana !== semanaAnterior) {
-      filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, fila._esSemanaProxima, fila._esEsteSabado);
+      filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, esProximoJugador, esEsteSabadoJugador);
     }
 
-    filasHTML += crearFilaTablaHTML(fila, mapaSemanas);
-    cardsHTML += crearCardBusquedaHTML(fila, mapaSemanas);
+    filasHTML += crearFilaTablaHTML(fila, mapaSemanas, esProximoJugador);
+    cardsHTML += crearCardBusquedaHTML(fila, mapaSemanas, esProximoJugador, esEsteSabadoJugador);
 
     encontrados++;
     semanaAnterior = fila.semana;
@@ -1765,7 +1820,7 @@ function actualizarTabsPublicas() {
     if (button.dataset.publicView === publicView) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   });
-  const labels = { mine: "Mi calendario", next: "Próxima fecha", pending: "Partidos por coordinar", results: "Resultados", all: "Todos los partidos" };
+  const labels = { mine: "Mi calendario", next: "Próximo partido", pending: "Partidos por coordinar", results: "Mis resultados", all: "Todo el torneo" };
   searchResultsTitle.textContent = labels[publicView] || "Partidos";
 }
 
@@ -1796,7 +1851,7 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
   publicViewTabs.forEach(button => button.addEventListener("click", () => {
     publicView = button.dataset.publicView;
     actualizarTabsPublicas();
-    const player = publicView === "mine" ? publicPlayerSelect.value : "";
+    const player = publicView === "all" ? "" : publicPlayerSelect.value;
     renderBusqueda(filas, mapaSemanas, player, publicView);
     document.getElementById("tablaBusqueda").closest(".bloque").scrollIntoView({ behavior: "smooth", block: "start" });
   }));

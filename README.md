@@ -1,12 +1,24 @@
-# Open Tennis Huechuraba · V6
+# Open Tennis Huechuraba · V7
 
 Aplicación pública personalizada para GitHub Pages y administrador privado de resultados en Google Apps Script.
+
+## Fases 4 y 5
+
+- Perfil deportivo personalizado con posición, puntos, récord, rendimiento, racha y próximo partido.
+- Progresión desde la última visita y distancia en puntos respecto del puesto superior.
+- Comparación cara a cara contra jugadores de la misma categoría.
+- Marcador público mediante enlace directo, sin ocupar espacio en la navegación principal.
+- Botón para compartir el resultado final por WhatsApp; el administrador sigue registrándolo manualmente.
+- Estilos públicos consolidados en `assets/css/app.css` y estilos del marcador en `assets/css/scoreboard.css`.
+- Logo público optimizado: se reutiliza el ícono de 512 px y se evita descargar el PNG original de 1,46 MB.
+
+Detalles: `docs/phase-4-5.md`.
 
 ## Fases 2 y 3
 
 - `Mi Open Tennis`: jugador guardado en el teléfono, posición, puntos, próximo partido y pendientes.
-- Vistas rápidas de calendario personal, próxima fecha, por coordinar y resultados.
-- Agregar partidos al calendario, compartir y abrir el marcador precargado.
+- Vistas rápidas de calendario personal, próximo partido, por coordinar y resultados, siempre filtradas por el jugador elegido.
+- Agregar partidos programados al calendario.
 - Modelo claro de estado (`Por coordinar`) y tipo de programación (`Oficial`, `Adelantado`, `Reprogramado`, `Recuperación`).
 - Última copia de los datos disponible sin conexión.
 
@@ -48,17 +60,19 @@ La configuración de datos quedó centralizada y documentada antes de construir 
 - `tablas.html`: tablas de posiciones desde Google Sheets.
 - `reglas.html`: reglamento en texto.
 - `marcador.html`: marcador interactivo.
-- `assets/css/v5.css`: ajustes principales de la V5.
+- `assets/css/app.css`: estilos consolidados de la aplicación pública.
+- `assets/css/scoreboard.css`: estilos compartidos que necesita el marcador.
+- `scripts/build-css.js`: regenera ambos archivos consolidados.
 - `assets/js/pwa-install.js`: instalación sin popup.
 - `manifest.webmanifest` y `sw.js`: soporte PWA.
 
 ## Recomendación al subir a GitHub
 
-Reemplaza todos los archivos del repositorio por los de este ZIP.
-Luego abre la URL con `?v=5` para evitar caché temporal, por ejemplo:
+Publica primero la rama de prueba y valida el flujo completo antes de llevarlo al dominio oficial.
+Luego abre la URL con `?v=7` para evitar caché temporal, por ejemplo:
 
 ```txt
-https://tgb96.github.io/oth4/?v=5
+https://tgb96.github.io/opentennis/?v=7
 ```
 
 Si el celular todavía muestra una versión anterior, borra los datos del sitio o abre en incógnito para limpiar el service worker antiguo.

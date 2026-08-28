@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v19-player-home';
+const CACHE_NAME = 'open-tennis-v20-phase4';
 
 const CORE_ASSETS = [
   './',
@@ -8,18 +8,14 @@ const CORE_ASSETS = [
   './resultados-2025.html',
   './reglas.html',
   './marcador.html',
-  './assets/css/styles.css',
-  './assets/css/v3.css',
-  './assets/css/v4.css',
-  './assets/css/v5.css',
-  './assets/css/v6.css',
+  './assets/css/app.css',
+  './assets/css/scoreboard.css',
   './assets/js/app.js',
   './assets/js/config.js',
   './assets/js/data-model.js',
   './assets/js/pwa-install.js',
   './assets/js/personalization.js',
   './data/resultados-2025.json',
-  './assets/img/logo-open-tennis.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/apple-touch-icon.png',

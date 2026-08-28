@@ -1944,16 +1944,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
-  <link rel="stylesheet" href="assets/css/v3.css" />
-  <link rel="stylesheet" href="assets/css/v4.css?v=4.1" />
-  <link rel="stylesheet" href="assets/css/v5.css?v=5" />
+  <link rel="stylesheet" href="assets/css/scoreboard.css?v=7" />
   <script defer src="assets/js/app.js?v=7"></script>
 </head>
 
 <body class="marcador-page v5-page">
   <aside class="sidebar app-topbar">
     <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio">
-      <img class="brand-logo" src="assets/img/logo-open-tennis.png" alt="" aria-hidden="true">
+      <img class="brand-logo" src="assets/icons/icon-512.png" alt="" aria-hidden="true">
       <span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span>
     </a>
   </aside>
@@ -2035,7 +2033,7 @@
           <div class="final-preview" id="finalPreview"></div>
           <div class="final-actions">
             <button class="green-btn" id="shareImageBtn" type="button">Compartir imagen</button>
-            <button class="orange-btn" id="shareWhatsAppBtn" type="button">WhatsApp texto</button>
+            <button class="orange-btn" id="shareWhatsAppBtn" type="button">Compartir resultado por WhatsApp</button>
             <button class="ghost" id="copyResultBtn" type="button">Copiar resultado</button>
           </div>
         </section>
@@ -3521,7 +3519,7 @@
         finalCard.classList.add("visible");
         document.getElementById("finalWinner").textContent = getPlayerLabel(state, state.matchWinner);
         document.getElementById("finalResult").textContent = generateResultText(state);
-        document.getElementById("finalPreview").textContent = "Puedes copiar el resultado o compartir una imagen por WhatsApp usando el menú de compartir del celular.";
+        document.getElementById("finalPreview").textContent = "Envía el resultado por WhatsApp y luego el administrador podrá registrarlo en la planilla.";
       } else {
         finalCard.classList.remove("visible");
       }
