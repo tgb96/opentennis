@@ -2,6 +2,13 @@
 
 Aplicación pública personalizada para GitHub Pages y administrador privado de resultados en Google Apps Script.
 
+## Ajuste V7.2
+
+- La pestaña Tablas vuelve a mostrar inmediatamente las categorías A, B, C y D en vertical, sin tarjetas ni el bloque Mi rendimiento.
+- La temporada 2025 conserva su página histórica independiente.
+- Inicio incorpora el historial 2025/2026 contra el rival del próximo partido.
+- Tablas necesita una sola consulta de datos y la navegación reutiliza las pantallas guardadas para responder más rápido tras la primera carga.
+
 ## Corrección V7.1
 
 - Los resultados y pendientes de una ida ya no se reutilizan por error en la vuelta de Damas.

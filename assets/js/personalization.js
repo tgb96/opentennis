@@ -142,6 +142,78 @@
     return rankings;
   }
 
+  function parseHistoricalResults(value) {
+    if (!value) return null;
+    if (typeof value === "object") return value;
+    try { return JSON.parse(String(value)); } catch (error) { return null; }
+  }
+
+  function samePlayers(match, player, rival) {
+    const pair = [
+      normalize(match && (match.player1 || match.jugador1)),
+      normalize(match && (match.player2 || match.jugador2))
+    ].sort();
+    const expected = [normalize(player), normalize(rival)].sort();
+    return pair[0] === expected[0] && pair[1] === expected[1];
+  }
+
+  function scoreFromWebResult(result) {
+    const match = String(result || "").match(/\d+\s*-\s*\d+(?:\s+\d+\s*-\s*\d+)*/);
+    return match ? match[0].replace(/\s*-\s*/g, "-").replace(/\s+/g, ", ") : "Resultado registrado";
+  }
+
+  function historicalWinner(match) {
+    const sets = [match && match.s1, match && match.s2, match && match.stb].filter(set => Array.isArray(set) && set.length >= 2);
+    let player1Sets = 0;
+    let player2Sets = 0;
+    sets.forEach(set => {
+      if (Number(set[0]) > Number(set[1])) player1Sets++;
+      else if (Number(set[1]) > Number(set[0])) player2Sets++;
+    });
+    return player1Sets > player2Sets
+      ? (match.player1 || match.jugador1)
+      : (match.player2 || match.jugador2);
+  }
+
+  function historicalScore(match) {
+    return [match && match.s1, match && match.s2, match && match.stb]
+      .filter(set => Array.isArray(set) && set.length >= 2)
+      .map(set => `${set[0]}-${set[1]}`)
+      .join(", ");
+  }
+
+  function headToHeadSummary(player, rival, matches, historicalData) {
+    if (!player || !rival) return { total: 0, playerWins: 0, rivalWins: 0, last: null };
+
+    const encounters = [];
+    const historical = parseHistoricalResults(historicalData);
+    if (historical && historical.categorias) {
+      Object.values(historical.categorias).flat().forEach(match => {
+        if (!samePlayers(match, player, rival)) return;
+        encounters.push({
+          season: String(historical.temporada || "2025"),
+          winner: historicalWinner(match),
+          score: historicalScore(match)
+        });
+      });
+    }
+
+    (matches || []).forEach(match => {
+      if (match.status !== "jugado" || !match.record || !samePlayers(match, player, rival)) return;
+      encounters.push({
+        season: "2026",
+        winner: match.record.winner,
+        score: scoreFromWebResult(match.record.resultWeb)
+      });
+    });
+
+    const playerKey = normalize(player);
+    const rivalKey = normalize(rival);
+    const playerWins = encounters.filter(encounter => normalize(encounter.winner) === playerKey).length;
+    const rivalWins = encounters.filter(encounter => normalize(encounter.winner) === rivalKey).length;
+    return { total: encounters.length, playerWins, rivalWins, last: encounters.length ? encounters[encounters.length - 1] : null };
+  }
+
   function playerSummary(player, matches, rankings, now) {
     const key = normalize(player);
     const mine = matches.filter(match => normalize(match.player1) === key || normalize(match.player2) === key);
@@ -192,6 +264,25 @@
     return Array.from(indexes).sort((a, b) => a - b).map(index => rows[index]);
   }
 
+  function headToHeadHtml(player, rival, summary) {
+    if (!summary) {
+      return `<div class="next-h2h is-loading"><span>Historial entre ustedes</span><p>Cargando historial…</p></div>`;
+    }
+    if (!summary.total) {
+      return `<div class="next-h2h"><span>Historial frente a ${escapeHtml(rival)}</span><p>Será el primer enfrentamiento registrado entre ustedes.</p></div>`;
+    }
+    const last = summary.last;
+    return `<div class="next-h2h">
+      <span>Historial frente a ${escapeHtml(rival)} · 2025–2026</span>
+      <div class="next-h2h-score">
+        <strong>${escapeHtml(player)} <b>${summary.playerWins}</b></strong>
+        <i>—</i>
+        <strong><b>${summary.rivalWins}</b> ${escapeHtml(rival)}</strong>
+      </div>
+      ${last ? `<p>Último cruce · ${escapeHtml(last.season)}: ${escapeHtml(last.winner)} ganó · ${escapeHtml(last.score)}</p>` : ""}
+    </div>`;
+  }
+
   async function boot() {
     if (typeof document === "undefined" || !document.getElementById("myOpenTennis")) return;
     const config = window.OPEN_TENNIS_CONFIG;
@@ -199,6 +290,10 @@
     const select = document.getElementById("myPlayerSelect");
     const content = document.getElementById("myOpenTennisContent");
     try {
+      let historicalData = null;
+      const historicalPromise = fetch("data/resultados-2025.json")
+        .then(response => response.ok ? response.json() : null)
+        .catch(() => null);
       const responses = await Promise.all([config.FIXTURE_URL, config.REGISTRO_URL, config.RANKINGS_URL].map(url => fetch(url)));
       if (responses.some(response => !response.ok)) throw new Error("No se pudieron cargar los datos");
       const texts = await Promise.all(responses.map(response => response.text()));
@@ -212,6 +307,8 @@
         localStorage.setItem(STORAGE_KEY, player);
         const summary = playerSummary(player, matches, rankings, new Date());
         const next = summary.upcoming;
+        const nextRival = next ? opponent(next, player) : "";
+        const headToHead = next ? (historicalData ? headToHeadSummary(player, nextRival, matches, historicalData) : null) : null;
         const playerParam = encodeURIComponent(player);
         const tableRows = categoryPreview(summary.categoryRanking, player);
         const pendingHtml = summary.pending.length ? `
@@ -267,8 +364,9 @@
           </div>
           <article class="next-match-card">
             <span class="personal-kicker">${next ? "Tu próximo partido" : "Tu calendario"}</span>
-            <h2>${next ? escapeHtml(player) + " vs " + escapeHtml(opponent(next, player)) : "No hay una próxima fecha confirmada"}</h2>
+            <h2>${next ? escapeHtml(player) + " vs " + escapeHtml(nextRival) : "No hay una próxima fecha confirmada"}</h2>
             <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos por coordinar."}</p>
+            ${next ? headToHeadHtml(player, nextRival, headToHead) : ""}
             <div class="personal-actions">
               <a href="partidos.html?jugador=${playerParam}">Ver mis partidos</a>
             </div>
@@ -284,11 +382,15 @@
       if (players.includes(saved)) select.value = saved;
       render(select.value);
       section.classList.remove("loading");
+      historicalPromise.then(data => {
+        historicalData = data;
+        if (select.value) render(select.value);
+      });
     } catch (error) {
       content.innerHTML = '<p class="personal-empty">No pudimos cargar tus datos. Intenta nuevamente en unos minutos.</p>';
     }
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, joinMatches, playerSummary, markerUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, headToHeadSummary, markerUrl, STORAGE_KEY };
 });

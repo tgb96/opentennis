@@ -2338,6 +2338,15 @@ body:not(.index-page) .app {
 .next-match-card { padding:16px; border-radius:18px; color:white; background:linear-gradient(135deg,#0b2f25,#1b5a43); }
 .next-match-card h2 { margin:5px 0; font-size:22px; }
 .next-match-card p { margin:0; color:#e4eee7; }
+.next-h2h { margin-top:14px; padding:12px; border:1px solid rgba(255,255,255,.22); border-radius:14px; background:rgba(255,255,255,.09); }
+.next-h2h > span { display:block; color:#f2bd98; font-size:10px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+.next-h2h-score { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:8px; margin-top:8px; }
+.next-h2h-score strong { display:flex; align-items:center; justify-content:flex-start; gap:7px; min-width:0; color:#fff; font-size:12px; }
+.next-h2h-score strong:last-child { justify-content:flex-end; text-align:right; }
+.next-h2h-score b { display:grid; place-items:center; flex:0 0 30px; width:30px; height:30px; border-radius:9px; color:#0b2f25; background:#fff; font-size:17px; }
+.next-h2h-score i { color:#b8d0c6; font-style:normal; }
+.next-h2h p { margin-top:8px; color:#dceae4; font-size:11px; line-height:1.35; }
+.next-h2h.is-loading { opacity:.75; }
 .personal-kicker { color:#efb080; font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
 .personal-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
 .personal-actions a { padding:10px 12px; border:1px solid rgba(255,255,255,.45); border-radius:12px; color:white; font-size:13px; font-weight:850; text-decoration:none; }

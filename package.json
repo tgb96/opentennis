@@ -1,7 +1,7 @@
 {
   "name": "open-tennis-huechuraba",
   "private": true,
-  "version": "7.1.0-player-data-fix",
+  "version": "7.2.0-history-fast-tabs",
   "scripts": {
     "build:css": "node scripts/build-css.js",
     "test": "node --test tests/*.test.js",

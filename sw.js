@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v21-home-data-fix';
+const CACHE_NAME = 'open-tennis-v22-fast-tabs-history';
 
 const CORE_ASSETS = [
   './',
@@ -70,19 +70,21 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  const network = fetch(request).then(response => {
+    if (response.ok) {
+      caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
+    }
+    return response;
+  });
+
   event.respondWith(
-    fetch(request)
-      .then(response => {
-        const copy = response.clone();
+    caches.match(request, { ignoreSearch: true }).then(cached => {
+      if (cached) {
+        event.waitUntil(network.catch(() => null));
+        return cached;
+      }
 
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(request, copy);
-        });
-
-        return response;
-      })
-      .catch(() =>
-        caches.match(request).then(cached => cached || caches.match('./index.html'))
-      )
+      return network.catch(() => caches.match('./index.html'));
+    })
   );
 });

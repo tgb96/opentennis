@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const personal = require("../assets/js/personalization.js");
 
 test("lee rankings por categoría", () => {
@@ -77,4 +79,18 @@ test("una nueva programación explícita reemplaza el pendiente anterior", () =>
 
   assert.equal(summary.pending.length, 0);
   assert.equal(summary.upcoming.week, "9");
+});
+
+test("suma el historial 2025 frente al próximo rival", () => {
+  const historical = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "resultados-2025.json"), "utf8"));
+  const summary = personal.headToHeadSummary("Tomás Gómez", "Felipe Reyes", [], historical);
+
+  assert.equal(summary.total, 1);
+  assert.equal(summary.playerWins, 0);
+  assert.equal(summary.rivalWins, 1);
+  assert.deepEqual(summary.last, {
+    season: "2025",
+    winner: "Felipe Reyes",
+    score: "6-3, 3-6, 10-8"
+  });
 });
