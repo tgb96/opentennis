@@ -2,6 +2,14 @@
 
 Aplicación pública personalizada para GitHub Pages y administrador privado de resultados en Google Apps Script.
 
+## Corrección V7.1
+
+- Los resultados y pendientes de una ida ya no se reutilizan por error en la vuelta de Damas.
+- El próximo partido se obtiene por la fecha futura más cercana y respeta una reprogramación confirmada.
+- El conteo de partidos por coordinar usa el mismo criterio en Inicio, Partidos, Tablas y Administrador.
+- Inicio ahora muestra categoría, tabla resumida y el detalle de cada partido por coordinar.
+- La revisión automática cubre los 32 jugadores y los 129 partidos vigentes.
+
 ## Fases 4 y 5
 
 - Perfil deportivo personalizado con posición, puntos, récord, rendimiento, racha y próximo partido.

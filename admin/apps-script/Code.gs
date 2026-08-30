@@ -414,6 +414,20 @@ function adminRecordStatus_(record) {
   return ADMIN_STATUSES.PROGRAMADO;
 }
 
+function adminEffectiveMatchStatus_(match, record) {
+  if (record && (record.resultWeb || record.winner)) return record.status;
+
+  var scheduleType = adminNormalizeText_(match && match.scheduleType || "oficial");
+  var fixtureStatus = adminNormalizeStatus_(match && (match.fixtureStatus || match.fixtureNotes));
+  var hasExplicitReschedule = Boolean(
+    match && match.date && scheduleType !== ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL &&
+    fixtureStatus === ADMIN_STATUSES.PROGRAMADO
+  );
+
+  if (hasExplicitReschedule) return ADMIN_STATUSES.PROGRAMADO;
+  return record ? record.status : fixtureStatus;
+}
+
 function adminGetDashboard_() {
   var spreadsheet = adminGetSpreadsheet_();
   var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
@@ -451,8 +465,9 @@ function adminGetDashboard_() {
     }
     if (!record && pairCounts[match.pairKey] === 1) record = recordsByPair[match.pairKey] || null;
 
-    var fallbackStatus = adminNormalizeStatus_(match.fixtureStatus || match.fixtureNotes);
-    var status = record ? record.status : fallbackStatus;
+    var status = adminEffectiveMatchStatus_(match, record);
+    var usesFixtureSchedule = status === ADMIN_STATUSES.PROGRAMADO &&
+      record && [ADMIN_STATUSES.POR_COORDINAR, ADMIN_STATUSES.SUSPENDIDO].indexOf(record.status) >= 0;
 
     return {
       matchId: match.matchId,
@@ -471,7 +486,7 @@ function adminGetDashboard_() {
       round: match.round,
       status: status,
       statusLabel: adminStatusLabel_(status),
-      notes: record ? record.notes : match.fixtureNotes,
+      notes: usesFixtureSchedule ? match.fixtureNotes : (record ? record.notes : match.fixtureNotes),
       resultWeb: record ? record.resultWeb : "",
       record: record ? {
         sourceRow: record.sourceRow,

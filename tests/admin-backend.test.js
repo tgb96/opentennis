@@ -253,3 +253,20 @@ test("el acceso falla si Google no entrega un correo verificable", () => {
     /ejecutarse como el usuario que accede/
   );
 });
+
+test("el administrador muestra la nueva fecha programada sobre el pendiente anterior", () => {
+  const context = createContext();
+  const match = {
+    date: "12/9/2026",
+    fixtureStatus: "Programado",
+    fixtureNotes: "",
+    scheduleType: "reprogramado"
+  };
+  const oldPendingRecord = {
+    resultWeb: "",
+    winner: "",
+    status: "por_coordinar"
+  };
+
+  assert.equal(context.adminEffectiveMatchStatus_(match, oldPendingRecord), "programado");
+});

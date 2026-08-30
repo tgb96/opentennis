@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v20-phase4';
+const CACHE_NAME = 'open-tennis-v21-home-data-fix';
 
 const CORE_ASSETS = [
   './',

@@ -2331,7 +2331,7 @@ body:not(.index-page) .app {
 .personal-heading h2 { margin:0; color:#0b2f25; font:700 26px/1.1 Oswald, sans-serif; }
 .personal-heading label { display:grid; gap:5px; color:#536158; font-size:12px; font-weight:800; }
 .personal-heading select { max-width:220px; padding:10px 12px; border:1px solid #b8c4bc; border-radius:12px; background:white; font:inherit; }
-.personal-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.personal-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
 .personal-stats div { padding:12px; border-radius:16px; background:#edf3ee; text-align:center; }
 .personal-stats span { display:block; color:#5c6c61; font-size:11px; font-weight:800; }
 .personal-stats strong { display:block; margin-top:3px; color:#0b2f25; font-size:23px; }
@@ -2343,6 +2343,29 @@ body:not(.index-page) .app {
 .personal-actions a { padding:10px 12px; border:1px solid rgba(255,255,255,.45); border-radius:12px; color:white; font-size:13px; font-weight:850; text-decoration:none; }
 .personal-actions a.primary { border-color:#d86636; background:#d86636; }
 .personal-empty { margin:0; color:#59645e; }
+.home-personal-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px; }
+.home-info-card { padding:16px; border:1px solid #ead8bd; border-radius:18px; background:#fffdf7; }
+.home-info-card h3 { margin:3px 0 0; color:#0b2f25; font:700 19px/1.15 Oswald,sans-serif; }
+.home-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.home-card-kicker { color:#a74b27; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.home-count { display:grid; place-items:center; min-width:34px; height:34px; padding:0 9px; border-radius:999px; color:#fff; background:#b94d2c; font-size:16px; }
+.home-heading-link,.home-card-link { color:#174d3a; font-size:12px; font-weight:850; text-decoration:none; }
+.home-heading-link { padding-top:4px; white-space:nowrap; }
+.home-card-link { display:inline-flex; margin-top:12px; padding:9px 11px; border:1px solid #b9c9bf; border-radius:11px; background:#fff; }
+.pending-match-list { display:grid; gap:8px; margin:12px 0 0; padding:0; list-style:none; }
+.pending-match-list li { padding:10px 11px; border-left:4px solid #d86636; border-radius:0 11px 11px 0; background:#f8eee4; }
+.pending-match-list li div { color:#24352f; font-size:13px; }
+.pending-match-list li div span { color:#77817b; font-size:11px; font-weight:800; text-transform:uppercase; }
+.pending-match-list small { display:block; margin-top:3px; color:#6d756f; font-size:11px; }
+.pending-clear { border-color:#cfe0d5; background:#eef6f0; }
+.mini-ranking { display:grid; gap:3px; margin-top:12px; }
+.mini-ranking-head,.mini-ranking-row { display:grid; grid-template-columns:42px minmax(0,1fr) 38px 32px; align-items:center; gap:6px; }
+.mini-ranking-head { padding:0 8px 5px; color:#7a817c; font-size:9px; font-weight:900; letter-spacing:.05em; text-transform:uppercase; }
+.mini-ranking-row { min-height:36px; padding:7px 8px; border-radius:10px; color:#435149; font-size:12px; }
+.mini-ranking-row:nth-child(odd) { background:#f4f0e7; }
+.mini-ranking-row strong { overflow:hidden; color:#20372e; text-overflow:ellipsis; white-space:nowrap; }
+.mini-ranking-row.is-player { color:#fff; background:#174d3a; }
+.mini-ranking-row.is-player strong { color:#fff; }
 .match-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
 .match-actions button { min-height:40px; padding:8px 10px; border:1px solid #c6d0c9; border-radius:11px; color:#173f31; background:#fff; font:800 12px/1.1 Inter,sans-serif; cursor:pointer; }
 .schedule-kind { display:inline-flex; margin-left:6px; padding:3px 7px; border-radius:999px; background:#e8f0ea; color:#275541; font-size:11px; font-weight:800; }
@@ -2354,6 +2377,8 @@ body:not(.index-page) .app {
   #appBottomNav.app-bottom-nav { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
   .personal-heading { align-items:stretch; flex-direction:column; }
   .personal-heading select { max-width:none; width:100%; }
+  .personal-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .home-personal-grid { grid-template-columns:1fr; }
   body.index-page .v6-home-main .v5-hero-card { display:none !important; }
   body.index-page { overflow-y:auto !important; }
   body.index-page .v6-home-main {

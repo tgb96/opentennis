@@ -1701,6 +1701,7 @@ function leerRegistro(csv) {
 
 function cruzarDatos(filasFixture, registros) {
   const conteoFixtureOrdenado = new Map();
+  const conteoFixtureExacto = new Map();
   const registrosPorId = new Map();
   const registrosExactos = new Map();
   const registrosOrdenados = new Map();
@@ -1712,6 +1713,8 @@ function cruzarDatos(filasFixture, registros) {
 
     const k = claveOrdenada(fila.jugador1, fila.jugador2);
     conteoFixtureOrdenado.set(k, (conteoFixtureOrdenado.get(k) || 0) + 1);
+    const exacta = claveExacta(fila.jugador1, fila.jugador2);
+    conteoFixtureExacto.set(exacta, (conteoFixtureExacto.get(exacta) || 0) + 1);
   }
 
   for (let i = 0; i < registros.length; i++) {
@@ -1724,7 +1727,8 @@ function cruzarDatos(filasFixture, registros) {
       );
     }
 
-    registrosExactos.set(registro.claveExacta, registro);
+    if (!registrosExactos.has(registro.claveExacta)) registrosExactos.set(registro.claveExacta, []);
+    registrosExactos.get(registro.claveExacta).push(registro);
     registrosOrdenados.set(registro.claveOrdenada, registro);
   }
 
@@ -1740,10 +1744,10 @@ function cruzarDatos(filasFixture, registros) {
 
     const exacta = claveExacta(fila.jugador1, fila.jugador2);
     const ordenada = claveOrdenada(fila.jugador1, fila.jugador2);
-    const registroExacto = registrosExactos.get(exacta);
+    const candidatosExactos = registrosExactos.get(exacta) || [];
 
-    if (registroExacto) {
-      fila.registro = registroExacto;
+    if (conteoFixtureExacto.get(exacta) === 1 && candidatosExactos.length === 1) {
+      fila.registro = candidatosExactos[0];
       continue;
     }
 
@@ -1834,6 +1838,10 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
     .map(player => `<option value="${escapeHTML(player)}">${escapeHTML(player)}</option>`).join("");
 
   const requested = new URLSearchParams(location.search).get("jugador") || localStorage.getItem(PERSONAL_PLAYER_KEY) || "";
+  const requestedView = new URLSearchParams(location.search).get("vista") || "";
+  if (["mine", "next", "pending", "results", "all"].includes(requestedView)) {
+    publicView = requestedView;
+  }
   if (players.includes(requested)) {
     publicPlayerSelect.value = requested;
     buscador.value = requested;

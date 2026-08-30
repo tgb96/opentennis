@@ -46,8 +46,8 @@
     return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 12) : null;
   }
 
-  function pairKey(player1, player2) {
-    return [normalize(player1), normalize(player2)].sort().join("|");
+  function exactPairKey(player1, player2) {
+    return normalize(player1) + "|" + normalize(player2);
   }
 
   function parseFixture(csv) {
@@ -80,19 +80,52 @@
     return "programado";
   }
 
+  function fixtureStatus(match) {
+    return dataModel ? dataModel.normalizeStatus(match.fixtureStatus || match.notes) : "programado";
+  }
+
+  function isExplicitReschedule(match) {
+    return Boolean(
+      match &&
+      match.date &&
+      normalize(match.scheduleType || "oficial") !== "oficial" &&
+      fixtureStatus(match) === "programado"
+    );
+  }
+
+  function resolvedStatus(match, record) {
+    if (record && (record.resultWeb || record.winner)) return "jugado";
+    if (isExplicitReschedule(match)) return "programado";
+    if (record) return recordStatus(record);
+    return fixtureStatus(match);
+  }
+
   function joinMatches(fixture, records) {
     const byId = new Map();
-    const byPair = new Map();
+    const byExactPair = new Map();
+    const fixtureExactPairCount = new Map();
+
+    fixture.forEach(match => {
+      const key = exactPairKey(match.player1, match.player2);
+      fixtureExactPairCount.set(key, (fixtureExactPairCount.get(key) || 0) + 1);
+    });
+
     records.forEach(record => {
       if (record.matchId) byId.set(normalize(record.matchId), record);
-      const key = pairKey(record.player1, record.player2);
-      if (!byPair.has(key)) byPair.set(key, []);
-      byPair.get(key).push(record);
+      const key = exactPairKey(record.player1, record.player2);
+      if (!byExactPair.has(key)) byExactPair.set(key, []);
+      byExactPair.get(key).push(record);
     });
+
     return fixture.map(match => {
-      const candidates = byPair.get(pairKey(match.player1, match.player2)) || [];
-      const record = byId.get(normalize(match.matchId)) || (candidates.length === 1 ? candidates[0] : null);
-      return Object.assign({}, match, { record, status: record ? recordStatus(record) : (dataModel ? dataModel.normalizeStatus(match.fixtureStatus || match.notes) : "programado") });
+      const exactKey = exactPairKey(match.player1, match.player2);
+      const candidates = byExactPair.get(exactKey) || [];
+      const recordById = match.matchId ? byId.get(normalize(match.matchId)) : null;
+      const legacyRecord = fixtureExactPairCount.get(exactKey) === 1 && candidates.length === 1
+        ? candidates[0]
+        : null;
+      const record = recordById || legacyRecord;
+      return Object.assign({}, match, { record, status: resolvedStatus(match, record) });
     });
   }
 
@@ -112,14 +145,19 @@
   function playerSummary(player, matches, rankings, now) {
     const key = normalize(player);
     const mine = matches.filter(match => normalize(match.player1) === key || normalize(match.player2) === key);
-    const today = now || new Date();
+    const today = new Date(now || new Date());
+    today.setHours(0, 0, 0, 0);
     const upcoming = mine.filter(match => match.status === "programado" && parseDate(match.date) && parseDate(match.date) >= today)
       .sort((a, b) => parseDate(a.date) - parseDate(b.date))[0] || null;
     const pending = mine.filter(match => ["por_coordinar", "suspendido"].includes(match.status));
     const recent = mine.filter(match => match.status === "jugado" && match.record && parseDate(match.record.date))
       .sort((a, b) => parseDate(b.record.date) - parseDate(a.record.date))[0] || null;
     const ranking = rankings.find(row => normalize(row.player) === key) || null;
-    return { upcoming, pending, recent, ranking, total: mine.length };
+    const category = ranking ? ranking.category : (mine.find(match => match.category) || {}).category || "";
+    const categoryRanking = rankings
+      .filter(row => row.category === category)
+      .sort((a, b) => a.position - b.position);
+    return { upcoming, pending, recent, ranking, category, categoryRanking, total: mine.length };
   }
 
   function opponent(match, player) {
@@ -130,6 +168,28 @@
     if (!match) return "marcador.html";
     const params = new URLSearchParams({ categoria: match.category, j1: match.player1, j2: match.player2, partido: match.matchId || "" });
     return "marcador.html?" + params.toString();
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function categoryPreview(rows, player) {
+    if (rows.length <= 6) return rows;
+    const key = normalize(player);
+    const selectedIndex = rows.findIndex(row => normalize(row.player) === key);
+    const indexes = new Set([0, 1, 2]);
+    if (selectedIndex >= 0) {
+      indexes.add(Math.max(0, selectedIndex - 1));
+      indexes.add(selectedIndex);
+      indexes.add(Math.min(rows.length - 1, selectedIndex + 1));
+    }
+    return Array.from(indexes).sort((a, b) => a - b).map(index => rows[index]);
   }
 
   async function boot() {
@@ -152,20 +212,71 @@
         localStorage.setItem(STORAGE_KEY, player);
         const summary = playerSummary(player, matches, rankings, new Date());
         const next = summary.upcoming;
+        const playerParam = encodeURIComponent(player);
+        const tableRows = categoryPreview(summary.categoryRanking, player);
+        const pendingHtml = summary.pending.length ? `
+          <section class="home-info-card pending-card" aria-labelledby="pendingHomeTitle">
+            <div class="home-card-heading">
+              <div>
+                <span class="home-card-kicker">Necesitan acuerdo</span>
+                <h3 id="pendingHomeTitle">Partidos por coordinar</h3>
+              </div>
+              <strong class="home-count">${summary.pending.length}</strong>
+            </div>
+            <ul class="pending-match-list">
+              ${summary.pending.map(match => `
+                <li>
+                  <div><span>vs</span> <strong>${escapeHtml(opponent(match, player))}</strong></div>
+                  <small>Semana ${escapeHtml(match.week || "—")}${match.originalDate || match.date ? ` · Fecha original ${escapeHtml(match.originalDate || match.date)}` : ""}</small>
+                </li>`).join("")}
+            </ul>
+            <a class="home-card-link" href="partidos.html?jugador=${playerParam}&vista=pending">Ver partidos por coordinar</a>
+          </section>` : `
+          <section class="home-info-card pending-card pending-clear">
+            <span class="home-card-kicker">Coordinación al día</span>
+            <h3>No tienes partidos por coordinar</h3>
+          </section>`;
+        const rankingHtml = summary.categoryRanking.length ? `
+          <section class="home-info-card category-card" aria-labelledby="categoryHomeTitle">
+            <div class="home-card-heading">
+              <div>
+                <span class="home-card-kicker">Tu categoría</span>
+                <h3 id="categoryHomeTitle">Tabla Categoría ${escapeHtml(summary.category)}</h3>
+              </div>
+              <a class="home-heading-link" href="tablas.html?jugador=${playerParam}">Ver completa</a>
+            </div>
+            <div class="mini-ranking" role="table" aria-label="Resumen de la tabla de la categoría ${escapeHtml(summary.category)}">
+              <div class="mini-ranking-head" role="row">
+                <span role="columnheader">Pos.</span><span role="columnheader">Jugador</span><span role="columnheader">Pts.</span><span role="columnheader">PJ</span>
+              </div>
+              ${tableRows.map(row => `
+                <div class="mini-ranking-row${normalize(row.player) === normalize(player) ? " is-player" : ""}" role="row">
+                  <span role="cell">#${row.position}</span>
+                  <strong role="cell">${escapeHtml(row.player)}</strong>
+                  <span role="cell">${row.points}</span>
+                  <span role="cell">${row.played}</span>
+                </div>`).join("")}
+            </div>
+          </section>` : "";
         content.innerHTML = `
           <div class="personal-stats">
+            <div><span>Categoría</span><strong>${summary.category ? escapeHtml(summary.category) : "—"}</strong></div>
             <div><span>Posición</span><strong>${summary.ranking ? "#" + summary.ranking.position : "—"}</strong></div>
             <div><span>Puntos</span><strong>${summary.ranking ? summary.ranking.points : "—"}</strong></div>
             <div><span>Por coordinar</span><strong>${summary.pending.length}</strong></div>
           </div>
           <article class="next-match-card">
             <span class="personal-kicker">${next ? "Tu próximo partido" : "Tu calendario"}</span>
-            <h2>${next ? player + " vs " + opponent(next, player) : "No hay una próxima fecha confirmada"}</h2>
-            <p>${next ? `Semana ${next.week} · ${next.date} · Cancha ${next.court} · ${next.turn}` : "Puedes revisar tus partidos por coordinar."}</p>
+            <h2>${next ? escapeHtml(player) + " vs " + escapeHtml(opponent(next, player)) : "No hay una próxima fecha confirmada"}</h2>
+            <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos por coordinar."}</p>
             <div class="personal-actions">
-              <a href="partidos.html?jugador=${encodeURIComponent(player)}">Ver mis partidos</a>
+              <a href="partidos.html?jugador=${playerParam}">Ver mis partidos</a>
             </div>
-          </article>`;
+          </article>
+          <div class="home-personal-grid">
+            ${pendingHtml}
+            ${rankingHtml}
+          </div>`;
       }
 
       select.addEventListener("change", () => render(select.value));

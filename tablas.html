@@ -901,9 +901,10 @@
 
   let registrosPorJugador = new Map();
   let fixturePorJugador = new Map();
-  let partidosRegistradosClave = new Set();
-  let partidosRegistradosId = new Set();
-  let cantidadFixturePorPareja = new Map();
+  let cantidadFixtureExacta = new Map();
+  let registrosPorId = new Map();
+  let registrosPorParejaExacta = new Map();
+  let fixturePorRegistro = new Map();
   let statsCache = new Map();
   let eventosInstalados = false;
   let categoriasActuales = [];
@@ -1174,6 +1175,7 @@
           fechaSemana: String(cols[6] || "").trim(),
           estadoFixture: String(cols[7] || "").trim(),
           tipoProgramacion: String(cols[13] || "oficial").trim().toLowerCase(),
+          observaciones: String(cols[8] || "").trim(),
           jugador1,
           jugador2,
           _j1: normalizar(jugador1),
@@ -1203,31 +1205,84 @@
   function prepararIndices(registros, fixture) {
     registrosPorJugador = new Map();
     fixturePorJugador = new Map();
-    partidosRegistradosClave = new Set();
-    partidosRegistradosId = new Set();
-    cantidadFixturePorPareja = new Map();
+    cantidadFixtureExacta = new Map();
+    registrosPorId = new Map();
+    registrosPorParejaExacta = new Map();
+    fixturePorRegistro = new Map();
     statsCache = new Map();
 
     for (const r of registros) {
       agregarAMapaLista(registrosPorJugador, r._j1, r);
       agregarAMapaLista(registrosPorJugador, r._j2, r);
-      partidosRegistradosClave.add(`${r._j1}|${r._j2}`);
-      partidosRegistradosClave.add(`${r._j2}|${r._j1}`);
-      if (r.matchId) partidosRegistradosId.add(OPEN_TENNIS_DATA.resolveMatchId({ matchId: r.matchId }));
+      const exacta = `${r._j1}|${r._j2}`;
+      agregarAMapaLista(registrosPorParejaExacta, exacta, r);
+      if (r.matchId) {
+        const matchId = OPEN_TENNIS_DATA.resolveMatchId({ matchId: r.matchId });
+        registrosPorId.set(matchId, r);
+      }
     }
 
     for (const f of fixture) {
       agregarAMapaLista(fixturePorJugador, f._j1, f);
       agregarAMapaLista(fixturePorJugador, f._j2, f);
-      const pareja = [f._j1, f._j2].sort().join("|");
-      cantidadFixturePorPareja.set(pareja, (cantidadFixturePorPareja.get(pareja) || 0) + 1);
+      const exacta = `${f._j1}|${f._j2}`;
+      cantidadFixtureExacta.set(exacta, (cantidadFixtureExacta.get(exacta) || 0) + 1);
+    }
+
+    for (const f of fixture) {
+      const registro = registroDeFixture(f);
+      if (registro) fixturePorRegistro.set(registro, f);
     }
   }
 
-  function fixtureYaRegistrado(partido) {
-    if (partido.matchId && partidosRegistradosId.has(partido.matchId)) return true;
-    const pareja = [partido._j1, partido._j2].sort().join("|");
-    return cantidadFixturePorPareja.get(pareja) === 1 && partidosRegistradosClave.has(`${partido._j1}|${partido._j2}`);
+  function registroDeFixture(partido) {
+    if (partido.matchId && registrosPorId.has(partido.matchId)) return registrosPorId.get(partido.matchId);
+    const exacta = `${partido._j1}|${partido._j2}`;
+    const candidatos = registrosPorParejaExacta.get(exacta) || [];
+    return cantidadFixtureExacta.get(exacta) === 1 && candidatos.length === 1 ? candidatos[0] : null;
+  }
+
+  function esReprogramacionExplicita(partido) {
+    return Boolean(
+      partido &&
+      partido.fechaSemana &&
+      normalizar(partido.tipoProgramacion || "oficial") !== "oficial" &&
+      OPEN_TENNIS_DATA.normalizeStatus(partido.estadoFixture || partido.observaciones) === "programado"
+    );
+  }
+
+  function estadoRegistro(registro) {
+    if (!registro) return "programado";
+    if (registro.resultadoWeb || registro.ganador) return "jugado";
+    if (OPEN_TENNIS_DATA.normalizeStatus(registro.observaciones) === "suspendido") return "suspendido";
+    if (["si", "sí", "pendiente"].includes(registro._pendiente) || registro._pendiente.includes("pendiente")) return "por_coordinar";
+    return OPEN_TENNIS_DATA.normalizeStatus(registro.pendiente || registro.observaciones);
+  }
+
+  function estadoEfectivoFixture(partido) {
+    const registro = registroDeFixture(partido);
+    if (registro && (registro.resultadoWeb || registro.ganador)) return "jugado";
+    if (esReprogramacionExplicita(partido)) return "programado";
+    if (registro) return estadoRegistro(registro);
+    return OPEN_TENNIS_DATA.normalizeStatus(partido.estadoFixture || partido.observaciones);
+  }
+
+  function parseFechaPartido(valor) {
+    const match = String(valor || "").match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 12) : null;
+  }
+
+  function esProximoProgramado(partido) {
+    const fecha = parseFechaPartido(partido.fechaSemana);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return estadoEfectivoFixture(partido) === "programado" && fecha && fecha >= hoy;
+  }
+
+  function registroPendienteActivo(registro) {
+    if (!registro || !["por_coordinar", "suspendido"].includes(estadoRegistro(registro))) return false;
+    const fixture = fixturePorRegistro.get(registro);
+    return !(fixture && esReprogramacionExplicita(fixture));
   }
 
   function jugadorEnRegistro(jugador, r) {
@@ -1355,7 +1410,7 @@
     let perdidos = 0;
 
     for (const r of registrosJugador) {
-      if (r._pendiente === "si") pendientes++;
+      if (registroPendienteActivo(r)) pendientes++;
       if (!r.resultadoWeb || !r.ganador) continue;
 
       jugados.push(r);
@@ -1391,7 +1446,9 @@
       ? `${ultimo._ganador === jugadorKey ? "Ganó" : "Perdió"} vs ${rivalDe(jugador, ultimo)} · ${ultimo.resultadoWeb}`
       : "Sin resultados registrados";
 
-    const proximo = fixtureJugador.find(f => !fixtureYaRegistrado(f));
+    const proximo = fixtureJugador
+      .filter(esProximoProgramado)
+      .sort((a, b) => parseFechaPartido(a.fechaSemana) - parseFechaPartido(b.fechaSemana))[0] || null;
     const proximoTexto = proximo
       ? `vs ${nombreCorto(rivalDe(jugador, proximo))} · Semana ${proximo.semana}${proximo.fechaSemana ? ` · ${proximo.fechaSemana}` : ""} · Cancha ${proximo.cancha} · Turno ${proximo.turno}`
       : "Sin próximos partidos programados";
@@ -1607,7 +1664,7 @@
     const ultimo = duelos.length ? duelos[duelos.length - 1] : null;
     const proximo = fixtureActual.find(partido => {
       const mismaPareja = (partido._j1 === keyA && partido._j2 === keyB) || (partido._j1 === keyB && partido._j2 === keyA);
-      return mismaPareja && !fixtureYaRegistrado(partido);
+      return mismaPareja && esProximoProgramado(partido);
     });
 
     return { duelos, ganadosA, ganadosB, ultimo, proximo };
