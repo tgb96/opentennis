@@ -451,6 +451,164 @@ textarea {
   }
 }
 
+/* V8 · Jerarquía de Partidos y reglamento desplegable */
+.championship-divider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0 18px;
+  padding: 22px 24px;
+  border: 1px solid rgba(199, 89, 43, .28);
+  border-radius: 24px;
+  color: #fffaf1;
+  background:
+    radial-gradient(circle at 92% 18%, rgba(224, 131, 76, .45), transparent 28%),
+    linear-gradient(135deg, var(--v4-green-950), var(--v4-green-800));
+  box-shadow: 0 14px 30px rgba(11, 47, 37, .16);
+}
+
+.championship-divider h2 {
+  margin: 2px 0 6px !important;
+  color: #fffaf1 !important;
+  font-family: Oswald, Inter, Arial, sans-serif !important;
+  font-size: clamp(28px, 5vw, 42px) !important;
+  line-height: 1 !important;
+  text-transform: uppercase;
+}
+
+.championship-divider p:last-child {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 250, 241, .78);
+  font: 600 14px/1.45 Inter, Arial, sans-serif;
+}
+
+.championship-divider > span {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid rgba(255, 250, 241, .24);
+  border-radius: 50%;
+  background: rgba(255, 250, 241, .10);
+  font-size: 30px;
+}
+
+.rules-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(199, 89, 43, .22);
+  border-radius: 18px;
+  background: #fff8ed;
+}
+
+.rules-toolbar strong,
+.rules-toolbar span { display: block; }
+.rules-toolbar strong { color: var(--v4-green-950); font-size: 14px; }
+.rules-toolbar span { margin-top: 2px; color: var(--v4-muted); font-size: 12px; }
+
+.rules-toolbar button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 9px 15px;
+  border: 1px solid var(--v4-clay-600);
+  border-radius: 999px;
+  background: #fffdf8;
+  color: var(--v4-clay-900);
+  font: 900 12px Inter, Arial, sans-serif;
+  cursor: pointer;
+}
+
+.reglas-page .reglamento-section {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, .94);
+  box-shadow: 0 12px 30px rgba(44, 23, 9, .09);
+}
+
+.rules-accordion-trigger {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 76px;
+  padding: 12px 16px;
+  border: 0;
+  background: linear-gradient(135deg, #fffaf1, #f5ead8);
+  color: var(--v4-green-950);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rules-accordion-trigger:hover,
+.rules-accordion-trigger:focus-visible { background: linear-gradient(135deg, #fff6e6, #f1dfc6); }
+.rules-accordion-trigger:focus-visible { outline: 3px solid rgba(199, 89, 43, .28); outline-offset: -3px; }
+
+.rules-trigger-number,
+.rules-trigger-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: Oswald, Inter, Arial, sans-serif;
+  font-weight: 900;
+}
+
+.rules-trigger-number {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(180deg, var(--v4-green-800), var(--v4-green-950));
+  color: #fffaf1;
+  font-size: 21px;
+}
+
+.rules-trigger-title {
+  font: 700 clamp(22px, 3.5vw, 31px)/1.05 Oswald, Inter, Arial, sans-serif;
+  letter-spacing: .2px;
+  text-transform: uppercase;
+}
+
+.rules-trigger-icon {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(199, 89, 43, .28);
+  background: #fffdf8;
+  color: var(--v4-clay-800);
+  font-size: 24px;
+}
+
+.reglas-page .reglamento-section > .section-content {
+  padding: 18px !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(199, 89, 43, .16) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 253, 248, .92) !important;
+  box-shadow: none !important;
+}
+
+.reglas-page .reglamento-section.is-collapsed > .section-content { display: none; }
+
+@media (max-width: 560px) {
+  .championship-divider { padding: 18px 16px; border-radius: 20px; }
+  .championship-divider > span { width: 48px; height: 48px; font-size: 23px; }
+  .championship-divider p:last-child { font-size: 12.5px; }
+  .rules-toolbar { align-items: flex-start; }
+  .rules-toolbar span { max-width: 190px; }
+  .rules-accordion-trigger { grid-template-columns: 42px minmax(0, 1fr) 32px; min-height: 68px; padding: 10px 12px; gap: 9px; }
+  .rules-trigger-number { width: 38px; height: 38px; font-size: 19px; }
+  .rules-trigger-title { font-size: 21px; }
+  .rules-trigger-icon { width: 30px; height: 30px; font-size: 21px; }
+}
+
 /* ===== v3.css ===== */
 /* =========================================================
    Open Tennis Huechuraba · V3 App
@@ -2410,3 +2568,12 @@ body:not(.index-page) .app {
 @media (min-width:641px) {
   #appBottomNav.app-bottom-nav { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
 }
+
+/* Mantener el acordeón por encima de las reglas históricas del reglamento. */
+.reglas-page .reglamento-section {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+.reglas-page .reglamento-section > .rules-accordion-trigger,
+.reglas-page .reglamento-section > .section-content { grid-column: 1 / -1; }
+.reglas-page .reglamento-section.is-collapsed > .section-content { display: none !important; }

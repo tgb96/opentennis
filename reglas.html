@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=7" />
+  <link rel="stylesheet" href="assets/css/app.css?v=8" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -31,6 +31,14 @@
         <div class="rules-eyebrow">Club Open Tennis Huechuraba</div>
         <h1>Reglamento</h1>
         <p>Escalerilla 2026</p>
+      </section>
+
+      <section class="rules-toolbar" aria-label="Controles del reglamento">
+        <div>
+          <strong>Consulta rápida</strong>
+          <span>Abre solo el tema que necesitas revisar.</span>
+        </div>
+        <button id="toggleAllRules" type="button">Expandir todo</button>
       </section>
 
       <section class="reglamento-section">
@@ -411,5 +419,46 @@
     <a href="tablas.html" data-page="tablas.html"><span class="nav-icon" aria-hidden="true">📊</span><span class="nav-label">Tablas</span></a>
     <a href="reglas.html" data-page="reglas.html"><span class="nav-icon" aria-hidden="true">📘</span><span class="nav-label">Reglas</span></a>
   </nav>
+  <script>
+    (() => {
+      const sections = Array.from(document.querySelectorAll(".reglamento-section"));
+      const toggleAll = document.getElementById("toggleAllRules");
+
+      sections.forEach((section, index) => {
+        const kicker = section.querySelector(":scope > .section-kicker");
+        const content = section.querySelector(":scope > .section-content");
+        const title = content && content.querySelector(":scope > h2");
+        if (!kicker || !content || !title) return;
+
+        const contentId = `rules-section-${index + 1}`;
+        const trigger = document.createElement("button");
+        trigger.type = "button";
+        trigger.className = "rules-accordion-trigger";
+        trigger.setAttribute("aria-controls", contentId);
+        trigger.innerHTML = `<span class="rules-trigger-number">${kicker.textContent}</span><span class="rules-trigger-title">${title.textContent}</span><span class="rules-trigger-icon" aria-hidden="true">+</span>`;
+        content.id = contentId;
+
+        kicker.remove();
+        title.remove();
+        section.insertBefore(trigger, content);
+
+        const setOpen = open => {
+          section.classList.toggle("is-collapsed", !open);
+          trigger.setAttribute("aria-expanded", String(open));
+          trigger.querySelector(".rules-trigger-icon").textContent = open ? "–" : "+";
+        };
+
+        setOpen(index === 0);
+        trigger.addEventListener("click", () => setOpen(trigger.getAttribute("aria-expanded") !== "true"));
+        section._setRulesOpen = setOpen;
+      });
+
+      toggleAll.addEventListener("click", () => {
+        const shouldOpen = sections.some(section => section.classList.contains("is-collapsed"));
+        sections.forEach(section => section._setRulesOpen && section._setRulesOpen(shouldOpen));
+        toggleAll.textContent = shouldOpen ? "Cerrar todo" : "Expandir todo";
+      });
+    })();
+  </script>
 </body>
 </html>

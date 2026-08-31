@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=7" />
+  <link rel="stylesheet" href="assets/css/app.css?v=8" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -45,7 +45,6 @@
       <button type="button" data-public-view="next">Próxima fecha</button>
       <button type="button" data-public-view="pending">Por coordinar</button>
       <button type="button" data-public-view="results">Resultados</button>
-      <button type="button" data-public-view="all">Todo</button>
     </nav>
   </section>
 
@@ -63,8 +62,17 @@
     <div id="cardsBusqueda" class="mobile-view"></div>
   </section>
 
+  <section class="championship-divider" aria-labelledby="championshipTitle">
+    <div>
+      <p class="v5-eyebrow">Consulta general</p>
+      <h2 id="championshipTitle">Todo el campeonato</h2>
+      <p>Desde aquí puedes revisar los partidos por coordinar y la programación completa de todas las categorías.</p>
+    </div>
+    <span aria-hidden="true">🎾</span>
+  </section>
+
   <section class="bloque bloque-pendientes">
-    <h2>Partidos pendientes</h2>
+    <h2>Partidos por coordinar</h2>
 
     <div class="desktop-view">
       <table id="tablaPendientes">
@@ -77,7 +85,7 @@
   </section>
 
   <section class="bloque">
-    <h2>Programación completa</h2>
+    <h2>Programación por semanas</h2>
 
     <div class="desktop-view">
       <table id="tablaCompleta">
@@ -1396,7 +1404,7 @@ function mensajeTabla(texto, tbody, contenedorMovil) {
 
 function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
   const busqueda = normalizar(String(filtro || "").trim());
-  const vistaPersonal = vista !== "all";
+  const vistaPersonal = true;
 
   if (vistaPersonal && busqueda === "") {
     mensajeTabla("Elige tu nombre para ver tus partidos.", tablaBusquedaBody, cardsBusqueda);
@@ -1824,7 +1832,7 @@ function actualizarTabsPublicas() {
     if (button.dataset.publicView === publicView) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   });
-  const labels = { mine: "Mi calendario", next: "Próximo partido", pending: "Partidos por coordinar", results: "Mis resultados", all: "Todo el torneo" };
+  const labels = { mine: "Mi calendario", next: "Próximo partido", pending: "Partidos por coordinar", results: "Mis resultados" };
   searchResultsTitle.textContent = labels[publicView] || "Partidos";
 }
 
@@ -1839,7 +1847,7 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
 
   const requested = new URLSearchParams(location.search).get("jugador") || localStorage.getItem(PERSONAL_PLAYER_KEY) || "";
   const requestedView = new URLSearchParams(location.search).get("vista") || "";
-  if (["mine", "next", "pending", "results", "all"].includes(requestedView)) {
+  if (["mine", "next", "pending", "results"].includes(requestedView)) {
     publicView = requestedView;
   }
   if (players.includes(requested)) {
@@ -1859,8 +1867,7 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
   publicViewTabs.forEach(button => button.addEventListener("click", () => {
     publicView = button.dataset.publicView;
     actualizarTabsPublicas();
-    const player = publicView === "all" ? "" : publicPlayerSelect.value;
-    renderBusqueda(filas, mapaSemanas, player, publicView);
+    renderBusqueda(filas, mapaSemanas, publicPlayerSelect.value, publicView);
     document.getElementById("tablaBusqueda").closest(".bloque").scrollIntoView({ behavior: "smooth", block: "start" });
   }));
 
