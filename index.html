@@ -39,7 +39,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/app.css?v=9" />
+  <link rel="stylesheet" href="assets/css/app.css?v=11" />
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
@@ -175,6 +175,53 @@
         max-height: none;
         overflow: visible !important;
         justify-content: flex-start;
+      }
+    }
+    @media (min-width: 1050px) {
+      body.index-page .v6-home-main {
+        width: min(calc(100% - 64px), 1400px) !important;
+        max-width: 1400px !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        display: grid !important;
+        grid-template-columns: minmax(340px, .78fr) minmax(560px, 1.22fr) !important;
+        grid-template-rows: auto auto !important;
+        gap: 24px !important;
+        align-items: start !important;
+        padding: 104px 0 42px !important;
+        overflow: visible !important;
+      }
+
+      body.index-page .v6-home-main .v5-hero-card {
+        grid-column: 1 !important;
+        grid-row: 1 / span 2 !important;
+        min-height: calc(100vh - 146px) !important;
+        position: sticky !important;
+        top: 104px !important;
+        padding: 46px !important;
+      }
+
+      body.index-page .v5-hero-logo-wrap {
+        width: 112px !important;
+        height: 112px !important;
+        margin-bottom: 22px !important;
+      }
+      body.index-page .v5-eyebrow { margin-bottom: 14px !important; font-size: 13px !important; letter-spacing: .16em !important; }
+      body.index-page .v5-hero-card h1 { font-size: clamp(58px, 5vw, 78px) !important; line-height: .92 !important; }
+      body.index-page .v5-hero-text { margin-top: 18px !important; font-size: 17px !important; line-height: 1.45 !important; }
+      body.index-page .v5-btn { min-height: 52px !important; font-size: 15px !important; }
+
+      body.index-page .my-open-tennis {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        margin-top: 0 !important;
+        padding: 26px !important;
+      }
+
+      body.index-page .v5-install-card {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        align-self: start !important;
       }
     }
   </style>

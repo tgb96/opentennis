@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v22-fast-tabs-history';
+const CACHE_NAME = 'open-tennis-v23-desktop-player-tables';
 
 const CORE_ASSETS = [
   './',
@@ -78,13 +78,9 @@ self.addEventListener('fetch', event => {
   });
 
   event.respondWith(
-    caches.match(request, { ignoreSearch: true }).then(cached => {
-      if (cached) {
-        event.waitUntil(network.catch(() => null));
-        return cached;
-      }
-
-      return network.catch(() => caches.match('./index.html'));
-    })
+    network.catch(() =>
+      caches.match(request, { ignoreSearch: true })
+        .then(cached => cached || caches.match('./index.html'))
+    )
   );
 });
