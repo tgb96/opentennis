@@ -32,6 +32,30 @@
 .home-personal-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px; }
 .home-info-card { padding:16px; border:1px solid #ead8bd; border-radius:18px; background:#fffdf7; }
 .home-info-card h3 { margin:3px 0 0; color:#0b2f25; font:700 19px/1.15 Oswald,sans-serif; }
+.season-card { grid-column:1 / -1; }
+.season-heading { align-items:center; }
+.player-zone { display:inline-flex; align-items:center; justify-content:center; min-height:30px; padding:6px 10px; border:1px solid transparent; border-radius:999px; font-size:11px; font-weight:900; text-align:center; }
+.player-zone.zone-leader { color:#775000; border-color:#e6c45a; background:#fff1bd; }
+.player-zone.zone-promotion { color:#2f6c2d; border-color:#acd39c; background:#e6f3df; }
+.player-zone.zone-playoff { color:#215d91; border-color:#a7cbe7; background:#e6f2fb; }
+.player-zone.zone-relegation { color:#9a3328; border-color:#e0afa7; background:#f9e4df; }
+.player-zone.zone-neutral { color:#486157; border-color:#cad8cf; background:#eef3ef; }
+.season-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:14px; }
+.season-metrics > div { padding:12px 13px; border-radius:14px; background:#edf3ee; }
+.season-metrics span { display:block; color:#68766d; font-size:10px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
+.season-metrics strong { display:block; margin-top:4px; color:#0b2f25; font-size:23px; }
+.recent-results-block { margin-top:14px; }
+.recent-results-title { display:block; color:#58675e; font-size:10px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+.recent-results-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:8px 0 0; padding:0; list-style:none; }
+.recent-result { display:grid; grid-template-columns:30px minmax(0,1fr); align-items:center; gap:8px; min-width:0; padding:9px; border:1px solid #e2ddd0; border-radius:12px; background:#fff; }
+.recent-result > strong { display:grid; place-items:center; width:30px; height:30px; border-radius:9px; color:white; background:#67736c; font-size:14px; }
+.recent-result.is-win > strong { background:#2d754d; }
+.recent-result.is-loss > strong { background:#b64b38; }
+.recent-result div { min-width:0; }
+.recent-result span,.recent-result small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.recent-result span { color:#20372e; font-size:12px; font-weight:850; }
+.recent-result small { margin-top:2px; color:#737b76; font-size:10px; }
+.recent-results-empty { margin:8px 0 0; color:#6d756f; font-size:12px; }
 .home-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
 .home-card-kicker { color:#a74b27; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
 .home-count { display:grid; place-items:center; min-width:34px; height:34px; padding:0 9px; border-radius:999px; color:#fff; background:#b94d2c; font-size:16px; }
@@ -65,6 +89,9 @@
   .personal-heading select { max-width:none; width:100%; }
   .personal-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .home-personal-grid { grid-template-columns:1fr; }
+  .recent-results-list { grid-template-columns:1fr; }
+  .season-heading { align-items:flex-start; }
+  .player-zone { max-width:48%; }
   body.index-page .v6-home-main .v5-hero-card { display:none !important; }
   body.index-page { overflow-y:auto !important; }
   body.index-page .v6-home-main {

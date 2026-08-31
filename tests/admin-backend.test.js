@@ -115,7 +115,8 @@ function baseSheets() {
   ambiguousRecord[1] = "Carla";
   ambiguousRecord[2] = "Diana";
   const registro = new MockSheet(1046180821, "Registro", [registroHeader, uniqueRecord, ambiguousRecord]);
-  return { fixture, registro, spreadsheet: new MockSpreadsheet([fixture, registro]) };
+  const rankings = new MockSheet(1249404240, "Rankings", [["CATEGORIA A"], ["N°", "Jugador", "Puntos", "Jugados"]]);
+  return { fixture, registro, rankings, spreadsheet: new MockSpreadsheet([fixture, registro, rankings]) };
 }
 
 test("setup crea encabezados y migra solo IDs inequívocos", () => {
@@ -203,7 +204,8 @@ test("los 56 registros reales se relacionan sin ambigüedad con el fixture", () 
   const backup = path.join(__dirname, "..", "data", "backups", "2026-08-26");
   const fixture = new MockSheet(0, "Fixture", parseCsv(path.join(backup, "fixture.csv")));
   const registro = new MockSheet(1046180821, "Registro", parseCsv(path.join(backup, "registro.csv")));
-  const spreadsheet = new MockSpreadsheet([fixture, registro]);
+  const rankings = new MockSheet(1249404240, "Rankings", parseCsv(path.join(backup, "rankings.csv")));
+  const spreadsheet = new MockSpreadsheet([fixture, registro, rankings]);
 
   context.adminEnsureAdminSchema_(spreadsheet);
   const migration = context.adminPopulateMatchIds_(spreadsheet);
@@ -235,6 +237,26 @@ test("los 56 registros reales se relacionan sin ambigüedad con el fixture", () 
     },
     { total: 129, played: 43, pending: 13, upcoming: 73 }
   );
+  assert.equal(dashboard.integrity.ok, true);
+  assert.equal(dashboard.integrity.issueCount, 0);
+});
+
+test("la auditoría detecta un ranking desactualizado y un ID duplicado", () => {
+  const context = createContext();
+  const backup = path.join(__dirname, "..", "data", "backups", "2026-08-26");
+  const fixture = new MockSheet(0, "Fixture", parseCsv(path.join(backup, "fixture.csv")));
+  const registro = new MockSheet(1046180821, "Registro", parseCsv(path.join(backup, "registro.csv")));
+  const rankings = new MockSheet(1249404240, "Rankings", parseCsv(path.join(backup, "rankings.csv")));
+  const spreadsheet = new MockSpreadsheet([fixture, registro, rankings]);
+  context.adminEnsureAdminSchema_(spreadsheet);
+  context.adminPopulateMatchIds_(spreadsheet);
+  registro.rows[2][22] = registro.rows[1][22];
+  rankings.rows[2][2] = "999";
+
+  const report = context.adminGetIntegrityReport_(fixture, registro, rankings);
+  assert.equal(report.ok, false);
+  assert.match(report.issues.join(" "), /ID duplicado/);
+  assert.match(report.issues.join(" "), /Rankings A/);
 });
 
 test("el acceso falla si Google no entrega un correo verificable", () => {

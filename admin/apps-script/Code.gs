@@ -374,10 +374,14 @@ function adminGetRegistroRecords_(registroSheet) {
       set2Player2: String(row[columns.SET_2_PLAYER_2] || "").trim(),
       stbPlayer1: String(row[columns.STB_PLAYER_1] || "").trim(),
       stbPlayer2: String(row[columns.STB_PLAYER_2] || "").trim(),
+      setsPlayer1: Number(row[columns.SETS_PLAYER_1] || 0),
+      setsPlayer2: Number(row[columns.SETS_PLAYER_2] || 0),
       winner: String(row[columns.WINNER] || "").trim(),
       loser: String(row[columns.LOSER] || "").trim(),
       resultType: String(row[columns.RESULT_TYPE] || "").trim(),
       resultWeb: String(row[columns.RESULT_WEB] || "").trim(),
+      pointsPlayer1: Number(row[columns.POINTS_PLAYER_1] || 0),
+      pointsPlayer2: Number(row[columns.POINTS_PLAYER_2] || 0),
       legacyKey: String(row[columns.LEGACY_KEY] || "").trim(),
       matchId: String(row[columns.MATCH_ID] || "").trim()
     };
@@ -432,6 +436,7 @@ function adminGetDashboard_() {
   var spreadsheet = adminGetSpreadsheet_();
   var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
   var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  var rankingsSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.RANKINGS_GID);
   var matches = adminGetFixtureMatches_(fixtureSheet);
   var records = adminGetRegistroRecords_(registroSheet);
   var pairCounts = {};
@@ -530,7 +535,144 @@ function adminGetDashboard_() {
     generatedAt: Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy HH:mm"),
     today: adminToday_(),
     summary: summary,
+    integrity: adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet),
     matches: publicMatches
+  };
+}
+
+function adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet) {
+  var fixtureRows = fixtureSheet.getDataRange().getDisplayValues();
+  var registroRows = registroSheet.getDataRange().getDisplayValues();
+  var rankingRows = rankingsSheet.getDataRange().getDisplayValues();
+  var fixtureColumns = ADMIN_CONFIG.COLUMNS.FIXTURE;
+  var registroColumns = ADMIN_CONFIG.COLUMNS.REGISTRO;
+  var issues = [];
+  var fixtureById = {};
+  var recordsById = {};
+  var categoryPlayers = {};
+  var statsByPlayer = {};
+
+  function statsFor(player) {
+    var key = adminNormalizeText_(player);
+    if (!statsByPlayer[key]) {
+      statsByPlayer[key] = { player: String(player || "").trim(), points: 0, played: 0, setDiff: 0, gameDiff: 0 };
+    }
+    return statsByPlayer[key];
+  }
+
+  fixtureRows.slice(1).forEach(function(row, index) {
+    var player1 = String(row[fixtureColumns.PLAYER_1] || "").trim();
+    var player2 = String(row[fixtureColumns.PLAYER_2] || "").trim();
+    if (!player1 || !player2 || player1 === "-" || player2 === "-") return;
+    var category = String(row[fixtureColumns.CATEGORY] || "").trim().toUpperCase();
+    var id = adminCreateMatchId_({ matchId: row[fixtureColumns.MATCH_ID] });
+    if (!String(row[fixtureColumns.MATCH_ID] || "").trim()) issues.push("Fixture fila " + (index + 2) + ": falta ID partido.");
+    if (fixtureById[id]) issues.push("Fixture: ID duplicado " + id + ".");
+    fixtureById[id] = { player1: player1, player2: player2 };
+    if (!categoryPlayers[category]) categoryPlayers[category] = {};
+    categoryPlayers[category][adminNormalizeText_(player1)] = player1;
+    categoryPlayers[category][adminNormalizeText_(player2)] = player2;
+  });
+
+  registroRows.slice(1).forEach(function(row, index) {
+    var player1 = String(row[registroColumns.PLAYER_1] || "").trim();
+    var player2 = String(row[registroColumns.PLAYER_2] || "").trim();
+    if (!player1 || !player2) return;
+    var rowNumber = index + 2;
+    var rawId = String(row[registroColumns.MATCH_ID] || "").trim();
+    var id = adminCreateMatchId_({ matchId: rawId });
+    if (!rawId) issues.push("Registro fila " + rowNumber + ": falta ID partido.");
+    if (rawId && recordsById[id]) issues.push("Registro: ID duplicado " + id + ".");
+    recordsById[id] = true;
+    var fixtureMatch = rawId ? fixtureById[id] : null;
+    if (rawId && !fixtureMatch) issues.push("Registro fila " + rowNumber + ": el ID no existe en Fixture.");
+    if (fixtureMatch && adminOrderedPairKey_(fixtureMatch.player1, fixtureMatch.player2) !== adminOrderedPairKey_(player1, player2)) {
+      issues.push("Registro fila " + rowNumber + ": los jugadores no coinciden con Fixture.");
+    }
+
+    var pending = Boolean(String(row[registroColumns.PENDING] || "").trim());
+    var winner = String(row[registroColumns.WINNER] || "").trim();
+    var loser = String(row[registroColumns.LOSER] || "").trim();
+    var resultWeb = String(row[registroColumns.RESULT_WEB] || "").trim();
+    var resultType = adminNormalizeText_(row[registroColumns.RESULT_TYPE]);
+    var completed = Boolean(winner || loser || resultWeb || resultType);
+    if (pending && completed) issues.push("Registro fila " + rowNumber + ": está pendiente y finalizado a la vez.");
+    if (!pending && !completed) issues.push("Registro fila " + rowNumber + ": no tiene estado ni resultado.");
+    if (winner && [adminNormalizeText_(player1), adminNormalizeText_(player2)].indexOf(adminNormalizeText_(winner)) < 0) {
+      issues.push("Registro fila " + rowNumber + ": ganador inválido.");
+    }
+    if (loser && [adminNormalizeText_(player1), adminNormalizeText_(player2)].indexOf(adminNormalizeText_(loser)) < 0) {
+      issues.push("Registro fila " + rowNumber + ": perdedor inválido.");
+    }
+
+    var points1 = Number(row[registroColumns.POINTS_PLAYER_1] || 0);
+    var points2 = Number(row[registroColumns.POINTS_PLAYER_2] || 0);
+    if (winner && loser && points1 + points2 !== 3) {
+      issues.push("Registro fila " + rowNumber + ": los puntos del partido no suman 3.");
+    }
+    if (!winner || !loser) return;
+
+    var stats1 = statsFor(player1);
+    var stats2 = statsFor(player2);
+    var sets1 = Number(row[registroColumns.SETS_PLAYER_1] || 0);
+    var sets2 = Number(row[registroColumns.SETS_PLAYER_2] || 0);
+    var games1 = Number(row[registroColumns.SET_1_PLAYER_1] || 0) + Number(row[registroColumns.SET_2_PLAYER_1] || 0);
+    var games2 = Number(row[registroColumns.SET_1_PLAYER_2] || 0) + Number(row[registroColumns.SET_2_PLAYER_2] || 0);
+    stats1.points += points1;
+    stats2.points += points2;
+    stats1.played++;
+    stats2.played++;
+    stats1.setDiff += sets1 - sets2;
+    stats2.setDiff += sets2 - sets1;
+    stats1.gameDiff += games1 - games2;
+    stats2.gameDiff += games2 - games1;
+  });
+
+  var actualByCategory = {};
+  var category = "";
+  rankingRows.forEach(function(row) {
+    var categoryMatch = String(row[0] || "").trim().match(/^CATEGORIA\s+([A-D])$/i);
+    if (categoryMatch) {
+      category = categoryMatch[1].toUpperCase();
+      actualByCategory[category] = [];
+      return;
+    }
+    if (!category || !/^\d+$/.test(String(row[0] || "").trim()) || !row[1]) return;
+    actualByCategory[category].push({
+      player: String(row[1] || "").trim(),
+      points: Number(row[2] || 0),
+      played: Number(row[3] || 0)
+    });
+  });
+
+  ["A", "B", "C", "D"].forEach(function(categoryName) {
+    var players = Object.keys(categoryPlayers[categoryName] || {}).map(function(key) {
+      return categoryPlayers[categoryName][key];
+    });
+    var expected = players.map(function(player) { return statsFor(player); }).sort(function(a, b) {
+      return b.points - a.points || a.played - b.played || b.setDiff - a.setDiff ||
+        b.gameDiff - a.gameDiff || String(a.player).localeCompare(String(b.player), "es");
+    });
+    var actual = actualByCategory[categoryName] || [];
+    if (actual.length !== expected.length) {
+      issues.push("Rankings " + categoryName + ": cantidad de jugadores incorrecta.");
+      return;
+    }
+    expected.forEach(function(player, index) {
+      var row = actual[index] || {};
+      if (adminNormalizeText_(row.player) !== adminNormalizeText_(player.player) ||
+          Number(row.points) !== player.points || Number(row.played) !== player.played) {
+        issues.push("Rankings " + categoryName + ": la posición " + (index + 1) + " no coincide con Registro.");
+      }
+    });
+  });
+
+  return {
+    ok: issues.length === 0,
+    issueCount: issues.length,
+    issues: issues.slice(0, 12),
+    fixtureCount: Object.keys(fixtureById).length,
+    recordCount: Object.keys(recordsById).length
   };
 }
 

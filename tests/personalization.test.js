@@ -16,13 +16,55 @@ test("resume próximo partido, pendientes y ranking de un jugador", () => {
   const matches = [
     { player1: "Ana", player2: "Bea", date: "28/8/2026", status: "programado", week: "2" },
     { player1: "Ana", player2: "Carla", date: "21/8/2026", status: "por_coordinar" },
-    { player1: "Diana", player2: "Ana", status: "jugado", record: { date: "20/8/2026" } }
+    { player1: "Diana", player2: "Ana", status: "jugado", record: { date: "20/8/2026", winner: "Ana", loser: "Diana" } }
   ];
-  const summary = personal.playerSummary("Ana", matches, [{ player: "Ana", position: 2, points: 6 }], new Date(2026, 7, 27));
+  const summary = personal.playerSummary("Ana", matches, [{ player: "Ana", category: "B", position: 2, points: 6, played: 1 }], new Date(2026, 7, 27));
   assert.equal(summary.upcoming.player2, "Bea");
   assert.equal(summary.pending.length, 1);
   assert.equal(summary.recent.player1, "Diana");
   assert.equal(summary.ranking.position, 2);
+  assert.equal(summary.played, 1);
+  assert.equal(summary.wins, 1);
+  assert.equal(summary.losses, 0);
+  assert.equal(summary.total, 3);
+  assert.equal(summary.zone.text, "Ascenso directo");
+});
+
+test("calcula récord, últimos tres resultados y zona sin contar un W/O de ambos", () => {
+  const matches = [
+    { player1: "Ana", player2: "Bea", status: "jugado", record: { date: "20/8/2026", winner: "Ana", loser: "Bea", resultWeb: "Ganador Ana 6-2 6-3" } },
+    { player1: "Carla", player2: "Ana", status: "jugado", record: { date: "21/8/2026", winner: "Carla", loser: "Ana", resultWeb: "Ganador Carla 6-4 6-4" } },
+    { player1: "Ana", player2: "Diana", status: "jugado", record: { date: "22/8/2026", resultType: "W/O", resultWeb: "W/O ambos" } },
+    { player1: "Eva", player2: "Ana", status: "jugado", record: { date: "23/8/2026", winner: "Ana", loser: "Eva", resultWeb: "Ganador Ana 7-5 6-4" } },
+    { player1: "Ana", player2: "Fran", status: "programado", date: "30/8/2026" }
+  ];
+  const rankings = [
+    { player: "Ana", category: "A", position: 7, points: 6, played: 3 },
+    { player: "Otra", category: "A", position: 1, points: 9, played: 3 },
+    { player: "Otra 2", category: "A", position: 2, points: 8, played: 3 },
+    { player: "Otra 3", category: "A", position: 3, points: 7, played: 3 },
+    { player: "Otra 4", category: "A", position: 4, points: 6, played: 3 },
+    { player: "Otra 5", category: "A", position: 5, points: 5, played: 3 },
+    { player: "Otra 6", category: "A", position: 6, points: 4, played: 3 },
+    { player: "Otra 8", category: "A", position: 8, points: 2, played: 3 },
+    { player: "Otra 9", category: "A", position: 9, points: 1, played: 3 }
+  ];
+
+  const summary = personal.playerSummary("Ana", matches, rankings, new Date(2026, 7, 24));
+  assert.equal(summary.played, 3);
+  assert.equal(summary.wins, 2);
+  assert.equal(summary.losses, 1);
+  assert.equal(summary.recentResults.length, 3);
+  assert.equal(summary.recentResults[0].record.date, "23/8/2026");
+  assert.equal(summary.zone.text, "Repechaje descenso");
+});
+
+test("define todas las zonas del torneo", () => {
+  assert.equal(personal.playerZone("A", 1, 9).text, "Líder actual");
+  assert.equal(personal.playerZone("A", 8, 9).text, "Descenso directo");
+  assert.equal(personal.playerZone("B", 3, 10).text, "Repechaje a A");
+  assert.equal(personal.playerZone("C", 2, 8).text, "Ascenso directo");
+  assert.equal(personal.playerZone("D", 2, 5).text, "Zona media");
 });
 
 test("crea un enlace de marcador precargado", () => {

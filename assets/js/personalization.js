@@ -76,7 +76,9 @@
       date: String(row[0] || "").trim(), player1: String(row[1] || "").trim(),
       player2: String(row[2] || "").trim(), pending: String(row[3] || "").trim(),
       notes: String(row[4] || "").trim(), winner: String(row[13] || "").trim(),
-      resultWeb: String(row[16] || "").trim(), matchId: String(row[22] || "").trim()
+      loser: String(row[14] || "").trim(), resultType: String(row[15] || "").trim(),
+      resultWeb: String(row[16] || "").trim(), pointsPlayer1: Number(row[17] || 0),
+      pointsPlayer2: Number(row[18] || 0), matchId: String(row[22] || "").trim()
     })).filter(record => record.player1 && record.player2);
   }
 
@@ -230,14 +232,48 @@
     const upcoming = mine.filter(match => match.status === "programado" && parseDate(match.date) && parseDate(match.date) >= today)
       .sort((a, b) => parseDate(a.date) - parseDate(b.date))[0] || null;
     const pending = mine.filter(match => ["por_coordinar", "suspendido"].includes(match.status));
-    const recent = mine.filter(match => match.status === "jugado" && match.record && parseDate(match.record.date))
-      .sort((a, b) => parseDate(b.record.date) - parseDate(a.record.date))[0] || null;
+    const recentResults = mine.filter(match => match.status === "jugado" && match.record && parseDate(match.record.date))
+      .sort((a, b) => parseDate(b.record.date) - parseDate(a.record.date));
+    const recent = recentResults[0] || null;
     const ranking = rankings.find(row => normalize(row.player) === key) || null;
     const category = ranking ? ranking.category : (mine.find(match => match.category) || {}).category || "";
     const categoryRanking = rankings
       .filter(row => row.category === category)
       .sort((a, b) => a.position - b.position);
-    return { upcoming, pending, recent, ranking, category, categoryRanking, total: mine.length };
+    const decidedResults = recentResults.filter(match => match.record && match.record.winner);
+    const wins = decidedResults.filter(match => normalize(match.record.winner) === key).length;
+    const losses = decidedResults.filter(match => normalize(match.record.loser) === key || normalize(match.record.winner) !== key).length;
+    const played = ranking ? ranking.played : decidedResults.length;
+    const zone = playerZone(category, ranking && ranking.position, categoryRanking.length);
+    return {
+      upcoming, pending, recent, recentResults: recentResults.slice(0, 3), ranking,
+      category, categoryRanking, total: mine.length, played, wins, losses, zone
+    };
+  }
+
+  function playerZone(category, position, total) {
+    const cat = String(category || "").toUpperCase();
+    const place = Number(position);
+    const players = Number(total);
+    if (!place || !players) return { text: "Sin zona definida", className: "zone-neutral", icon: "•" };
+
+    if (cat === "A") {
+      if (place === 1) return { text: "Líder actual", className: "zone-leader", icon: "👑" };
+      if (place === players - 2) return { text: "Repechaje descenso", className: "zone-playoff", icon: "↔" };
+      if (place >= players - 1) return { text: "Descenso directo", className: "zone-relegation", icon: "↓" };
+    }
+    if (cat === "B") {
+      if (place <= 2) return { text: "Ascenso directo", className: "zone-promotion", icon: "↑" };
+      if (place === 3) return { text: "Repechaje a A", className: "zone-playoff", icon: "↔" };
+      if (place === players - 2) return { text: "Repechaje descenso", className: "zone-playoff", icon: "↔" };
+      if (place >= players - 1) return { text: "Descenso directo", className: "zone-relegation", icon: "↓" };
+    }
+    if (cat === "C") {
+      if (place <= 2) return { text: "Ascenso directo", className: "zone-promotion", icon: "↑" };
+      if (place === 3) return { text: "Repechaje a B", className: "zone-playoff", icon: "↔" };
+    }
+    if (cat === "D" && place === 1) return { text: "Líder actual", className: "zone-leader", icon: "👑" };
+    return { text: "Zona media", className: "zone-neutral", icon: "•" };
   }
 
   function opponent(match, player) {
@@ -292,6 +328,23 @@
     </div>`;
   }
 
+  function recentResultHtml(match, player) {
+    const rival = opponent(match, player);
+    const winner = normalize(match.record && match.record.winner);
+    const playerKey = normalize(player);
+    const isNeutral = !winner;
+    const won = winner === playerKey;
+    const outcome = isNeutral ? "—" : (won ? "G" : "P");
+    const outcomeText = isNeutral ? "Sin ganador" : (won ? "Ganó" : "Perdió");
+    const score = normalize(match.record && match.record.resultType).includes("w/o")
+      ? (match.record.resultWeb || "W/O")
+      : scoreFromWebResult(match.record && match.record.resultWeb);
+    return `<li class="recent-result ${isNeutral ? "is-neutral" : (won ? "is-win" : "is-loss")}">
+      <strong aria-label="${outcomeText}">${outcome}</strong>
+      <div><span>vs ${escapeHtml(rival)}</span><small>${escapeHtml(match.record.date)} · ${escapeHtml(score)}</small></div>
+    </li>`;
+  }
+
   async function boot() {
     if (typeof document === "undefined" || !document.getElementById("myOpenTennis")) return;
     const config = window.OPEN_TENNIS_CONFIG;
@@ -322,6 +375,26 @@
         const matchesPage = pageUrl("partidos.html");
         const tablesPage = pageUrl("tablas.html");
         const tableRows = categoryPreview(summary.categoryRanking, player);
+        const seasonHtml = `
+          <section class="home-info-card season-card" aria-labelledby="seasonHomeTitle">
+            <div class="home-card-heading season-heading">
+              <div>
+                <span class="home-card-kicker">Tu temporada 2026</span>
+                <h3 id="seasonHomeTitle">Resumen personal</h3>
+              </div>
+              <span class="player-zone ${escapeHtml(summary.zone.className)}">${escapeHtml(summary.zone.icon)} ${escapeHtml(summary.zone.text)}</span>
+            </div>
+            <div class="season-metrics">
+              <div><span>Jugados / total</span><strong>${summary.played} / ${summary.total}</strong></div>
+              <div><span>Récord</span><strong>${summary.wins}-${summary.losses}</strong></div>
+            </div>
+            <div class="recent-results-block">
+              <span class="recent-results-title">Últimos tres resultados</span>
+              ${summary.recentResults.length
+                ? `<ul class="recent-results-list">${summary.recentResults.map(match => recentResultHtml(match, player)).join("")}</ul>`
+                : `<p class="recent-results-empty">Aún no tienes resultados registrados esta temporada.</p>`}
+            </div>
+          </section>`;
         const pendingHtml = summary.pending.length ? `
           <section class="home-info-card pending-card" aria-labelledby="pendingHomeTitle">
             <div class="home-card-heading">
@@ -383,6 +456,7 @@
             </div>
           </article>
           <div class="home-personal-grid">
+            ${seasonHtml}
             ${pendingHtml}
             ${rankingHtml}
           </div>`;
@@ -403,5 +477,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, headToHeadSummary, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, markerUrl, pageUrl, STORAGE_KEY };
 });

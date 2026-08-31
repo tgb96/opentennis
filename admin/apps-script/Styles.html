@@ -99,6 +99,11 @@
   .summary-card.pending strong { color: var(--clay-700); }
   .summary-card.upcoming strong { color: #98710c; }
   .summary-card.played strong { color: var(--green-650); }
+  .integrity-status { display:grid; gap:3px; margin:-5px 0 16px; padding:12px 14px; border:1px solid; border-radius:14px; font-size:12px; }
+  .integrity-status strong { font-size:13px; }
+  .integrity-status span { line-height:1.35; }
+  .integrity-status.is-ok { color:#185b41; border-color:#b9d6c7; background:#e8f4ed; }
+  .integrity-status.has-issues { color:#842b24; border-color:#e1aaa4; background:#f9e2df; }
 
   .controls { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 9px; }
   .controls input, .controls select, .field input, .field select, .field textarea {

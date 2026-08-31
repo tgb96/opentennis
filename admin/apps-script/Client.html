@@ -19,6 +19,7 @@
       pending: document.getElementById("pendingCount"),
       upcoming: document.getElementById("upcomingCount"),
       played: document.getElementById("playedCount"),
+      integrity: document.getElementById("integrityStatus"),
       search: document.getElementById("searchInput"),
       category: document.getElementById("categoryFilter"),
       tabs: Array.prototype.slice.call(document.querySelectorAll(".tabs button")),
@@ -93,6 +94,15 @@
       setText(elements.pending, summary.pending || 0);
       setText(elements.upcoming, summary.upcoming || 0);
       setText(elements.played, summary.played || 0);
+      var integrity = dashboard.integrity || { ok: false, issueCount: 1 };
+      elements.integrity.className = "integrity-status " + (integrity.ok ? "is-ok" : "has-issues");
+      elements.integrity.replaceChildren();
+      elements.integrity.appendChild(createElement("strong", "", integrity.ok
+        ? "✓ Datos y ranking verificados"
+        : "⚠ Revisión necesaria antes de publicar"));
+      elements.integrity.appendChild(createElement("span", "", integrity.ok
+        ? integrity.fixtureCount + " partidos · " + integrity.recordCount + " registros · tablas al día"
+        : integrity.issueCount + " problema(s): " + (integrity.issues || []).join(" ")));
       renderMatches();
     }
 

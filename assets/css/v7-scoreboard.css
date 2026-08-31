@@ -1,0 +1,56 @@
+/* ===== V10 · marcador en computador ===== */
+@media (min-width: 1050px) {
+  body.marcador-page { padding-bottom: 0 !important; }
+
+  .marcador-page .app-topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2147482000 !important;
+    min-height: 86px !important;
+    justify-content: flex-start !important;
+    padding: 14px clamp(28px, 4vw, 64px) !important;
+    border-bottom: 1px solid rgba(255,247,234,.14) !important;
+    background: linear-gradient(110deg, #06291f 0%, #0b3a2d 70%, #124b39 100%) !important;
+    box-shadow: 0 10px 30px rgba(5,37,28,.18) !important;
+  }
+
+  .marcador-page .app-topbar .brand { width: auto !important; max-width: 300px !important; margin: 0 !important; }
+
+  .marcador-page #appBottomNav.app-bottom-nav {
+    left: auto !important;
+    right: clamp(28px, 4vw, 64px) !important;
+    top: 13px !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: min(590px, 54vw) !important;
+    height: 60px !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    border-radius: 21px !important;
+  }
+
+  .marcador-page #appBottomNav.app-bottom-nav a {
+    height: 48px !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    padding: 8px 14px !important;
+    border-radius: 15px !important;
+    font-size: 12px !important;
+  }
+
+  .marcador-page #appBottomNav .nav-icon { font-size: 17px !important; }
+  .marcador-page #appBottomNav .nav-label { width: auto !important; overflow: visible !important; }
+
+  .marcador-page .marcador-app {
+    width: min(calc(100% - 64px), 1440px) !important;
+    max-width: 1440px !important;
+    padding: 38px 0 64px !important;
+  }
+
+  .marcador-page .setup-grid { grid-template-columns: .72fr 1fr 1fr auto !important; align-items: end !important; }
+  .marcador-page .setup-grid > div:first-child,
+  .marcador-page .setup-grid > div:last-child { grid-column: auto !important; }
+  .marcador-page .setup-grid > div:last-child button { width: auto !important; min-width: 180px !important; }
+  .marcador-page .score-layout { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .55fr) !important; gap: 24px !important; }
+}

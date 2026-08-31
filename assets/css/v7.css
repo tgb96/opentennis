@@ -1,0 +1,160 @@
+/* Mantener el acordeón por encima de las reglas históricas del reglamento. */
+.reglas-page .reglamento-section {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+.reglas-page .reglamento-section > .rules-accordion-trigger,
+.reglas-page .reglamento-section > .section-content { grid-column: 1 / -1; }
+.reglas-page .reglamento-section.is-collapsed > .section-content { display: none !important; }
+
+/* ===== V10 · experiencia de escritorio ===== */
+@media (min-width: 1050px) {
+  body { padding-bottom: 0 !important; }
+
+  body:not(.index-page) .app-shell,
+  body:not(.index-page) .layout { padding-bottom: 0 !important; }
+
+  body:not(.index-page) .app-topbar,
+  body:not(.index-page) .sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2147482000 !important;
+    min-height: 86px !important;
+    justify-content: flex-start !important;
+    padding: 14px clamp(28px, 4vw, 64px) !important;
+    border-bottom: 1px solid rgba(255,247,234,.14) !important;
+    background: linear-gradient(110deg, #06291f 0%, #0b3a2d 70%, #124b39 100%) !important;
+    box-shadow: 0 10px 30px rgba(5,37,28,.18) !important;
+  }
+
+  body:not(.index-page) .app-topbar .brand,
+  body:not(.index-page) .sidebar .brand {
+    width: auto !important;
+    max-width: 300px !important;
+    margin: 0 !important;
+  }
+
+  #appBottomNav.app-bottom-nav {
+    left: auto !important;
+    right: clamp(28px, 4vw, 64px) !important;
+    top: 13px !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: min(590px, 54vw) !important;
+    height: 60px !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    border-radius: 21px !important;
+    box-shadow: 0 10px 28px rgba(5,37,28,.30), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  }
+
+  #appBottomNav.app-bottom-nav a {
+    height: 48px !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    padding: 8px 14px !important;
+    border-radius: 15px !important;
+    font-size: 12px !important;
+  }
+
+  #appBottomNav .nav-icon { font-size: 17px !important; }
+  #appBottomNav .nav-label { width: auto !important; overflow: visible !important; }
+
+  body:not(.index-page) .main,
+  body:not(.index-page) .app-main,
+  body:not(.index-page) .app {
+    max-width: 1440px !important;
+    padding: 38px clamp(32px, 5vw, 72px) 64px !important;
+    overflow: visible !important;
+  }
+
+  .page-title {
+    margin-bottom: 26px !important;
+    font-size: clamp(42px, 4vw, 58px) !important;
+    letter-spacing: -.025em !important;
+  }
+
+  .programacion-app { display: block !important; }
+  .programacion-app > .match-experience {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 28px !important;
+  }
+  .programacion-app > .match-experience .personal-heading { flex: 1 1 auto !important; margin-bottom: 0 !important; }
+  .programacion-app > .match-experience .public-view-tabs { flex: 0 0 auto !important; }
+  .programacion-app > .championship-divider { margin-top: 12px !important; }
+  .programacion-app > .bloque-pendientes,
+  .programacion-app > section:last-of-type { margin-bottom: 10px !important; }
+
+  .rankings-app,
+  .reglas-page .reglamento-text { max-width: 1240px !important; margin-inline: auto !important; }
+  .rankings-header p { font-size: 15px !important; }
+  .categoria-ranking { border-radius: 20px !important; }
+  .categoria-titulo { padding: 18px 22px !important; font-size: 20px !important; }
+  .tabla-ranking th,
+  .tabla-ranking td { padding-top: 14px !important; padding-bottom: 14px !important; }
+
+  .reglas-page .rules-hero { padding: 34px 38px !important; }
+  .reglas-page .rules-toolbar { margin: 20px 0 24px !important; padding: 18px 22px !important; }
+  .reglas-page .reglamento-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .reglas-page .rule-card { padding: 22px !important; }
+
+  body.index-page {
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+  }
+
+  body.index-page .v6-home-main {
+    width: min(calc(100% - 64px), 1400px) !important;
+    max-width: 1400px !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    display: grid !important;
+    grid-template-columns: minmax(340px, .78fr) minmax(560px, 1.22fr) !important;
+    grid-template-rows: auto auto !important;
+    gap: 24px !important;
+    align-items: start !important;
+    padding: 104px 0 42px !important;
+    overflow: visible !important;
+  }
+
+  body.index-page .v6-home-main .v5-hero-card {
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+    min-height: calc(100vh - 146px) !important;
+    position: sticky !important;
+    top: 104px !important;
+    padding: 46px !important;
+  }
+
+  body.index-page .v5-hero-logo-wrap {
+    width: 112px !important;
+    height: 112px !important;
+    margin-bottom: 22px !important;
+  }
+  body.index-page .v5-eyebrow { margin-bottom: 14px !important; font-size: 13px !important; letter-spacing: .16em !important; }
+  body.index-page .v5-hero-card h1 { font-size: clamp(58px, 5vw, 78px) !important; line-height: .92 !important; }
+  body.index-page .v5-hero-text { margin-top: 18px !important; font-size: 17px !important; line-height: 1.45 !important; }
+  body.index-page .v5-btn { min-height: 52px !important; font-size: 15px !important; }
+
+  body.index-page .my-open-tennis {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    margin-top: 0 !important;
+    padding: 26px !important;
+  }
+
+  body.index-page .v5-install-card {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    align-self: start !important;
+  }
+
+  body.index-page .personal-stats { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  body.index-page .home-personal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  body.index-page #appBottomNav.app-bottom-nav {
+    top: 22px !important;
+    right: 32px !important;
+  }
+}

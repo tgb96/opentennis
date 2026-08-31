@@ -14,5 +14,5 @@ function build(output, sources) {
   console.log(`${output}: ${sources.join(" + ")}`);
 }
 
-build("app.css", ["styles.css", "v3.css", "v4.css", "v5.css", "v6.css"]);
-build("scoreboard.css", ["v3.css", "v4.css", "v5.css"]);
+build("app.css", ["styles.css", "v2-overrides.css", "v3.css", "v4.css", "v5.css", "v6.css", "v7.css"]);
+build("scoreboard.css", ["v3.css", "v4.css", "v5.css", "v7-scoreboard.css"]);

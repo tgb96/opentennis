@@ -1867,6 +1867,7 @@ body:not(.index-page) .app {
   }
 }
 
+/* ===== v7-scoreboard.css ===== */
 /* ===== V10 · marcador en computador ===== */
 @media (min-width: 1050px) {
   body.marcador-page { padding-bottom: 0 !important; }
