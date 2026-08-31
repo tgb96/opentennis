@@ -10,6 +10,14 @@
 
   const STORAGE_KEY = "openTennisPlayerV1";
 
+  function pageUrl(fileName, pathname) {
+    const currentPath = pathname !== undefined
+      ? String(pathname || "")
+      : (typeof location !== "undefined" ? location.pathname : "");
+    const usesCleanRoutes = /^\/(?:app|partidos|tablas|resultados-2025|reglas|marcador)\/?$/.test(currentPath);
+    return usesCleanRoutes ? "/" + String(fileName).replace(/\.html$/, "") : fileName;
+  }
+
   function parseCsvLine(line) {
     const values = [];
     let value = "";
@@ -236,10 +244,11 @@
     return normalize(match.player1) === normalize(player) ? match.player2 : match.player1;
   }
 
-  function markerUrl(match) {
-    if (!match) return "marcador.html";
+  function markerUrl(match, pathname) {
+    const markerPage = pageUrl("marcador.html", pathname);
+    if (!match) return markerPage;
     const params = new URLSearchParams({ categoria: match.category, j1: match.player1, j2: match.player2, partido: match.matchId || "" });
-    return "marcador.html?" + params.toString();
+    return markerPage + "?" + params.toString();
   }
 
   function escapeHtml(value) {
@@ -310,6 +319,8 @@
         const nextRival = next ? opponent(next, player) : "";
         const headToHead = next ? (historicalData ? headToHeadSummary(player, nextRival, matches, historicalData) : null) : null;
         const playerParam = encodeURIComponent(player);
+        const matchesPage = pageUrl("partidos.html");
+        const tablesPage = pageUrl("tablas.html");
         const tableRows = categoryPreview(summary.categoryRanking, player);
         const pendingHtml = summary.pending.length ? `
           <section class="home-info-card pending-card" aria-labelledby="pendingHomeTitle">
@@ -327,7 +338,7 @@
                   <small>Semana ${escapeHtml(match.week || "—")}${match.originalDate || match.date ? ` · Fecha original ${escapeHtml(match.originalDate || match.date)}` : ""}</small>
                 </li>`).join("")}
             </ul>
-            <a class="home-card-link" href="partidos.html?jugador=${playerParam}&vista=pending">Ver partidos por coordinar</a>
+            <a class="home-card-link" href="${matchesPage}?jugador=${playerParam}&vista=pending">Ver partidos por coordinar</a>
           </section>` : `
           <section class="home-info-card pending-card pending-clear">
             <span class="home-card-kicker">Coordinación al día</span>
@@ -340,7 +351,7 @@
                 <span class="home-card-kicker">Tu categoría</span>
                 <h3 id="categoryHomeTitle">Tabla Categoría ${escapeHtml(summary.category)}</h3>
               </div>
-              <a class="home-heading-link" href="tablas.html?jugador=${playerParam}">Ver completa</a>
+              <a class="home-heading-link" href="${tablesPage}?jugador=${playerParam}">Ver completa</a>
             </div>
             <div class="mini-ranking" role="table" aria-label="Resumen de la tabla de la categoría ${escapeHtml(summary.category)}">
               <div class="mini-ranking-head" role="row">
@@ -368,7 +379,7 @@
             <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos por coordinar."}</p>
             ${next ? headToHeadHtml(player, nextRival, headToHead) : ""}
             <div class="personal-actions">
-              <a href="partidos.html?jugador=${playerParam}">Ver mis partidos</a>
+              <a href="${matchesPage}?jugador=${playerParam}">Ver mis partidos</a>
             </div>
           </article>
           <div class="home-personal-grid">
@@ -392,5 +403,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, headToHeadSummary, markerUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, headToHeadSummary, markerUrl, pageUrl, STORAGE_KEY };
 });

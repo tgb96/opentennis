@@ -32,6 +32,17 @@ test("crea un enlace de marcador precargado", () => {
   assert.match(url, /partido=partido-1/);
 });
 
+test("usa rutas limpias en la versión publicada de prueba", () => {
+  assert.equal(personal.pageUrl("partidos.html", "/app"), "/partidos");
+  assert.equal(personal.pageUrl("tablas.html", "/partidos"), "/tablas");
+  assert.equal(personal.markerUrl(null, "/app"), "/marcador");
+});
+
+test("mantiene rutas html en la versión oficial y local", () => {
+  assert.equal(personal.pageUrl("partidos.html", "/index.html"), "partidos.html");
+  assert.equal(personal.pageUrl("tablas.html", "/"), "tablas.html");
+});
+
 test("no reutiliza el resultado de la ida en el partido de vuelta", () => {
   const fixture = personal.parseFixture([
     "Semana,Cancha,Turno,Categoría,Jugador 1,Jugador 2,Fecha,Estado,Observaciones,ID partido,Fecha oficial,Cancha oficial,Turno oficial,Tipo programación,Ronda",
