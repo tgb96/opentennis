@@ -10,13 +10,24 @@ class MockRange {
   }
 
   getDisplayValue() {
-    return String((this.sheet.rows[this.row - 1] || [])[this.column - 1] || "");
+    const value = (this.sheet.rows[this.row - 1] || [])[this.column - 1];
+    return value == null ? "" : String(value);
   }
 
   getDisplayValues() {
     return Array.from({ length: this.rowCount }, (_, rowOffset) =>
       Array.from({ length: this.columnCount }, (_, columnOffset) =>
-        String((this.sheet.rows[this.row - 1 + rowOffset] || [])[this.column - 1 + columnOffset] || "")
+        ((value) => value == null ? "" : String(value))(
+          (this.sheet.rows[this.row - 1 + rowOffset] || [])[this.column - 1 + columnOffset]
+        )
+      )
+    );
+  }
+
+  getValues() {
+    return Array.from({ length: this.rowCount }, (_, rowOffset) =>
+      Array.from({ length: this.columnCount }, (_, columnOffset) =>
+        (this.sheet.rows[this.row - 1 + rowOffset] || [])[this.column - 1 + columnOffset] || ""
       )
     );
   }
@@ -54,12 +65,20 @@ class MockSheet {
   getRange(row, column, rowCount, columnCount) {
     return new MockRange(this, row, column, rowCount, columnCount);
   }
+  appendRow(row) { this.rows.push(row.slice()); return this; }
+  setFrozenRows() { return this; }
 }
 
 class MockSpreadsheet {
   constructor(sheets) { this.sheets = sheets; }
   getSheets() { return this.sheets; }
   getName() { return "Open Tennis 2026"; }
+  getSheetByName(name) { return this.sheets.find(sheet => sheet.getName() === name) || null; }
+  insertSheet(name) {
+    const sheet = new MockSheet(Date.now(), name, []);
+    this.sheets.push(sheet);
+    return sheet;
+  }
 }
 
 function parseCsv(filePath) {
@@ -291,4 +310,61 @@ test("el administrador muestra la nueva fecha programada sobre el pendiente ante
   };
 
   assert.equal(context.adminEffectiveMatchStatus_(match, oldPendingRecord), "programado");
+});
+
+test("resume la próxima jornada y separa lo pendiente, registrado y por jugar", () => {
+  const context = createContext();
+  const matches = [
+    { matchId: "uno", week: "9", date: "12/9/2026", status: "programado" },
+    { matchId: "dos", week: "9", date: "12/9/2026", status: "por_coordinar" },
+    { matchId: "tres", week: "9", date: "12/9/2026", status: "jugado" },
+    { matchId: "cuatro", week: "10", date: "26/9/2026", status: "programado" }
+  ];
+
+  const week = context.adminBuildWeekSummary_(matches, "1/9/2026");
+  assert.equal(week.date, "12/9/2026");
+  assert.equal(week.total, 3);
+  assert.equal(week.toRegister, 1);
+  assert.equal(week.pending, 1);
+  assert.equal(week.played, 1);
+  assert.deepEqual(Array.from(week.matchIds), ["uno", "dos", "tres"]);
+});
+
+test("el centro de alertas detecta fechas vencidas y resultados públicos incompletos", () => {
+  const context = createContext();
+  const alerts = context.adminBuildAlerts_([
+    { matchId: "vencido", date: "20/8/2026", status: "programado", resultWeb: "" },
+    { matchId: "incompleto", date: "21/8/2026", status: "jugado", resultWeb: "" }
+  ], { ok: true, issueCount: 0, issues: [] }, "1/9/2026");
+
+  assert.match(alerts.map(alert => alert.id).join(" "), /overdue/);
+  assert.match(alerts.map(alert => alert.id).join(" "), /missing-result/);
+});
+
+test("deshacer restaura fixture y elimina un registro recién creado", () => {
+  const context = createContext();
+  const fixtureHeader = ["Semana", "Cancha", "Turno", "Categoría", "Jugador 1", "Jugador 2", "Fecha", "Estado", "Observaciones", "ID partido", "Fecha oficial", "Cancha oficial", "Turno oficial", "Tipo programación", "Ronda"];
+  const fixtureBefore = ["9", "1", "Turno 1", "A", "Ana", "Bea", "12/9/2026", "Programado", "", "partido-9", "12/9/2026", "1", "Turno 1", "oficial", "Única"];
+  const fixtureAfter = fixtureBefore.slice();
+  fixtureAfter[7] = "Jugado";
+  const recordAfter = Array(23).fill("");
+  Object.assign(recordAfter, { 0: "12/9/2026", 1: "Ana", 2: "Bea", 5: 6, 6: 2, 7: 6, 8: 3, 11: 2, 12: 0, 13: "Ana", 14: "Bea", 15: "2 sets", 16: "Ganador Ana 6-2 6-3", 17: 3, 18: 0, 19: 3, 20: 0, 21: "ana|bea", 22: "partido-9" });
+  const fixture = new MockSheet(0, "Fixture", [fixtureHeader, fixtureAfter]);
+  const registro = new MockSheet(1046180821, "Registro", [Array.from({ length: 23 }, (_, index) => `Columna ${index + 1}`), recordAfter]);
+  const rankings = new MockSheet(1249404240, "Rankings", [["CATEGORIA A"], ["N°", "Jugador", "Puntos", "Jugados"], ["1", "Ana", "3", "1"], ["2", "Bea", "0", "1"]]);
+  const audit = new MockSheet(999, "Admin Auditoría", [
+    ["Fecha y hora", "Usuario", "Acción", "ID partido", "Fila registro", "Valor anterior", "Valor nuevo"],
+    [new Date(), "admin@example.com", "CREAR", "partido-9", 2, JSON.stringify({ fixture: fixtureBefore, registro: [] }), JSON.stringify({ fixture: fixtureAfter, registro: recordAfter })]
+  ]);
+  const spreadsheet = new MockSpreadsheet([fixture, registro, rankings, audit]);
+  context.PropertiesService = { getScriptProperties() { return { getProperty() { return "spreadsheet-test"; } }; } };
+  context.SpreadsheetApp.openById = () => spreadsheet;
+  context.Session = { getActiveUser() { return { getEmail() { return "admin@example.com"; } }; } };
+  context.Utilities = { formatDate(date, timeZone, pattern) { return pattern === "d/M/yyyy" ? "1/9/2026" : "1/9/2026 10:00"; } };
+
+  const result = context.adminUndoLastAction_("partido-9");
+  assert.equal(result.ok, true);
+  assert.deepEqual(fixture.rows[1], fixtureBefore);
+  assert.equal(registro.rows[1].every(value => value === ""), true);
+  assert.equal(audit.rows.at(-1)[2], "DESHACER");
 });

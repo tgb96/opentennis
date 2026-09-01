@@ -7,9 +7,23 @@ const read = fileName => fs.readFileSync(path.join(directory, fileName), "utf8")
 const dashboard = {
   season: "2026",
   spreadsheetName: "Open Tennis 2026 · Vista de prueba",
-  generatedAt: "26/8/2026 16:10",
-  today: "26/8/2026",
+  generatedAt: "1/9/2026 10:00",
+  today: "1/9/2026",
   summary: { total: 4, pending: 2, upcoming: 1, played: 1 },
+  week: {
+    date: "2/9/2026", week: "10",
+    matchIds: ["2026-s10-c-jose-astete-pablo-arias"],
+    total: 1, toRegister: 1, pending: 0, played: 0
+  },
+  alerts: [{ id: "all-good", severity: "success", title: "No hay alertas pendientes", detail: "Partidos, registros y ranking están consistentes.", count: 0 }],
+  integrity: { ok: true, issueCount: 0, issues: [], fixtureCount: 4, recordCount: 3 },
+  rankings: [
+    { category: "A", position: 1, player: "Andrés Soto", points: 6, played: 2 },
+    { category: "A", position: 2, player: "Felipe León", points: 3, played: 2 },
+    { category: "C", position: 1, player: "José Astete", points: 4, played: 2 },
+    { category: "C", position: 2, player: "Pablo Arias", points: 3, played: 2 }
+  ],
+  undo: { available: false },
   matches: [
     {
       matchId: "2026-s9-a-diego-fossa-nicolas-collao",
@@ -34,7 +48,7 @@ const dashboard = {
       week: "8", court: "1", turn: "19:00", category: "A",
       player1: "Andrés Soto", player2: "Felipe León", date: "20/8/2026",
       status: "jugado", statusLabel: "Jugado", notes: "", resultWeb: "Ganador Andrés Soto 6-3 6-4",
-      record: { date: "20/8/2026", set1Player1: "6", set1Player2: "3", set2Player1: "6", set2Player2: "4", stbPlayer1: "", stbPlayer2: "" }
+      record: { date: "20/8/2026", set1Player1: "6", set1Player2: "3", set2Player1: "6", set2Player2: "4", stbPlayer1: "", stbPlayer2: "", winner: "Andrés Soto", loser: "Felipe León", pointsPlayer1: 3, pointsPlayer2: 0 }
     }
   ]
 };
@@ -44,7 +58,8 @@ window.google = { script: { run: {
   withSuccessHandler: function (handler) { this.success = handler; return this; },
   withFailureHandler: function (handler) { this.failure = handler; return this; },
   getAdminDashboard: function () { this.success(${JSON.stringify(dashboard)}); },
-  saveAdminMatch: function () { this.success(${JSON.stringify(dashboard)}); }
+  saveAdminMatch: function () { this.success({ ok: true, matchId: "preview", status: "jugado", savedAt: "1/9/2026 10:01", undo: { available: true, matchId: "preview", expiresInMinutes: 10 } }); },
+  undoAdminLastAction: function () { this.success({ ok: true, matchId: "preview", dashboard: ${JSON.stringify(dashboard)} }); }
 } } };
 </script>`;
 

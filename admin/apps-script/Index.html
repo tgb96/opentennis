@@ -39,7 +39,47 @@
       </article>
     </section>
 
+    <section id="weekPanel" class="week-panel" aria-labelledby="weekTitle">
+      <div class="week-heading">
+        <div>
+          <p class="eyebrow">Próxima jornada</p>
+          <h2 id="weekTitle">Esta semana</h2>
+          <p id="weekDate" class="muted"></p>
+        </div>
+        <button id="showWeekButton" class="secondary-button compact-button" type="button">Ver jornada</button>
+      </div>
+      <div class="week-counts" aria-label="Estado de la próxima jornada">
+        <span><b id="weekToRegister">0</b> por registrar</span>
+        <span><b id="weekPending">0</b> por confirmar</span>
+        <span><b id="weekPlayed">0</b> registrados</span>
+      </div>
+    </section>
+
     <section id="integrityStatus" class="integrity-status" role="status" aria-live="polite"></section>
+
+    <details id="alertsCenter" class="alerts-center" open>
+      <summary>
+        <span><strong>Centro de alertas</strong><small id="alertsSummary"></small></span>
+        <b id="alertsCount">0</b>
+      </summary>
+      <div id="alertsList" class="alerts-list"></div>
+    </details>
+
+    <section id="publicationStatus" class="publication-status" aria-live="polite" hidden>
+      <div class="publication-heading">
+        <div>
+          <p class="eyebrow">Último movimiento</p>
+          <strong id="publicationTitle">Comprobando publicación…</strong>
+        </div>
+        <button id="verifyPublicationButton" class="secondary-button compact-button" type="button" hidden>Verificar ahora</button>
+      </div>
+      <ol class="publication-steps">
+        <li id="sheetStep"><span>1</span><p><b>Google Sheets</b><small>Esperando guardado</small></p></li>
+        <li id="rankingStep"><span>2</span><p><b>Ranking</b><small>Esperando verificación</small></p></li>
+        <li id="publicStep"><span>3</span><p><b>opentennis.cl</b><small>Esperando publicación</small></p></li>
+      </ol>
+      <button id="undoButton" class="undo-button" type="button" hidden>↶ Deshacer último cambio</button>
+    </section>
 
     <section class="controls" aria-label="Buscar y filtrar">
       <label class="search-field">
@@ -59,7 +99,8 @@
     </section>
 
     <nav class="tabs" aria-label="Vista de partidos">
-      <button type="button" data-view="pending" aria-current="page">Por coordinar</button>
+      <button type="button" data-view="week" aria-current="page">Esta semana</button>
+      <button type="button" data-view="pending">Por coordinar</button>
       <button type="button" data-view="upcoming">Programados</button>
       <button type="button" data-view="recent">Resultados</button>
       <button type="button" data-view="all">Todos</button>
@@ -157,6 +198,14 @@
           <span>Observación <small>(opcional)</small></span>
           <textarea id="notesInput" rows="3" placeholder="Ej.: adelantado, lesionado o nueva fecha acordada"></textarea>
         </label>
+
+        <section id="savePreview" class="save-preview" aria-live="polite">
+          <p class="eyebrow">Vista previa antes de guardar</p>
+          <strong id="previewTitle">Completa los datos del partido</strong>
+          <p id="previewResult" class="muted"></p>
+          <div id="previewPoints" class="preview-points"></div>
+          <p id="previewRanking" class="preview-ranking"></p>
+        </section>
 
         <div id="formError" class="form-error" role="alert" hidden></div>
       </div>

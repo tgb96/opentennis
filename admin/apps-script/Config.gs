@@ -7,7 +7,13 @@ var ADMIN_CONFIG = Object.freeze({
   AUDIT_SHEET_NAME: "Admin Auditoría",
   SPREADSHEET_ID_PROPERTY: "SPREADSHEET_ID",
   ADMIN_EMAILS_PROPERTY: "ADMIN_EMAILS",
+  UNDO_WINDOW_MINUTES: 10,
   REGISTRO_COLUMN_COUNT: 23,
+  PUBLIC_DATA_URLS: Object.freeze({
+    FIXTURE: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=0&single=true&output=csv",
+    REGISTRO: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1046180821&single=true&output=csv",
+    RANKINGS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1249404240&single=true&output=csv"
+  }),
   SCHEDULE_TYPES: Object.freeze({
     OFICIAL: "oficial",
     ADELANTADO: "adelantado",

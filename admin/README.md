@@ -13,6 +13,12 @@ Este módulo es una aplicación privada de Google Apps Script conectada al mismo
 - Actualiza la fila existente en vez de crear un duplicado.
 - Guarda cada creación o corrección en `Admin Auditoría`.
 - Bloquea guardados simultáneos y valida todos los datos en el servidor.
+- Abre por defecto la próxima jornada y separa partidos por registrar, por confirmar y ya registrados.
+- Ofrece accesos rápidos para resultado, pendiente, reprogramación y W/O sin guardar accidentalmente.
+- Muestra una vista previa del resultado, puntos y posición estimada antes de publicar.
+- Permite deshacer el último movimiento durante 10 minutos si nadie modificó después esas filas.
+- Reúne alertas de fechas vencidas, resultados incompletos, duplicados y rankings desactualizados.
+- Confirma por separado el guardado en Sheets, la verificación del ranking y la aparición en la fuente pública.
 
 ## Instalación en Google Sheets
 

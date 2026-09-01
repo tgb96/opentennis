@@ -6,403 +6,364 @@
     var PENDING_STATUSES = ["por_coordinar", "suspendido"];
     var state = {
       dashboard: window.__INITIAL_DATA__ || { summary: {}, matches: [] },
-      view: "pending",
-      query: "",
-      category: "",
-      currentMatch: null,
-      toastTimer: null
+      view: "week", query: "", category: "", alertMatchIds: [],
+      currentMatch: null, lastPayload: null, undo: null, toastTimer: null
     };
 
     var elements = {
-      season: document.getElementById("seasonLabel"),
-      updated: document.getElementById("updatedLabel"),
-      pending: document.getElementById("pendingCount"),
-      upcoming: document.getElementById("upcomingCount"),
-      played: document.getElementById("playedCount"),
-      integrity: document.getElementById("integrityStatus"),
-      search: document.getElementById("searchInput"),
-      category: document.getElementById("categoryFilter"),
-      tabs: Array.prototype.slice.call(document.querySelectorAll(".tabs button")),
-      matchList: document.getElementById("matchList"),
-      refresh: document.getElementById("refreshButton"),
-      dialog: document.getElementById("matchDialog"),
-      form: document.getElementById("matchForm"),
-      dialogMeta: document.getElementById("dialogMeta"),
-      dialogTitle: document.getElementById("dialogTitle"),
-      matchId: document.getElementById("matchIdInput"),
-      status: document.getElementById("statusInput"),
-      originalSchedule: document.getElementById("originalSchedule"),
-      scheduleSection: document.getElementById("scheduleSection"),
-      scheduleType: document.getElementById("scheduleTypeInput"),
-      court: document.getElementById("courtInput"),
-      turn: document.getElementById("turnInput"),
-      date: document.getElementById("dateInput"),
-      dateLabel: document.getElementById("dateLabel"),
-      scoreSection: document.getElementById("scoreSection"),
-      scorePlayer1: document.getElementById("scorePlayer1"),
-      scorePlayer2: document.getElementById("scorePlayer2"),
-      set1Player1: document.getElementById("set1Player1"),
-      set1Player2: document.getElementById("set1Player2"),
-      set2Player1: document.getElementById("set2Player1"),
-      set2Player2: document.getElementById("set2Player2"),
-      stbPlayer1: document.getElementById("stbPlayer1"),
-      stbPlayer2: document.getElementById("stbPlayer2"),
-      woExplanation: document.getElementById("woExplanation"),
-      notes: document.getElementById("notesInput"),
-      error: document.getElementById("formError"),
-      close: document.getElementById("closeDialog"),
-      cancel: document.getElementById("cancelButton"),
-      save: document.getElementById("saveButton"),
-      loading: document.getElementById("loadingOverlay"),
-      toast: document.getElementById("toast")
+      season: document.getElementById("seasonLabel"), updated: document.getElementById("updatedLabel"),
+      pending: document.getElementById("pendingCount"), upcoming: document.getElementById("upcomingCount"),
+      played: document.getElementById("playedCount"), weekPanel: document.getElementById("weekPanel"),
+      weekDate: document.getElementById("weekDate"), weekToRegister: document.getElementById("weekToRegister"),
+      weekPending: document.getElementById("weekPending"), weekPlayed: document.getElementById("weekPlayed"),
+      showWeek: document.getElementById("showWeekButton"), integrity: document.getElementById("integrityStatus"),
+      alertsCenter: document.getElementById("alertsCenter"), alertsSummary: document.getElementById("alertsSummary"),
+      alertsCount: document.getElementById("alertsCount"), alertsList: document.getElementById("alertsList"),
+      publication: document.getElementById("publicationStatus"), publicationTitle: document.getElementById("publicationTitle"),
+      sheetStep: document.getElementById("sheetStep"), rankingStep: document.getElementById("rankingStep"),
+      publicStep: document.getElementById("publicStep"), verifyPublication: document.getElementById("verifyPublicationButton"),
+      undo: document.getElementById("undoButton"), search: document.getElementById("searchInput"),
+      category: document.getElementById("categoryFilter"), tabs: Array.prototype.slice.call(document.querySelectorAll(".tabs button")),
+      matchList: document.getElementById("matchList"), refresh: document.getElementById("refreshButton"),
+      dialog: document.getElementById("matchDialog"), form: document.getElementById("matchForm"),
+      dialogMeta: document.getElementById("dialogMeta"), dialogTitle: document.getElementById("dialogTitle"),
+      matchId: document.getElementById("matchIdInput"), status: document.getElementById("statusInput"),
+      originalSchedule: document.getElementById("originalSchedule"), scheduleSection: document.getElementById("scheduleSection"),
+      scheduleType: document.getElementById("scheduleTypeInput"), court: document.getElementById("courtInput"),
+      turn: document.getElementById("turnInput"), date: document.getElementById("dateInput"),
+      dateLabel: document.getElementById("dateLabel"), scoreSection: document.getElementById("scoreSection"),
+      scorePlayer1: document.getElementById("scorePlayer1"), scorePlayer2: document.getElementById("scorePlayer2"),
+      set1Player1: document.getElementById("set1Player1"), set1Player2: document.getElementById("set1Player2"),
+      set2Player1: document.getElementById("set2Player1"), set2Player2: document.getElementById("set2Player2"),
+      stbPlayer1: document.getElementById("stbPlayer1"), stbPlayer2: document.getElementById("stbPlayer2"),
+      woExplanation: document.getElementById("woExplanation"), notes: document.getElementById("notesInput"),
+      previewTitle: document.getElementById("previewTitle"), previewResult: document.getElementById("previewResult"),
+      previewPoints: document.getElementById("previewPoints"), previewRanking: document.getElementById("previewRanking"),
+      error: document.getElementById("formError"), close: document.getElementById("closeDialog"),
+      cancel: document.getElementById("cancelButton"), save: document.getElementById("saveButton"),
+      loading: document.getElementById("loadingOverlay"), toast: document.getElementById("toast")
     };
 
     function normalize(value) {
-      return String(value || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
+      return String(value || "").toLowerCase().normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
     }
-
-    function visibleNotes(match) {
-      var notes = String(match.notes || "").trim();
-      var legacyStatusNotes = ["pendiente", "postergado", "reprogramado"];
-      if (match.status === "por_coordinar" && legacyStatusNotes.indexOf(normalize(notes)) >= 0) return "";
-      return notes;
-    }
-
-    function setText(element, value) {
-      element.textContent = String(value == null ? "" : value);
-    }
-
+    function setText(element, value) { element.textContent = String(value == null ? "" : value); }
     function createElement(tag, className, text) {
       var element = document.createElement(tag);
       if (className) element.className = className;
       if (typeof text !== "undefined") setText(element, text);
       return element;
     }
+    function visibleNotes(match) {
+      var notes = String(match.notes || "").trim();
+      if (match.status === "por_coordinar" && ["pendiente", "postergado", "reprogramado"].indexOf(normalize(notes)) >= 0) return "";
+      return notes;
+    }
 
     function renderDashboard() {
-      var dashboard = state.dashboard || {};
-      var summary = dashboard.summary || {};
+      var dashboard = state.dashboard || {}, summary = dashboard.summary || {};
       setText(elements.season, dashboard.season || "");
-      setText(elements.updated, dashboard.generatedAt
-        ? "Actualizado " + dashboard.generatedAt + " · " + (dashboard.spreadsheetName || "Google Sheets")
-        : "");
-      setText(elements.pending, summary.pending || 0);
-      setText(elements.upcoming, summary.upcoming || 0);
-      setText(elements.played, summary.played || 0);
-      var integrity = dashboard.integrity || { ok: false, issueCount: 1 };
+      setText(elements.updated, dashboard.generatedAt ? "Actualizado " + dashboard.generatedAt + " · " + (dashboard.spreadsheetName || "Google Sheets") : "");
+      setText(elements.pending, summary.pending || 0); setText(elements.upcoming, summary.upcoming || 0); setText(elements.played, summary.played || 0);
+      renderWeek(); renderIntegrity(); renderAlerts();
+      state.undo = dashboard.undo && dashboard.undo.available ? dashboard.undo : state.undo;
+      renderUndo(); renderMatches();
+    }
+    function renderWeek() {
+      var week = state.dashboard.week || {};
+      setText(elements.weekDate, week.date ? "Semana " + (week.week || "") + " · " + week.date + " · " + week.total + " partido(s)" : "No hay una próxima jornada programada.");
+      setText(elements.weekToRegister, week.toRegister || 0); setText(elements.weekPending, week.pending || 0); setText(elements.weekPlayed, week.played || 0);
+      elements.showWeek.disabled = !week.date;
+    }
+    function renderIntegrity() {
+      var integrity = state.dashboard.integrity || { ok: false, issueCount: 1 };
       elements.integrity.className = "integrity-status " + (integrity.ok ? "is-ok" : "has-issues");
       elements.integrity.replaceChildren();
-      elements.integrity.appendChild(createElement("strong", "", integrity.ok
-        ? "✓ Datos y ranking verificados"
-        : "⚠ Revisión necesaria antes de publicar"));
+      elements.integrity.appendChild(createElement("strong", "", integrity.ok ? "✓ Datos y ranking verificados" : "⚠ Revisión necesaria antes de publicar"));
       elements.integrity.appendChild(createElement("span", "", integrity.ok
         ? integrity.fixtureCount + " partidos · " + integrity.recordCount + " registros · tablas al día"
         : integrity.issueCount + " problema(s): " + (integrity.issues || []).join(" ")));
+    }
+    function renderAlerts() {
+      var alerts = state.dashboard.alerts || [];
+      var active = alerts.filter(function(alert) { return alert.severity !== "success"; });
+      setText(elements.alertsCount, active.length); setText(elements.alertsSummary, active.length ? active.length + " revisión(es) recomendada(s)" : "Todo en orden");
+      elements.alertsList.replaceChildren();
+      alerts.forEach(function(alert) {
+        var item = createElement("article", "alert-item " + alert.severity);
+        item.appendChild(createElement("span", "alert-dot"));
+        var copy = createElement("div", "alert-copy");
+        copy.appendChild(createElement("strong", "", alert.title)); copy.appendChild(createElement("small", "", alert.detail)); item.appendChild(copy);
+        if (alert.matchIds && alert.matchIds.length) {
+          var button = createElement("button", "alert-action", "Revisar"); button.type = "button";
+          button.addEventListener("click", function() { state.alertMatchIds = alert.matchIds.slice(); setView("alert"); elements.alertsCenter.open = false; });
+          item.appendChild(button);
+        }
+        elements.alertsList.appendChild(item);
+      });
+    }
+    function setView(view) {
+      state.view = view;
+      elements.tabs.forEach(function(tab) { if (tab.dataset.view === view) tab.setAttribute("aria-current", "page"); else tab.removeAttribute("aria-current"); });
       renderMatches();
     }
-
     function matchBelongsToView(match) {
+      if (state.view === "week") return ((state.dashboard.week || {}).matchIds || []).indexOf(match.matchId) >= 0;
+      if (state.view === "alert") return state.alertMatchIds.indexOf(match.matchId) >= 0;
       if (state.view === "pending") return PENDING_STATUSES.indexOf(match.status) >= 0;
       if (state.view === "upcoming") return match.status === "programado";
       if (state.view === "recent") return PLAYED_STATUSES.indexOf(match.status) >= 0;
       return true;
     }
-
     function visibleMatches() {
-      var query = normalize(state.query);
-      var category = normalize(state.category);
-      var matches = (state.dashboard.matches || []).filter(function (match) {
-        var players = normalize(match.player1 + " " + match.player2);
-        return matchBelongsToView(match) &&
-          (!query || players.indexOf(query) >= 0) &&
-          (!category || normalize(match.category) === category);
+      var query = normalize(state.query), category = normalize(state.category);
+      var matches = (state.dashboard.matches || []).filter(function(match) {
+        return matchBelongsToView(match) && (!query || normalize(match.player1 + " " + match.player2).indexOf(query) >= 0) && (!category || normalize(match.category) === category);
       });
-
       if (state.view === "recent") matches.reverse();
       return matches;
     }
 
+    function appendMatchCard(match, fragment) {
+      var card = createElement("article", "match-card"), main = createElement("button", "match-card-main");
+      main.type = "button"; main.setAttribute("aria-label", "Editar " + match.player1 + " contra " + match.player2);
+      main.addEventListener("click", function() { openMatch(match.matchId); });
+      var top = createElement("div", "match-top");
+      top.appendChild(createElement("span", "match-meta", [match.category ? "Categoría " + match.category : "", match.week ? "Semana " + match.week : "", match.court ? "Cancha " + match.court : "", match.turn || ""].filter(Boolean).join(" · ")));
+      top.appendChild(createElement("span", "status-pill " + match.status, match.statusLabel));
+      var players = createElement("div", "match-players"); players.appendChild(createElement("span", "", match.player1)); players.appendChild(createElement("span", "versus", "VS")); players.appendChild(createElement("span", "", match.player2));
+      main.appendChild(top); main.appendChild(players);
+      if (match.scheduleType && match.scheduleType !== "oficial") main.appendChild(createElement("span", "schedule-badge", match.scheduleTypeLabel));
+      var detail = match.resultWeb || visibleNotes(match) || (match.status === "por_coordinar" ? "Nueva fecha por coordinar" : (match.date ? "Fecha: " + match.date : "Toca para registrar"));
+      if (detail) main.appendChild(createElement("div", "match-result", detail)); card.appendChild(main);
+      var actions = createElement("div", "quick-actions");
+      if (PLAYED_STATUSES.indexOf(match.status) >= 0) addQuickAction(actions, "Corregir resultado", match.matchId, "jugado");
+      else { addQuickAction(actions, "Resultado", match.matchId, "jugado"); addQuickAction(actions, "Pendiente", match.matchId, "por_coordinar"); addQuickAction(actions, "Reprogramar", match.matchId, "programado"); addQuickAction(actions, "W/O", match.matchId, "wo_j1"); }
+      card.appendChild(actions); fragment.appendChild(card);
+    }
+    function addQuickAction(container, label, matchId, status) {
+      var button = createElement("button", "", label); button.type = "button";
+      button.addEventListener("click", function() { openMatch(matchId, status); }); container.appendChild(button);
+    }
     function renderMatches() {
-      var matches = visibleMatches();
-      elements.matchList.replaceChildren();
-
+      var matches = visibleMatches(); elements.matchList.replaceChildren();
       if (!matches.length) {
-        var empty = createElement("div", "empty-state");
-        empty.appendChild(createElement("strong", "", "No hay partidos en esta vista"));
-        empty.appendChild(createElement("p", "", state.query || state.category
-          ? "Prueba cambiando la búsqueda o el filtro."
-          : "Cuando cambie el estado de un partido aparecerá aquí."));
-        elements.matchList.appendChild(empty);
-        return;
+        var empty = createElement("div", "empty-state"); empty.appendChild(createElement("strong", "", "No hay partidos en esta vista"));
+        empty.appendChild(createElement("p", "", state.query || state.category ? "Prueba cambiando la búsqueda o el filtro." : "Cuando cambie el estado de un partido aparecerá aquí."));
+        elements.matchList.appendChild(empty); return;
       }
-
       var fragment = document.createDocumentFragment();
-      matches.forEach(function (match) {
-        var card = createElement("button", "match-card");
-        card.type = "button";
-        card.dataset.matchId = match.matchId;
-        card.setAttribute("aria-label", "Editar " + match.player1 + " contra " + match.player2);
-
-        var top = createElement("div", "match-top");
-        var metaParts = [
-          match.category ? "Categoría " + match.category : "",
-          match.week ? "Semana " + match.week : "",
-          match.court ? "Cancha " + match.court : "",
-          match.turn ? match.turn : ""
-        ].filter(Boolean);
-        top.appendChild(createElement("span", "match-meta", metaParts.join(" · ")));
-        top.appendChild(createElement("span", "status-pill " + match.status, match.statusLabel));
-
-        var players = createElement("div", "match-players");
-        players.appendChild(createElement("span", "", match.player1));
-        players.appendChild(createElement("span", "versus", "VS"));
-        players.appendChild(createElement("span", "", match.player2));
-
-        card.appendChild(top);
-        card.appendChild(players);
-
-        if (match.scheduleType && match.scheduleType !== "oficial") {
-          card.appendChild(createElement("span", "schedule-badge", match.scheduleTypeLabel));
-        }
-
-        var detail = match.resultWeb || visibleNotes(match) || (
-          match.status === "por_coordinar"
-            ? "Nueva fecha por coordinar"
-            : (match.date ? "Fecha: " + match.date : "Toca para registrar")
-        );
-        if (detail) card.appendChild(createElement("div", "match-result", detail));
-        card.addEventListener("click", function () { openMatch(match.matchId); });
-        fragment.appendChild(card);
-      });
+      if (state.view === "week") {
+        [{ title: "Por registrar", statuses: ["programado"] }, { title: "Por confirmar o reprogramar", statuses: PENDING_STATUSES }, { title: "Resultados registrados", statuses: PLAYED_STATUSES }].forEach(function(group) {
+          var grouped = matches.filter(function(match) { return group.statuses.indexOf(match.status) >= 0; });
+          if (!grouped.length) return;
+          var title = createElement("strong", "match-group-title", group.title); title.appendChild(createElement("span", "", grouped.length)); fragment.appendChild(title);
+          grouped.forEach(function(match) { appendMatchCard(match, fragment); });
+        });
+      } else matches.forEach(function(match) { appendMatchCard(match, fragment); });
       elements.matchList.appendChild(fragment);
     }
 
-    function findMatch(matchId) {
-      return (state.dashboard.matches || []).find(function (match) {
-        return match.matchId === matchId;
-      }) || null;
-    }
-
+    function findMatch(matchId) { return (state.dashboard.matches || []).find(function(match) { return match.matchId === matchId; }) || null; }
     function dateForInput(value) {
-      var text = String(value || "").trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
-      var match = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
-      if (!match) return "";
-      return match[3] + "-" + match[2].padStart(2, "0") + "-" + match[1].padStart(2, "0");
+      var text = String(value || "").trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      var match = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/); return match ? match[3] + "-" + match[2].padStart(2, "0") + "-" + match[1].padStart(2, "0") : "";
     }
-
-    function dateForSheet(value) {
-      var match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      return match ? Number(match[3]) + "/" + Number(match[2]) + "/" + match[1] : value;
+    function dateForSheet(value) { var match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/); return match ? Number(match[3]) + "/" + Number(match[2]) + "/" + match[1] : value; }
+    function comparableDate(value) {
+      var text = String(value || "").trim(), match = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+      return match ? match[3] + "-" + String(Number(match[2])).padStart(2, "0") + "-" + String(Number(match[1])).padStart(2, "0") : text;
     }
-
-    function setScoreValue(element, value) {
-      element.value = value === 0 || value ? value : "";
-    }
-
+    function setScoreValue(element, value) { element.value = value === 0 || value ? value : ""; }
     function updatePlayerLabels(match) {
-      setText(elements.scorePlayer1, match.player1);
-      setText(elements.scorePlayer2, match.player2);
-
-      elements.set1Player1.setAttribute("aria-label", "Set 1, " + match.player1);
-      elements.set1Player2.setAttribute("aria-label", "Set 1, " + match.player2);
-      elements.set2Player1.setAttribute("aria-label", "Set 2, " + match.player1);
-      elements.set2Player2.setAttribute("aria-label", "Set 2, " + match.player2);
-      elements.stbPlayer1.setAttribute("aria-label", "Super tie-break, " + match.player1);
-      elements.stbPlayer2.setAttribute("aria-label", "Super tie-break, " + match.player2);
-
-      elements.status.querySelector('option[value="wo_j1"]').textContent = "W/O de " + match.player1;
-      elements.status.querySelector('option[value="wo_j2"]').textContent = "W/O de " + match.player2;
+      setText(elements.scorePlayer1, match.player1); setText(elements.scorePlayer2, match.player2);
+      elements.set1Player1.setAttribute("aria-label", "Set 1, " + match.player1); elements.set1Player2.setAttribute("aria-label", "Set 1, " + match.player2);
+      elements.set2Player1.setAttribute("aria-label", "Set 2, " + match.player1); elements.set2Player2.setAttribute("aria-label", "Set 2, " + match.player2);
+      elements.stbPlayer1.setAttribute("aria-label", "Super tie-break, " + match.player1); elements.stbPlayer2.setAttribute("aria-label", "Super tie-break, " + match.player2);
+      elements.status.querySelector('option[value="wo_j1"]').textContent = "W/O de " + match.player1; elements.status.querySelector('option[value="wo_j2"]').textContent = "W/O de " + match.player2;
     }
-
-    function openMatch(matchId) {
-      var match = findMatch(matchId);
-      if (!match) return;
-      state.currentMatch = match;
-      elements.form.reset();
-      elements.error.hidden = true;
-
-      setText(elements.dialogMeta, [
-        match.category ? "Categoría " + match.category : "",
-        match.week ? "Semana " + match.week : "",
-        match.court ? "Cancha " + match.court : ""
-      ].filter(Boolean).join(" · "));
-      setText(elements.dialogTitle, match.player1 + " vs " + match.player2);
-      elements.matchId.value = match.matchId;
-      elements.status.value = match.status === "programado" ? "jugado" : match.status;
+    function openMatch(matchId, presetStatus) {
+      var match = findMatch(matchId); if (!match) return; state.currentMatch = match; elements.form.reset(); elements.error.hidden = true;
+      setText(elements.dialogMeta, [match.category ? "Categoría " + match.category : "", match.week ? "Semana " + match.week : "", match.court ? "Cancha " + match.court : ""].filter(Boolean).join(" · "));
+      setText(elements.dialogTitle, match.player1 + " vs " + match.player2); elements.matchId.value = match.matchId;
+      elements.status.value = presetStatus || (match.status === "programado" ? "jugado" : match.status);
       elements.date.value = dateForInput((match.record && match.record.date) || match.date || state.dashboard.today);
-      elements.scheduleType.value = match.scheduleType || "oficial";
-      elements.court.value = match.court || "";
-      elements.turn.value = match.turn || "";
-      elements.notes.value = visibleNotes(match);
-      setText(elements.originalSchedule, [
-        "Programación oficial",
-        match.originalDate || match.date,
-        match.originalCourt ? "Cancha " + match.originalCourt : "",
-        match.originalTurn || "",
-        match.round || ""
-      ].filter(Boolean).join(" · "));
-      updatePlayerLabels(match);
-
-      var record = match.record || {};
-      setScoreValue(elements.set1Player1, record.set1Player1);
-      setScoreValue(elements.set1Player2, record.set1Player2);
-      setScoreValue(elements.set2Player1, record.set2Player1);
-      setScoreValue(elements.set2Player2, record.set2Player2);
-      setScoreValue(elements.stbPlayer1, record.stbPlayer1);
-      setScoreValue(elements.stbPlayer2, record.stbPlayer2);
-      updateFormMode();
-      elements.dialog.showModal();
+      elements.scheduleType.value = match.scheduleType || "oficial"; elements.court.value = match.court || ""; elements.turn.value = match.turn || ""; elements.notes.value = visibleNotes(match);
+      setText(elements.originalSchedule, ["Programación oficial", match.originalDate || match.date, match.originalCourt ? "Cancha " + match.originalCourt : "", match.originalTurn || "", match.round || ""].filter(Boolean).join(" · "));
+      updatePlayerLabels(match); var record = match.record || {};
+      setScoreValue(elements.set1Player1, record.set1Player1); setScoreValue(elements.set1Player2, record.set1Player2); setScoreValue(elements.set2Player1, record.set2Player1); setScoreValue(elements.set2Player2, record.set2Player2); setScoreValue(elements.stbPlayer1, record.stbPlayer1); setScoreValue(elements.stbPlayer2, record.stbPlayer2);
+      updateFormMode(); elements.dialog.showModal();
     }
-
     function updateFormMode() {
-      var status = elements.status.value;
-      var isPlayed = status === "jugado";
-      var isWo = status.indexOf("wo_") === 0;
-      var isScheduling = status === "programado";
+      var status = elements.status.value, isPlayed = status === "jugado", isWo = status.indexOf("wo_") === 0, isScheduling = status === "programado";
       var needsDate = isPlayed || isWo || isScheduling || status === "suspendido";
-      elements.scoreSection.hidden = !isPlayed;
-      elements.woExplanation.hidden = !isWo;
-      elements.scheduleSection.hidden = !isScheduling;
-      elements.date.closest("label").hidden = !needsDate;
-      elements.date.required = needsDate;
-      setText(elements.dateLabel, isScheduling ? "Nueva fecha acordada" : "Fecha del partido");
-
-      if (isScheduling && elements.scheduleType.value === "oficial") {
-        elements.scheduleType.value = "reprogramado";
+      elements.scoreSection.hidden = !isPlayed; elements.woExplanation.hidden = !isWo; elements.scheduleSection.hidden = !isScheduling;
+      elements.date.closest("label").hidden = !needsDate; elements.date.required = needsDate; setText(elements.dateLabel, isScheduling ? "Nueva fecha acordada" : "Fecha del partido");
+      if (isScheduling && elements.scheduleType.value === "oficial") elements.scheduleType.value = "reprogramado";
+      [elements.set1Player1, elements.set1Player2, elements.set2Player1, elements.set2Player2].forEach(function(input) { input.required = isPlayed; });
+      if (isWo && state.currentMatch) {
+        var message = status === "wo_j1" ? state.currentMatch.player1 + " queda ausente. " + state.currentMatch.player2 + " gana y recibe 3 puntos."
+          : (status === "wo_j2" ? state.currentMatch.player2 + " queda ausente. " + state.currentMatch.player1 + " gana y recibe 3 puntos." : "Ambos jugadores quedan con W/O. No se asignan puntos ni ganador.");
+        setText(elements.woExplanation, message);
       }
-
-      [elements.set1Player1, elements.set1Player2, elements.set2Player1, elements.set2Player2].forEach(function (input) {
-        input.required = isPlayed;
-      });
-
-      if (!isWo || !state.currentMatch) return;
-      var message;
-      if (status === "wo_j1") {
-        message = state.currentMatch.player1 + " queda ausente. " + state.currentMatch.player2 + " gana y recibe 3 puntos.";
-      } else if (status === "wo_j2") {
-        message = state.currentMatch.player2 + " queda ausente. " + state.currentMatch.player1 + " gana y recibe 3 puntos.";
-      } else {
-        message = "Ambos jugadores quedan con W/O. No se asignan puntos ni ganador.";
-      }
-      setText(elements.woExplanation, message);
+      updatePreview();
     }
-
     function currentPayload() {
-      return {
-        matchId: elements.matchId.value,
-        status: elements.status.value,
-        date: dateForSheet(elements.date.value),
-        scheduleType: elements.scheduleType.value,
-        court: elements.court.value.trim(),
-        turn: elements.turn.value.trim(),
-        notes: elements.notes.value.trim(),
-        set1Player1: elements.set1Player1.value,
-        set1Player2: elements.set1Player2.value,
-        set2Player1: elements.set2Player1.value,
-        set2Player2: elements.set2Player2.value,
-        stbPlayer1: elements.stbPlayer1.value,
-        stbPlayer2: elements.stbPlayer2.value
-      };
+      return { matchId: elements.matchId.value, status: elements.status.value, date: dateForSheet(elements.date.value), scheduleType: elements.scheduleType.value,
+        court: elements.court.value.trim(), turn: elements.turn.value.trim(), notes: elements.notes.value.trim(),
+        set1Player1: elements.set1Player1.value, set1Player2: elements.set1Player2.value, set2Player1: elements.set2Player1.value, set2Player2: elements.set2Player2.value,
+        stbPlayer1: elements.stbPlayer1.value, stbPlayer2: elements.stbPlayer2.value };
     }
 
-    function showLoading(show, label) {
-      elements.loading.hidden = !show;
-      elements.save.disabled = show;
-      if (label) elements.loading.querySelector("strong").textContent = label;
+    function scoreNumber(value, label) {
+      if (value === "" || value == null) throw new Error("Falta " + label + ".");
+      var number = Number(value); if (!Number.isInteger(number) || number < 0 || number > 99) throw new Error(label + " no es válido."); return number;
+    }
+    function regularSetWinner(score1, score2) {
+      var high = Math.max(score1, score2), low = Math.min(score1, score2), valid = (high === 6 && low <= 4) || (high === 7 && (low === 5 || low === 6));
+      if (!valid || score1 === score2) throw new Error("El marcador de set todavía no es válido."); return score1 > score2 ? 0 : 1;
+    }
+    function calculateResultPreview(match, payload) {
+      if (payload.status.indexOf("wo_") === 0) {
+        if (payload.status === "wo_ambos") return { winner: "", loser: "", resultWeb: "W/O ambos", points: [0, 0], decided: false };
+        var woWinner = payload.status === "wo_j1" ? 1 : 0;
+        return { winner: woWinner === 0 ? match.player1 : match.player2, loser: woWinner === 0 ? match.player2 : match.player1,
+          resultWeb: "Ganador " + (woWinner === 0 ? match.player1 : match.player2) + " por W/O", points: woWinner === 0 ? [3, 0] : [0, 3], decided: true };
+      }
+      if (payload.status !== "jugado") return null;
+      var set1 = [scoreNumber(payload.set1Player1, "el primer set"), scoreNumber(payload.set1Player2, "el primer set")];
+      var set2 = [scoreNumber(payload.set2Player1, "el segundo set"), scoreNumber(payload.set2Player2, "el segundo set")];
+      var winners = [regularSetWinner(set1[0], set1[1]), regularSetWinner(set2[0], set2[1])], sets = [0, 0]; sets[winners[0]]++; sets[winners[1]]++;
+      var winnerIndex, points = [0, 0], scoreParts = [set1, set2];
+      if (sets[0] === 2 || sets[1] === 2) { winnerIndex = sets[0] === 2 ? 0 : 1; points[winnerIndex] = 3; }
+      else {
+        var stb = [scoreNumber(payload.stbPlayer1, "el super tie-break"), scoreNumber(payload.stbPlayer2, "el super tie-break")];
+        if (Math.max(stb[0], stb[1]) < 10 || Math.abs(stb[0] - stb[1]) < 2 || stb[0] === stb[1]) throw new Error("El super tie-break debe llegar a 10 con diferencia de 2.");
+        winnerIndex = stb[0] > stb[1] ? 0 : 1; points[winnerIndex] = 2; points[winnerIndex === 0 ? 1 : 0] = 1; scoreParts.push(stb);
+      }
+      var players = [match.player1, match.player2], loserIndex = winnerIndex === 0 ? 1 : 0;
+      return { winner: players[winnerIndex], loser: players[loserIndex], resultWeb: "Ganador " + players[winnerIndex] + " " + scoreParts.map(function(score) { return score[winnerIndex] + "-" + score[loserIndex]; }).join(" "), points: points, decided: true };
+    }
+    function rankingEstimate(match, result) {
+      if (!result || !result.decided) return "La tabla no cambiará con este estado.";
+      var rows = (state.dashboard.rankings || []).filter(function(row) { return row.category === match.category; });
+      if (!rows.length) return "Se recalculará la tabla de la categoría al guardar.";
+      var oldDecided = Boolean(match.record && match.record.winner && match.record.loser);
+      var projected = rows.map(function(row) {
+        var item = Object.assign({}, row);
+        if (normalize(row.player) === normalize(match.player1)) { item.points = row.points - (oldDecided ? Number(match.record.pointsPlayer1 || 0) : 0) + result.points[0]; item.played = row.played - (oldDecided ? 1 : 0) + 1; }
+        else if (normalize(row.player) === normalize(match.player2)) { item.points = row.points - (oldDecided ? Number(match.record.pointsPlayer2 || 0) : 0) + result.points[1]; item.played = row.played - (oldDecided ? 1 : 0) + 1; }
+        return item;
+      }).sort(function(a, b) { return b.points - a.points || a.played - b.played || a.position - b.position; });
+      return [match.player1, match.player2].map(function(player) {
+        var before = rows.find(function(row) { return normalize(row.player) === normalize(player); });
+        var after = projected.findIndex(function(row) { return normalize(row.player) === normalize(player); }) + 1;
+        return player + ": " + (before ? "#" + before.position : "sin posición") + " → #" + after + " estimada";
+      }).join(" · ") + ". Los desempates pueden ajustar la posición final.";
+    }
+    function updatePreview() {
+      if (!state.currentMatch) return;
+      var match = state.currentMatch, payload = currentPayload(); elements.previewPoints.replaceChildren(); elements.previewRanking.textContent = "";
+      try {
+        var result = calculateResultPreview(match, payload);
+        if (result) {
+          setText(elements.previewTitle, result.resultWeb); setText(elements.previewResult, "Esto es exactamente lo que se publicará como resultado.");
+          [match.player1, match.player2].forEach(function(player, index) { var point = createElement("span", "preview-point"); point.appendChild(createElement("small", "", player)); point.appendChild(createElement("b", "", result.points[index] + " punto(s)")); elements.previewPoints.appendChild(point); });
+          setText(elements.previewRanking, rankingEstimate(match, result));
+        } else if (payload.status === "programado") {
+          setText(elements.previewTitle, "Quedará programado para " + (payload.date || "una nueva fecha")); setText(elements.previewResult, [payload.court ? "Cancha " + payload.court : "", payload.turn].filter(Boolean).join(" · ") || "Completa cancha y turno."); setText(elements.previewRanking, "No modifica puntos ni ranking.");
+        } else if (payload.status === "por_coordinar") {
+          setText(elements.previewTitle, "El partido quedará por coordinar"); setText(elements.previewResult, "Los jugadores deberán acordar una nueva fecha."); setText(elements.previewRanking, "No modifica puntos ni ranking.");
+        } else { setText(elements.previewTitle, "El partido quedará suspendido"); setText(elements.previewResult, "Conservará la fecha informada y quedará pendiente de definición."); setText(elements.previewRanking, "No modifica puntos ni ranking."); }
+      } catch (error) { setText(elements.previewTitle, "Completa un marcador válido"); setText(elements.previewResult, error.message); setText(elements.previewRanking, "La estimación de puntos aparecerá antes de guardar."); }
     }
 
-    function showToast(message) {
-      window.clearTimeout(state.toastTimer);
-      setText(elements.toast, message);
-      elements.toast.classList.add("visible");
-      state.toastTimer = window.setTimeout(function () {
-        elements.toast.classList.remove("visible");
-      }, 3200);
+    function showLoading(show, label) { elements.loading.hidden = !show; elements.save.disabled = show; if (label) elements.loading.querySelector("strong").textContent = label; }
+    function showToast(message) { window.clearTimeout(state.toastTimer); setText(elements.toast, message); elements.toast.classList.add("visible"); state.toastTimer = window.setTimeout(function() { elements.toast.classList.remove("visible"); }, 3600); }
+    function errorMessage(error) { return error ? String(error.message || error).replace(/^Exception:\s*/i, "") : "Ocurrió un error inesperado."; }
+    function setPublicationStep(element, status, message) {
+      element.className = status || ""; setText(element.querySelector("small"), message);
+      setText(element.querySelector("span"), status === "is-ok" ? "✓" : (status === "has-error" || status === "has-warning" ? "!" : "…"));
     }
-
-    function errorMessage(error) {
-      if (!error) return "Ocurrió un error inesperado.";
-      return String(error.message || error).replace(/^Exception:\s*/i, "");
+    function startPublication() {
+      elements.publication.hidden = false; elements.verifyPublication.hidden = true; setText(elements.publicationTitle, "Guardando y comprobando el movimiento…");
+      setPublicationStep(elements.sheetStep, "is-working", "Guardando movimiento"); setPublicationStep(elements.rankingStep, "", "Esperando verificación"); setPublicationStep(elements.publicStep, "", "Esperando publicación"); elements.undo.hidden = true;
+    }
+    function parseCsv(text) {
+      return String(text || "").trim().split(/\r?\n/).filter(Boolean).map(function(line) {
+        var values = [], value = "", quoted = false;
+        for (var index = 0; index < line.length; index++) { var character = line[index]; if (character === '"' && line[index + 1] === '"') { value += '"'; index++; } else if (character === '"') quoted = !quoted; else if (character === "," && !quoted) { values.push(value); value = ""; } else value += character; }
+        values.push(value); return values;
+      });
+    }
+    function verifyPublicData(payload) {
+      var urls = state.dashboard.publicDataUrls || {};
+      if (!urls.fixture || !urls.registro || !urls.rankings || !payload) { setPublicationStep(elements.publicStep, "has-warning", "Se actualizará automáticamente"); elements.verifyPublication.hidden = false; return; }
+      setPublicationStep(elements.publicStep, "is-working", "Consultando fuente pública"); elements.verifyPublication.hidden = true;
+      var cacheKey = "&_admin_check=" + Date.now();
+      Promise.all([urls.fixture, urls.registro, urls.rankings].map(function(url) { return fetch(url + cacheKey, { cache: "no-store" }).then(function(response) { if (!response.ok) throw new Error("No disponible"); return response.text(); }); }))
+        .then(function(contents) {
+          var fixture = parseCsv(contents[0]), records = parseCsv(contents[1]), rankings = parseCsv(contents[2]);
+          var fixtureRow = fixture.find(function(row) { return normalize(row[9]) === normalize(payload.matchId); });
+          var recordRow = records.find(function(row) { return normalize(row[22]) === normalize(payload.matchId); });
+          var visible = Boolean(fixtureRow && rankings.length > 4);
+          if (payload.status === "programado") visible = visible && comparableDate(fixtureRow[6]) === comparableDate(payload.date);
+          else if (payload.status === "jugado" || payload.status.indexOf("wo_") === 0) visible = visible && Boolean(recordRow && recordRow[16]);
+          else visible = visible && Boolean(recordRow && recordRow[3]);
+          if (!visible) throw new Error("La versión pública todavía está propagando el cambio.");
+          setPublicationStep(elements.publicStep, "is-ok", "Visible en opentennis.cl"); setText(elements.publicationTitle, "Movimiento guardado y publicado correctamente");
+        }).catch(function() {
+          setPublicationStep(elements.publicStep, "has-warning", "Sheets listo; publicación todavía actualizándose"); setText(elements.publicationTitle, "Guardado correctamente; falta confirmar la vista pública"); elements.verifyPublication.hidden = false;
+        });
+    }
+    function renderUndo() {
+      var undo = state.undo; elements.undo.hidden = !(undo && undo.available);
+      if (undo && undo.available) setText(elements.undo, "↶ Deshacer último cambio" + (undo.expiresAt ? " · hasta " + undo.expiresAt : ""));
     }
 
     function saveMatch(event) {
-      event.preventDefault();
-      elements.error.hidden = true;
-      if (!elements.form.reportValidity()) return;
-
-      showLoading(true, "Guardando resultado…");
-      google.script.run
-        .withSuccessHandler(function () {
-          state.currentMatch = null;
-          elements.dialog.close();
-          showLoading(false);
-          showToast("Partido guardado y publicado en Google Sheets.");
-
-          google.script.run
-            .withSuccessHandler(function (dashboard) {
-              state.dashboard = dashboard;
-              renderDashboard();
-            })
-            .withFailureHandler(function () {
-              showToast("El partido quedó guardado. Usa ↻ para actualizar la lista.");
-            })
-            .getAdminDashboard();
-        })
-        .withFailureHandler(function (error) {
-          showLoading(false);
-          setText(elements.error, errorMessage(error));
-          elements.error.hidden = false;
-        })
-        .saveAdminMatch(currentPayload());
+      event.preventDefault(); elements.error.hidden = true; if (!elements.form.reportValidity()) return;
+      var payload = currentPayload(); state.lastPayload = payload; startPublication(); showLoading(true, "Guardando resultado…");
+      google.script.run.withSuccessHandler(function(response) {
+        state.currentMatch = null; state.undo = response.undo || null; elements.dialog.close(); showLoading(false);
+        setPublicationStep(elements.sheetStep, "is-ok", "Guardado " + (response.savedAt || "")); setPublicationStep(elements.rankingStep, "is-working", "Recalculando tabla"); renderUndo(); showToast("Partido guardado en Google Sheets.");
+        google.script.run.withSuccessHandler(function(dashboard) {
+          state.dashboard = dashboard; state.undo = dashboard.undo && dashboard.undo.available ? dashboard.undo : state.undo; renderDashboard();
+          var integrity = dashboard.integrity || {}; setPublicationStep(elements.rankingStep, integrity.ok ? "is-ok" : "has-warning", integrity.ok ? "Tabla verificada" : "Revisión recomendada"); verifyPublicData(payload);
+        }).withFailureHandler(function() { setPublicationStep(elements.rankingStep, "has-warning", "Usa ↻ para comprobar"); verifyPublicData(payload); }).getAdminDashboard();
+      }).withFailureHandler(function(error) {
+        showLoading(false); setPublicationStep(elements.sheetStep, "has-error", "No se guardó"); setText(elements.publicationTitle, "No se pudo completar el movimiento"); setText(elements.error, errorMessage(error)); elements.error.hidden = false;
+      }).saveAdminMatch(payload);
     }
-
+    function undoLastAction() {
+      if (!state.undo || !state.undo.available) return;
+      if (!window.confirm("¿Deshacer el último cambio guardado? Se restaurará el partido exactamente como estaba antes.")) return;
+      showLoading(true, "Deshaciendo último cambio…");
+      google.script.run.withSuccessHandler(function(response) {
+        state.dashboard = response.dashboard; state.undo = null; state.lastPayload = null; showLoading(false); renderDashboard(); elements.publication.hidden = false;
+        setText(elements.publicationTitle, "Último cambio deshecho correctamente"); setPublicationStep(elements.sheetStep, "is-ok", "Estado anterior restaurado");
+        setPublicationStep(elements.rankingStep, response.dashboard.integrity.ok ? "is-ok" : "has-warning", response.dashboard.integrity.ok ? "Tabla verificada" : "Revisión recomendada");
+        setPublicationStep(elements.publicStep, "has-warning", "La vista pública se refrescará automáticamente"); elements.verifyPublication.hidden = true; renderUndo(); showToast("Se restauró el estado anterior del partido.");
+      }).withFailureHandler(function(error) { showLoading(false); showToast(errorMessage(error)); }).undoAdminLastAction(state.undo.matchId);
+    }
     function refreshDashboard() {
       showLoading(true, "Actualizando partidos…");
-      google.script.run
-        .withSuccessHandler(function (dashboard) {
-          state.dashboard = dashboard;
-          showLoading(false);
-          renderDashboard();
-          showToast("Datos actualizados.");
-        })
-        .withFailureHandler(function (error) {
-          showLoading(false);
-          showToast(errorMessage(error));
-        })
-        .getAdminDashboard();
+      google.script.run.withSuccessHandler(function(dashboard) { state.dashboard = dashboard; state.undo = dashboard.undo; showLoading(false); renderDashboard(); showToast("Datos actualizados."); })
+        .withFailureHandler(function(error) { showLoading(false); showToast(errorMessage(error)); }).getAdminDashboard();
     }
 
-    elements.search.addEventListener("input", function () {
-      state.query = elements.search.value;
-      renderMatches();
+    elements.search.addEventListener("input", function() { state.query = elements.search.value; renderMatches(); });
+    elements.category.addEventListener("change", function() { state.category = elements.category.value; renderMatches(); });
+    elements.tabs.forEach(function(tab) { tab.addEventListener("click", function() { setView(tab.dataset.view); }); });
+    elements.showWeek.addEventListener("click", function() { setView("week"); }); elements.status.addEventListener("change", updateFormMode);
+    [elements.scheduleType, elements.date, elements.court, elements.turn, elements.set1Player1, elements.set1Player2, elements.set2Player1, elements.set2Player2, elements.stbPlayer1, elements.stbPlayer2].forEach(function(input) {
+      input.addEventListener("input", updatePreview); input.addEventListener("change", updatePreview);
     });
-    elements.category.addEventListener("change", function () {
-      state.category = elements.category.value;
-      renderMatches();
-    });
-    elements.tabs.forEach(function (tab) {
-      tab.addEventListener("click", function () {
-        state.view = tab.dataset.view;
-        elements.tabs.forEach(function (candidate) {
-          if (candidate === tab) candidate.setAttribute("aria-current", "page");
-          else candidate.removeAttribute("aria-current");
-        });
-        renderMatches();
-      });
-    });
-    elements.status.addEventListener("change", updateFormMode);
-    elements.form.addEventListener("submit", saveMatch);
-    elements.refresh.addEventListener("click", refreshDashboard);
-    elements.close.addEventListener("click", function () { elements.dialog.close(); });
-    elements.cancel.addEventListener("click", function () { elements.dialog.close(); });
-    elements.dialog.addEventListener("close", function () { state.currentMatch = null; });
-
+    elements.form.addEventListener("submit", saveMatch); elements.refresh.addEventListener("click", refreshDashboard);
+    elements.verifyPublication.addEventListener("click", function() { verifyPublicData(state.lastPayload); }); elements.undo.addEventListener("click", undoLastAction);
+    elements.close.addEventListener("click", function() { elements.dialog.close(); }); elements.cancel.addEventListener("click", function() { elements.dialog.close(); });
+    elements.dialog.addEventListener("close", function() { state.currentMatch = null; });
     renderDashboard();
   })();
 </script>

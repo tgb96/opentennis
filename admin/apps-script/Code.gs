@@ -259,6 +259,18 @@ function getAdminDashboard() {
   return adminGetDashboard_();
 }
 
+function undoAdminLastAction(matchId) {
+  adminAssertAuthorized_();
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    return adminUndoLastAction_(matchId);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function saveAdminMatch(payload) {
   adminAssertAuthorized_();
 
@@ -433,6 +445,138 @@ function adminEffectiveMatchStatus_(match, record) {
   return record ? record.status : fixtureStatus;
 }
 
+function adminDateObject_(value) {
+  var comparable = adminComparableDate_(value);
+  var match = comparable.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12) : null;
+}
+
+function adminReadRankings_(rankingsSheet) {
+  var rankings = [];
+  var category = "";
+  rankingsSheet.getDataRange().getDisplayValues().forEach(function(row) {
+    var categoryMatch = String(row[0] || "").trim().match(/^CATEGORIA\s+([A-D])$/i);
+    if (categoryMatch) {
+      category = categoryMatch[1].toUpperCase();
+      return;
+    }
+    if (!category || !/^\d+$/.test(String(row[0] || "").trim()) || !row[1]) return;
+    rankings.push({
+      category: category,
+      position: Number(row[0]),
+      player: String(row[1] || "").trim(),
+      points: Number(row[2] || 0),
+      played: Number(row[3] || 0)
+    });
+  });
+  return rankings;
+}
+
+function adminBuildWeekSummary_(matches, todayValue) {
+  var today = adminDateObject_(todayValue) || new Date();
+  today.setHours(0, 0, 0, 0);
+  var target = matches.filter(function(match) {
+    var date = adminDateObject_(match.date);
+    return match.status === ADMIN_STATUSES.PROGRAMADO && date && date >= today;
+  }).sort(function(a, b) {
+    return adminDateObject_(a.date) - adminDateObject_(b.date);
+  })[0] || null;
+
+  if (!target) {
+    return { date: "", matchIds: [], total: 0, toRegister: 0, pending: 0, played: 0 };
+  }
+
+  var comparableDate = adminComparableDate_(target.date);
+  var weekMatches = matches.filter(function(match) {
+    return adminComparableDate_(match.date) === comparableDate;
+  });
+  var result = {
+    date: target.date,
+    week: target.week,
+    matchIds: weekMatches.map(function(match) { return match.matchId; }),
+    total: weekMatches.length,
+    toRegister: 0,
+    pending: 0,
+    played: 0
+  };
+  weekMatches.forEach(function(match) {
+    if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
+      result.played++;
+    } else if ([ADMIN_STATUSES.POR_COORDINAR, ADMIN_STATUSES.SUSPENDIDO].indexOf(match.status) >= 0) {
+      result.pending++;
+    } else {
+      result.toRegister++;
+    }
+  });
+  return result;
+}
+
+function adminBuildAlerts_(matches, integrity, todayValue) {
+  var today = adminDateObject_(todayValue) || new Date();
+  today.setHours(0, 0, 0, 0);
+  var overdue = matches.filter(function(match) {
+    var date = adminDateObject_(match.date);
+    return match.status === ADMIN_STATUSES.PROGRAMADO && date && date < today;
+  });
+  var withoutDate = matches.filter(function(match) {
+    return match.status === ADMIN_STATUSES.PROGRAMADO && !adminDateObject_(match.date);
+  });
+  var playedWithoutResult = matches.filter(function(match) {
+    return [ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0 && !match.resultWeb;
+  });
+  var alerts = [];
+
+  if (!integrity.ok) {
+    alerts.push({
+      id: "integrity",
+      severity: "error",
+      title: "Hay datos que necesitan revisión",
+      detail: integrity.issues.join(" "),
+      count: integrity.issueCount
+    });
+  }
+  if (overdue.length) {
+    alerts.push({
+      id: "overdue",
+      severity: "warning",
+      title: overdue.length + " partido(s) mantienen una fecha vencida",
+      detail: "Revisa si corresponde registrar el resultado o dejarlos por coordinar.",
+      count: overdue.length,
+      matchIds: overdue.map(function(match) { return match.matchId; })
+    });
+  }
+  if (withoutDate.length) {
+    alerts.push({
+      id: "without-date",
+      severity: "warning",
+      title: withoutDate.length + " partido(s) programados no tienen fecha válida",
+      detail: "Completa la fecha antes de publicar la programación.",
+      count: withoutDate.length,
+      matchIds: withoutDate.map(function(match) { return match.matchId; })
+    });
+  }
+  if (playedWithoutResult.length) {
+    alerts.push({
+      id: "missing-result",
+      severity: "error",
+      title: playedWithoutResult.length + " partido(s) aparecen jugados sin resultado público",
+      detail: "Abre esos partidos y revisa el marcador registrado.",
+      count: playedWithoutResult.length,
+      matchIds: playedWithoutResult.map(function(match) { return match.matchId; })
+    });
+  }
+  if (!alerts.length) {
+    alerts.push({
+      id: "all-good",
+      severity: "success",
+      title: "No hay alertas pendientes",
+      detail: "Partidos, registros y ranking están consistentes.",
+      count: 0
+    });
+  }
+  return alerts;
+}
+
 function adminGetDashboard_() {
   var spreadsheet = adminGetSpreadsheet_();
   var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
@@ -502,7 +646,11 @@ function adminGetDashboard_() {
         set2Player1: record.set2Player1,
         set2Player2: record.set2Player2,
         stbPlayer1: record.stbPlayer1,
-        stbPlayer2: record.stbPlayer2
+        stbPlayer2: record.stbPlayer2,
+        winner: record.winner,
+        loser: record.loser,
+        pointsPlayer1: record.pointsPlayer1,
+        pointsPlayer2: record.pointsPlayer2
       } : null
     };
   });
@@ -530,13 +678,24 @@ function adminGetDashboard_() {
     }
   });
 
+  var integrity = adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet);
+  var today = adminToday_();
   return {
     season: ADMIN_CONFIG.SEASON,
     spreadsheetName: spreadsheet.getName(),
     generatedAt: Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy HH:mm"),
-    today: adminToday_(),
+    today: today,
     summary: summary,
-    integrity: adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet),
+    week: adminBuildWeekSummary_(publicMatches, today),
+    alerts: adminBuildAlerts_(publicMatches, integrity, today),
+    integrity: integrity,
+    rankings: adminReadRankings_(rankingsSheet),
+    undo: adminGetUndoState_(spreadsheet),
+    publicDataUrls: {
+      fixture: ADMIN_CONFIG.PUBLIC_DATA_URLS.FIXTURE,
+      registro: ADMIN_CONFIG.PUBLIC_DATA_URLS.REGISTRO,
+      rankings: ADMIN_CONFIG.PUBLIC_DATA_URLS.RANKINGS
+    },
     matches: publicMatches
   };
 }
@@ -610,6 +769,32 @@ function adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet) {
     var points2 = Number(row[registroColumns.POINTS_PLAYER_2] || 0);
     if (winner && loser && points1 + points2 !== 3) {
       issues.push("Registro fila " + rowNumber + ": los puntos del partido no suman 3.");
+    }
+    var isWo = resultType.indexOf("w/o") >= 0 || resultType === "wo";
+    var isRetirement = adminNormalizeText_(resultWeb).indexOf("retiro") >= 0 || resultType.indexOf("retiro") >= 0;
+    if (completed && !pending && !isWo && !isRetirement && (!winner || !loser)) {
+      issues.push("Registro fila " + rowNumber + ": el resultado está incompleto.");
+    }
+    if (winner && loser && !isWo && !isRetirement) {
+      try {
+        var calculated = adminCalculatePlayedResult_({
+          player1: player1,
+          player2: player2,
+          set1Player1: row[registroColumns.SET_1_PLAYER_1],
+          set1Player2: row[registroColumns.SET_1_PLAYER_2],
+          set2Player1: row[registroColumns.SET_2_PLAYER_1],
+          set2Player2: row[registroColumns.SET_2_PLAYER_2],
+          stbPlayer1: row[registroColumns.STB_PLAYER_1],
+          stbPlayer2: row[registroColumns.STB_PLAYER_2]
+        });
+        if (adminNormalizeText_(calculated.winner) !== adminNormalizeText_(winner) ||
+            adminNormalizeText_(calculated.loser) !== adminNormalizeText_(loser) ||
+            Number(calculated.points[0]) !== points1 || Number(calculated.points[1]) !== points2) {
+          issues.push("Registro fila " + rowNumber + ": el marcador no coincide con ganador o puntos.");
+        }
+      } catch (scoreError) {
+        issues.push("Registro fila " + rowNumber + ": marcador inválido o incompleto.");
+      }
     }
     if (!winner || !loser) return;
 
@@ -759,7 +944,12 @@ function adminSaveMatch_(payload) {
     ok: true,
     matchId: match.matchId,
     status: payload.status,
-    savedAt: Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy HH:mm:ss")
+    savedAt: Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy HH:mm:ss"),
+    undo: {
+      available: true,
+      matchId: match.matchId,
+      expiresInMinutes: ADMIN_CONFIG.UNDO_WINDOW_MINUTES
+    }
   };
 }
 
@@ -812,6 +1002,112 @@ function adminFindRegistroTarget_(registroSheet, match, fixtureMatches) {
   return {
     row: firstEmptyRow || registroSheet.getLastRow() + 1,
     existing: false
+  };
+}
+
+function adminGetUndoState_(spreadsheet) {
+  var unavailable = { available: false };
+  if (!spreadsheet || typeof spreadsheet.getSheetByName !== "function") return unavailable;
+  var sheet = spreadsheet.getSheetByName(ADMIN_CONFIG.AUDIT_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2 || typeof sheet.getRange !== "function") return unavailable;
+
+  var row = sheet.getRange(sheet.getLastRow(), 1, 1, 7).getValues()[0];
+  var action = String(row[2] || "").trim();
+  var matchId = adminCreateMatchId_({ matchId: row[3] });
+  if (!matchId || action === "DESHACER") return unavailable;
+
+  var createdAt = row[0] instanceof Date ? row[0] : new Date(row[0]);
+  var age = new Date().getTime() - createdAt.getTime();
+  var windowMs = ADMIN_CONFIG.UNDO_WINDOW_MINUTES * 60 * 1000;
+  if (!createdAt || isNaN(createdAt.getTime()) || age < 0 || age > windowMs) return unavailable;
+
+  var activeEmail = typeof Session !== "undefined" && Session.getActiveUser
+    ? String(Session.getActiveUser().getEmail() || "").trim().toLowerCase()
+    : "";
+  var auditEmail = String(row[1] || "").trim().toLowerCase();
+  if (!activeEmail || activeEmail !== auditEmail) return unavailable;
+
+  return {
+    available: true,
+    matchId: matchId,
+    action: action,
+    expiresAt: Utilities.formatDate(new Date(createdAt.getTime() + windowMs), ADMIN_CONFIG.TIME_ZONE, "HH:mm")
+  };
+}
+
+function adminRowsEqual_(current, expected) {
+  if (!Array.isArray(current) || !Array.isArray(expected) || current.length !== expected.length) return false;
+  return current.every(function(value, index) {
+    return String(value == null ? "" : value) === String(expected[index] == null ? "" : expected[index]);
+  });
+}
+
+function adminUndoLastAction_(requestedMatchId) {
+  var spreadsheet = adminGetSpreadsheet_();
+  var undo = adminGetUndoState_(spreadsheet);
+  var matchId = adminCreateMatchId_({ matchId: requestedMatchId });
+  if (!undo.available || undo.matchId !== matchId) {
+    throw new Error("El último cambio ya no se puede deshacer o fue reemplazado por otro movimiento.");
+  }
+
+  var auditSheet = spreadsheet.getSheetByName(ADMIN_CONFIG.AUDIT_SHEET_NAME);
+  var auditRow = auditSheet.getRange(auditSheet.getLastRow(), 1, 1, 7).getValues()[0];
+  var targetRow = Number(auditRow[4] || 0);
+  var before = JSON.parse(String(auditRow[5] || "{}"));
+  var after = JSON.parse(String(auditRow[6] || "{}"));
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  var fixtureMatch = adminGetFixtureMatches_(fixtureSheet).find(function(match) {
+    return match.matchId === matchId;
+  });
+  if (!fixtureMatch) throw new Error("No se encontró el partido que se quiere restaurar.");
+
+  var fixtureWidth = ADMIN_CONFIG.COLUMNS.FIXTURE.ROUND + 1;
+  var fixtureRange = fixtureSheet.getRange(fixtureMatch.sourceRow, 1, 1, fixtureWidth);
+  var currentFixture = fixtureRange.getDisplayValues()[0];
+  if (!adminRowsEqual_(currentFixture, after.fixture || [])) {
+    throw new Error("El fixture cambió después del último movimiento. Actualiza la página antes de continuar.");
+  }
+
+  var registroRange = null;
+  var currentRegistro = [];
+  if (Array.isArray(after.registro) && after.registro.length) {
+    if (!targetRow) throw new Error("No se pudo identificar la fila del registro que se quiere restaurar.");
+    registroRange = registroSheet.getRange(targetRow, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT);
+    currentRegistro = registroRange.getDisplayValues()[0];
+    if (!adminRowsEqual_(currentRegistro, after.registro)) {
+      throw new Error("El registro cambió después del último movimiento. No se deshizo para proteger los datos.");
+    }
+  }
+
+  try {
+    fixtureRange.setValues([before.fixture]);
+    if (registroRange) {
+      registroRange.setValues([
+        Array.isArray(before.registro) && before.registro.length
+          ? before.registro
+          : new Array(ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).fill("")
+      ]);
+    }
+    adminWriteAudit_(spreadsheet, {
+      action: "DESHACER",
+      matchId: matchId,
+      targetRow: targetRow || fixtureMatch.sourceRow,
+      before: { fixture: currentFixture, registro: currentRegistro },
+      after: before
+    });
+    SpreadsheetApp.flush();
+  } catch (error) {
+    fixtureRange.setValues([currentFixture]);
+    if (registroRange) registroRange.setValues([currentRegistro]);
+    SpreadsheetApp.flush();
+    throw error;
+  }
+
+  return {
+    ok: true,
+    matchId: matchId,
+    dashboard: adminGetDashboard_()
   };
 }
 
