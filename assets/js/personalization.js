@@ -49,6 +49,17 @@
       .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
   }
 
+  const PLAYER_NAME_ALIASES = Object.freeze({
+    "m. jose valladares": "maria jose valladares",
+    "m jose valladares": "maria jose valladares",
+    "christian linares": "cristhian linares"
+  });
+
+  function playerNameKey(value) {
+    const key = normalize(value);
+    return PLAYER_NAME_ALIASES[key] || key;
+  }
+
   function parseDate(value) {
     const match = String(value || "").match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
     return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 12) : null;
@@ -160,10 +171,10 @@
 
   function samePlayers(match, player, rival) {
     const pair = [
-      normalize(match && (match.player1 || match.jugador1)),
-      normalize(match && (match.player2 || match.jugador2))
+      playerNameKey(match && (match.player1 || match.jugador1)),
+      playerNameKey(match && (match.player2 || match.jugador2))
     ].sort();
-    const expected = [normalize(player), normalize(rival)].sort();
+    const expected = [playerNameKey(player), playerNameKey(rival)].sort();
     return pair[0] === expected[0] && pair[1] === expected[1];
   }
 
@@ -217,10 +228,10 @@
       });
     });
 
-    const playerKey = normalize(player);
-    const rivalKey = normalize(rival);
-    const playerWins = encounters.filter(encounter => normalize(encounter.winner) === playerKey).length;
-    const rivalWins = encounters.filter(encounter => normalize(encounter.winner) === rivalKey).length;
+    const playerKey = playerNameKey(player);
+    const rivalKey = playerNameKey(rival);
+    const playerWins = encounters.filter(encounter => playerNameKey(encounter.winner) === playerKey).length;
+    const rivalWins = encounters.filter(encounter => playerNameKey(encounter.winner) === rivalKey).length;
     return { total: encounters.length, playerWins, rivalWins, last: encounters.length ? encounters[encounters.length - 1] : null };
   }
 
@@ -477,5 +488,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, playerNameKey, markerUrl, pageUrl, STORAGE_KEY };
 });

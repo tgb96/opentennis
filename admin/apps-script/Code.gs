@@ -755,7 +755,12 @@ function adminSaveMatch_(payload) {
   }
 
   SpreadsheetApp.flush();
-  return adminGetDashboard_();
+  return {
+    ok: true,
+    matchId: match.matchId,
+    status: payload.status,
+    savedAt: Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy HH:mm:ss")
+  };
 }
 
 function adminFindRegistroTarget_(registroSheet, match, fixtureMatches) {

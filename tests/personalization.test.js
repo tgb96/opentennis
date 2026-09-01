@@ -147,3 +147,16 @@ test("suma el historial 2025 frente al próximo rival", () => {
     score: "6-3, 3-6, 10-8"
   });
 });
+
+test("reconoce a María José Valladares aunque en 2025 figure abreviada", () => {
+  const historical = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "resultados-2025.json"), "utf8"));
+  const summary = personal.headToHeadSummary("Catalina Valladares", "María José Valladares", [], historical);
+
+  assert.equal(summary.total, 1);
+  assert.equal(summary.playerWins + summary.rivalWins, 1);
+  assert.equal(personal.playerNameKey("M. José Valladares"), personal.playerNameKey("María José Valladares"));
+});
+
+test("reconoce la corrección histórica Christian/Cristhian Linares", () => {
+  assert.equal(personal.playerNameKey("Christian Linares"), personal.playerNameKey("Cristhian Linares"));
+});

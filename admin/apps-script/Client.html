@@ -338,13 +338,21 @@
 
       showLoading(true, "Guardando resultado…");
       google.script.run
-        .withSuccessHandler(function (dashboard) {
-          state.dashboard = dashboard;
+        .withSuccessHandler(function () {
           state.currentMatch = null;
           elements.dialog.close();
           showLoading(false);
-          renderDashboard();
           showToast("Partido guardado y publicado en Google Sheets.");
+
+          google.script.run
+            .withSuccessHandler(function (dashboard) {
+              state.dashboard = dashboard;
+              renderDashboard();
+            })
+            .withFailureHandler(function () {
+              showToast("El partido quedó guardado. Usa ↻ para actualizar la lista.");
+            })
+            .getAdminDashboard();
         })
         .withFailureHandler(function (error) {
           showLoading(false);

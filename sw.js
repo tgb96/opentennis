@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v23-desktop-player-tables';
+const CACHE_NAME = 'open-tennis-v24-history-aliases';
 
 const CORE_ASSETS = [
   './',

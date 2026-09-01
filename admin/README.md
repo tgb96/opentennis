@@ -29,9 +29,9 @@ Este módulo es una aplicación privada de Google Apps Script conectada al mismo
 6. Acepta los permisos solicitados. Esa función verifica o crea los encabezados J–O/W, asigna IDs solamente a coincidencias inequívocas, conserva la programación oficial y crea `Admin Auditoría`.
 7. Selecciona **Implementar → Nueva implementación → Aplicación web**.
 8. Configura **Ejecutar como: usuario que accede a la aplicación web** y **Quién tiene acceso: solo yo**.
-9. Guarda la URL de la aplicación web en la pantalla de inicio del celular.
+9. Abre `https://opentennis.cl/admin/` y usa **Instalar aplicación** para crear la PWA con el ícono propio del administrador. La app instalada abre la aplicación privada de Apps Script y Google sigue exigiendo la cuenta autorizada.
 
-La opción **usuario que accede** es necesaria para que Google entregue el correo y el servidor pueda compararlo con la lista autorizada. No publiques esa URL dentro del sitio público. Si en el futuro necesitas más de un administrador, agrega primero su correo con `addAdminEmail("CORREO")` y luego amplía el acceso solamente a usuarios que hayan iniciado sesión.
+La opción **usuario que accede** es necesaria para que Google entregue el correo y el servidor pueda compararlo con la lista autorizada. La pantalla de instalación pública no contiene resultados ni da acceso al panel: solamente abre la URL privada, cuya autorización sigue controlando Apps Script. Si en el futuro necesitas más de un administrador, agrega primero su correo con `addAdminEmail("CORREO")` y luego amplía el acceso solamente a usuarios que hayan iniciado sesión.
 
 ## Prueba local para desarrollo
 
