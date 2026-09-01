@@ -4,8 +4,14 @@ function doGet() {
   template.initialData = adminGetDashboard_();
 
   return template.evaluate()
-    .setTitle("Administrador Open Tennis")
-    .addMetaTag("viewport", "width=device-width, initial-scale=1, viewport-fit=cover");
+    .setTitle("Open Tennis Admin")
+    .setFaviconUrl("https://opentennis.cl/assets/icons/admin-icon-512.png")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1, viewport-fit=cover")
+    .addMetaTag("theme-color", "#073528")
+    .addMetaTag("mobile-web-app-capable", "yes")
+    .addMetaTag("apple-mobile-web-app-capable", "yes")
+    .addMetaTag("apple-mobile-web-app-status-bar-style", "black-translucent")
+    .addMetaTag("application-name", "Open Tennis Admin");
 }
 
 function include(fileName) {

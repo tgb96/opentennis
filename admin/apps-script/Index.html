@@ -2,11 +2,12 @@
 <html lang="es">
 <head>
   <base target="_top">
+  <link rel="apple-touch-icon" href="https://opentennis.cl/assets/icons/admin-icon-512.png">
   <?!= include("Styles"); ?>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand-mark" aria-hidden="true">OT</div>
+    <img class="brand-mark" src="https://opentennis.cl/assets/icons/admin-icon-512.png" alt="">
     <div class="brand-copy">
       <strong>Open Tennis</strong>
       <span>Administrador de resultados</span>
@@ -22,6 +23,22 @@
         <p id="updatedLabel" class="muted"></p>
       </div>
     </section>
+
+    <details class="install-card">
+      <summary>
+        <img src="https://opentennis.cl/assets/icons/admin-icon-512.png" alt="">
+        <span>
+          <strong>Instalar Open Tennis Admin</strong>
+          <small>Acceso privado desde tu pantalla de inicio</small>
+        </span>
+        <b>Cómo instalar</b>
+      </summary>
+      <div class="install-steps">
+        <p><strong>Android · Chrome</strong><br>Abre el menú ⋮ y elige <em>Agregar a pantalla principal</em>.</p>
+        <p><strong>iPhone · Safari</strong><br>Toca Compartir ⎋ y elige <em>Agregar a inicio</em>.</p>
+        <p class="muted">Usará este ícono de administrador y seguirá pidiendo tu cuenta autorizada.</p>
+      </div>
+    </details>
 
     <section class="summary" aria-label="Resumen">
       <article class="summary-card pending">
