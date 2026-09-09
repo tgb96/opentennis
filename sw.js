@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v24-history-aliases';
+const CACHE_NAME = 'open-tennis-v25-full-head-to-head';
 
 const CORE_ASSETS = [
   './',

@@ -2603,6 +2603,36 @@ body:not(.index-page) .app {
   grid-template-columns: minmax(0, 1fr) !important;
   gap: 0 !important;
 }
+
+/* Historial completo contra el próximo rival */
+.next-h2h-matches {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, .16);
+  list-style: none;
+}
+
+.next-h2h-matches li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  color: #dceae4;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.next-h2h-matches time {
+  color: #f2bd98;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.next-h2h-matches span {
+  min-width: 0;
+}
 .reglas-page .reglamento-section > .rules-accordion-trigger,
 .reglas-page .reglamento-section > .section-content { grid-column: 1 / -1; }
 .reglas-page .reglamento-section.is-collapsed > .section-content { display: none !important; }

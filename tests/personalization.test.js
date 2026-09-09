@@ -148,6 +148,33 @@ test("suma el historial 2025 frente al próximo rival", () => {
   });
 });
 
+test("muestra todos los cruces con fecha completa en 2026 y solo el año en 2025", () => {
+  const historical = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "resultados-2025.json"), "utf8"));
+  const matches = [
+    {
+      status: "jugado",
+      player1: "Felipe Reyes",
+      player2: "Tomás Gómez",
+      record: { date: "08/08/2026", winner: "Tomás Gómez", resultWeb: "Tomás Gómez ganó 6-4 6-2" }
+    },
+    {
+      status: "jugado",
+      player1: "Tomás Gómez",
+      player2: "Felipe Reyes",
+      record: { date: "16/05/2026", winner: "Felipe Reyes", resultWeb: "Felipe Reyes ganó 7-5 6-3" }
+    }
+  ];
+  const summary = personal.headToHeadSummary("Tomás Gómez", "Felipe Reyes", matches, historical);
+  const html = personal.headToHeadHtml("Tomás Gómez", "Felipe Reyes", summary);
+
+  assert.equal(summary.total, 3);
+  assert.deepEqual(summary.encounters.map(encounter => encounter.date || encounter.season), ["2025", "16/05/2026", "08/08/2026"]);
+  assert.match(html, /Historial frente a Felipe Reyes/);
+  assert.doesNotMatch(html, /2025–2026|Último cruce/);
+  assert.ok(html.indexOf("08\/08\/2026") < html.indexOf("16\/05\/2026"));
+  assert.ok(html.indexOf("16\/05\/2026") < html.indexOf(">2025<"));
+});
+
 test("reconoce a María José Valladares aunque en 2025 figure abreviada", () => {
   const historical = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "resultados-2025.json"), "utf8"));
   const summary = personal.headToHeadSummary("Catalina Valladares", "María José Valladares", [], historical);

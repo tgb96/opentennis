@@ -204,7 +204,7 @@
   }
 
   function headToHeadSummary(player, rival, matches, historicalData) {
-    if (!player || !rival) return { total: 0, playerWins: 0, rivalWins: 0, last: null };
+    if (!player || !rival) return { total: 0, playerWins: 0, rivalWins: 0, encounters: [], last: null };
 
     const encounters = [];
     const historical = parseHistoricalResults(historicalData);
@@ -223,16 +223,31 @@
       if (match.status !== "jugado" || !match.record || !samePlayers(match, player, rival)) return;
       encounters.push({
         season: "2026",
+        date: match.record.date || "",
         winner: match.record.winner,
         score: scoreFromWebResult(match.record.resultWeb)
       });
+    });
+
+    encounters.sort((first, second) => {
+      const firstDate = parseDate(first.date);
+      const secondDate = parseDate(second.date);
+      const firstOrder = firstDate ? firstDate.getTime() : Number(first.season || 0);
+      const secondOrder = secondDate ? secondDate.getTime() : Number(second.season || 0);
+      return firstOrder - secondOrder;
     });
 
     const playerKey = playerNameKey(player);
     const rivalKey = playerNameKey(rival);
     const playerWins = encounters.filter(encounter => playerNameKey(encounter.winner) === playerKey).length;
     const rivalWins = encounters.filter(encounter => playerNameKey(encounter.winner) === rivalKey).length;
-    return { total: encounters.length, playerWins, rivalWins, last: encounters.length ? encounters[encounters.length - 1] : null };
+    return {
+      total: encounters.length,
+      playerWins,
+      rivalWins,
+      encounters,
+      last: encounters.length ? encounters[encounters.length - 1] : null
+    };
   }
 
   function playerSummary(player, matches, rankings, now) {
@@ -327,15 +342,20 @@
     if (!summary.total) {
       return `<div class="next-h2h"><span>Historial frente a ${escapeHtml(rival)}</span><p>Será el primer enfrentamiento registrado entre ustedes.</p></div>`;
     }
-    const last = summary.last;
+    const encounters = (summary.encounters || (summary.last ? [summary.last] : [])).slice().reverse();
     return `<div class="next-h2h">
-      <span>Historial frente a ${escapeHtml(rival)} · 2025–2026</span>
+      <span>Historial frente a ${escapeHtml(rival)}</span>
       <div class="next-h2h-score">
         <strong>${escapeHtml(player)} <b>${summary.playerWins}</b></strong>
         <i>—</i>
         <strong><b>${summary.rivalWins}</b> ${escapeHtml(rival)}</strong>
       </div>
-      ${last ? `<p>Último cruce · ${escapeHtml(last.season)}: ${escapeHtml(last.winner)} ganó · ${escapeHtml(last.score)}</p>` : ""}
+      <ol class="next-h2h-matches" aria-label="Encuentros registrados">
+        ${encounters.map(encounter => {
+          const dateLabel = encounter.date || encounter.season;
+          return `<li><time>${escapeHtml(dateLabel)}</time><span>${escapeHtml(encounter.winner)} ganó · ${escapeHtml(encounter.score)}</span></li>`;
+        }).join("")}
+      </ol>
     </div>`;
   }
 
@@ -488,5 +508,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, playerNameKey, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, playerNameKey, markerUrl, pageUrl, STORAGE_KEY };
 });
