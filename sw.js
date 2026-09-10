@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v25-full-head-to-head';
+const CACHE_NAME = 'open-tennis-v26-fast-offline';
 
 const CORE_ASSETS = [
   './',
@@ -12,6 +12,7 @@ const CORE_ASSETS = [
   './assets/css/scoreboard.css',
   './assets/js/app.js',
   './assets/js/config.js',
+  './assets/js/data-cache.js',
   './assets/js/data-model.js',
   './assets/js/pwa-install.js',
   './assets/js/personalization.js',
@@ -52,35 +53,35 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (url.origin !== self.location.origin) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(async cache => {
-        const cached = await cache.match(request);
-        const network = fetch(request).then(response => {
-          if (response.ok || response.type === 'opaque') cache.put(request, response.clone());
-          return response;
-        });
-        if (cached) {
-          network.catch(() => null);
-          return cached;
-        }
-        return network;
-      })
-    );
-    return;
-  }
-
-  const network = fetch(request).then(response => {
-    if (response.ok) {
-      caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
-    }
-    return response;
-  });
-
-  event.respondWith(
-    network.catch(() =>
-      caches.match(request, { ignoreSearch: true })
-        .then(cached => cached || caches.match('./index.html'))
-    )
+  const cachePromise = caches.open(CACHE_NAME);
+  const cachedPromise = cachePromise.then(cache =>
+    cache.match(request, { ignoreSearch: url.origin === self.location.origin })
   );
+  const networkPromise = cachePromise.then(cache =>
+    fetch(request).then(async response => {
+      if (response.ok || response.type === 'opaque') {
+        await cache.put(request, response.clone());
+      }
+      return response;
+    })
+  );
+
+  event.waitUntil(networkPromise.catch(() => null));
+  event.respondWith(cachedPromise.then(async cached => {
+
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      return await networkPromise;
+    } catch (error) {
+      if (request.mode === 'navigate') {
+        const cache = await cachePromise;
+        const fallback = await cache.match('./index.html');
+        if (fallback) return fallback;
+      }
+      throw error;
+    }
+  }));
 });

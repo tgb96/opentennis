@@ -9,9 +9,31 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=8').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=9').catch(() => {});
     });
   }
+
+  const connectivityNotice = (() => {
+    let notice = null;
+    return visible => {
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.className = 'app-connectivity-notice';
+        notice.setAttribute('role', 'status');
+        notice.setAttribute('aria-live', 'polite');
+        notice.textContent = 'Sin conexión: mostrando los últimos datos guardados.';
+        document.body.appendChild(notice);
+      }
+      notice.classList.toggle('is-visible', Boolean(visible));
+    };
+  })();
+
+  window.addEventListener('offline', () => connectivityNotice(true));
+  window.addEventListener('online', () => connectivityNotice(false));
+  window.addEventListener('open-tennis:data-status', event => {
+    connectivityNotice(event.detail && event.detail.available === false);
+  });
+  if (navigator.onLine === false) connectivityNotice(true);
 
   const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
 

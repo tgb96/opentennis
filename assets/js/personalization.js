@@ -384,12 +384,19 @@
     const content = document.getElementById("myOpenTennisContent");
     try {
       let historicalData = null;
-      const historicalPromise = fetch("data/resultados-2025.json")
-        .then(response => response.ok ? response.json() : null)
+      const historicalPromise = (window.OPEN_TENNIS_CACHE
+        ? window.OPEN_TENNIS_CACHE.getText("data/resultados-2025.json")
+        : fetch("data/resultados-2025.json").then(response => response.ok ? response.text() : ""))
+        .then(text => text ? JSON.parse(text) : null)
         .catch(() => null);
-      const responses = await Promise.all([config.FIXTURE_URL, config.REGISTRO_URL, config.RANKINGS_URL].map(url => fetch(url)));
-      if (responses.some(response => !response.ok)) throw new Error("No se pudieron cargar los datos");
-      const texts = await Promise.all(responses.map(response => response.text()));
+      const dataUrls = [config.FIXTURE_URL, config.REGISTRO_URL, config.RANKINGS_URL];
+      const texts = window.OPEN_TENNIS_CACHE
+        ? (await window.OPEN_TENNIS_CACHE.loadMany(dataUrls)).texts
+        : await Promise.all(dataUrls.map(async url => {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("No se pudieron cargar los datos");
+          return response.text();
+        }));
       const matches = joinMatches(parseFixture(texts[0]), parseRecords(texts[1]));
       const rankings = parseRankings(texts[2]);
       const players = Array.from(new Set(matches.flatMap(match => [match.player1, match.player2]))).sort((a, b) => a.localeCompare(b, "es"));
