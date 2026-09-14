@@ -205,10 +205,11 @@
       : (match.player2 || match.jugador2);
   }
 
-  function historicalScore(match) {
+  function historicalScore(match, winner) {
+    const winnerIsPlayer1 = playerNameKey(winner) === playerNameKey(match && (match.player1 || match.jugador1));
     return [match && match.s1, match && match.s2, match && match.stb]
       .filter(set => Array.isArray(set) && set.length >= 2)
-      .map(set => `${set[0]}-${set[1]}`)
+      .map(set => winnerIsPlayer1 ? `${set[0]}-${set[1]}` : `${set[1]}-${set[0]}`)
       .join(", ");
   }
 
@@ -220,10 +221,11 @@
     if (historical && historical.categorias) {
       Object.values(historical.categorias).flat().forEach(match => {
         if (!samePlayers(match, player, rival)) return;
+        const winner = historicalWinner(match);
         encounters.push({
           season: String(historical.temporada || "2025"),
-          winner: historicalWinner(match),
-          score: historicalScore(match)
+          winner,
+          score: historicalScore(match, winner)
         });
       });
     }
@@ -384,7 +386,7 @@
           const winner = playerNameKey(encounter.winner) === playerNameKey(player)
             ? shortPlayerName(player)
             : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
-          return `<li><time>${escapeHtml(dateLabel)}</time><span>${escapeHtml(winner)} ganó · ${escapeHtml(encounter.score)}</span></li>`;
+          return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}</span></li>`;
         }).join("")}
       </ol>
     </div>`;
@@ -415,7 +417,7 @@
         const winner = playerNameKey(encounter.winner) === playerNameKey(player)
           ? shortPlayerName(player)
           : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
-        return `<li><time>${escapeHtml(dateLabel)}</time><span><strong>${escapeHtml(winner)}</strong> ganó · ${escapeHtml(encounter.score)}</span></li>`;
+        return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}</span></li>`;
       }).join("")}
     </ol>`;
   }

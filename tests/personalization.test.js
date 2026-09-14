@@ -170,8 +170,9 @@ test("muestra todos los cruces con fecha completa en 2026 y solo el año en 2025
   assert.equal(summary.total, 3);
   assert.deepEqual(summary.encounters.map(encounter => encounter.date || encounter.season), ["2025", "16/05/2026", "08/08/2026"]);
   assert.match(html, /Historial frente a Felipe Reyes/);
-  assert.match(html, /Felipe ganó/);
-  assert.doesNotMatch(html, /Felipe Reyes ganó/);
+  assert.match(html, /Ganó Felipe/);
+  assert.doesNotMatch(html, /Ganó Felipe Reyes/);
+  assert.doesNotMatch(html, /ganó ·/);
   assert.doesNotMatch(html, /2025–2026|Último cruce/);
   assert.ok(html.indexOf("08\/08\/2026") < html.indexOf("16\/05\/2026"));
   assert.ok(html.indexOf("16\/05\/2026") < html.indexOf(">2025<"));
@@ -219,6 +220,24 @@ test("el comparador cara a cara muestra marcador y todos los encuentros", () => 
   assert.match(html, /08\/08\/2026/);
   assert.match(html, />2025</);
   assert.ok(html.indexOf("08/08/2026") < html.indexOf(">2025<"));
+});
+
+test("muestra cada marcador histórico desde la perspectiva del ganador", () => {
+  const historical = {
+    temporada: 2025,
+    categorias: {
+      B: [
+        { jugador1: "Tomás Gómez", jugador2: "Angelo Basualto", s1: [4, 6], s2: [1, 6] }
+      ]
+    }
+  };
+  const summary = personal.headToHeadSummary("Tomás Gómez", "Angelo Basualto", [], historical);
+  const html = personal.headToHeadExplorerHtml("Tomás Gómez", "Angelo Basualto", summary);
+
+  assert.equal(summary.encounters[0].winner, "Angelo Basualto");
+  assert.equal(summary.encounters[0].score, "6-4, 6-1");
+  assert.match(html, /Ganó Angelo 6-4, 6-1/);
+  assert.doesNotMatch(html, /4-6, 1-6|ganó ·/);
 });
 
 test("reconoce la corrección histórica Christian/Cristhian Linares", () => {
