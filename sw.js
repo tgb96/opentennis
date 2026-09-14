@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v28-centered-icons';
+const CACHE_NAME = 'open-tennis-v29-icon-update';
 
 const CORE_ASSETS = [
   './',
@@ -17,10 +17,10 @@ const CORE_ASSETS = [
   './assets/js/pwa-install.js',
   './assets/js/personalization.js',
   './data/resultados-2025.json',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
-  './assets/icons/icon-maskable-192.png',
-  './assets/icons/icon-maskable-512.png',
+  './assets/icons/icon-192.png?v=2',
+  './assets/icons/icon-512.png?v=2',
+  './assets/icons/icon-maskable-192.png?v=2',
+  './assets/icons/icon-maskable-512.png?v=2',
   './assets/icons/apple-touch-icon.png',
   './manifest.webmanifest'
 ];
