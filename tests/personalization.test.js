@@ -170,6 +170,8 @@ test("muestra todos los cruces con fecha completa en 2026 y solo el año en 2025
   assert.equal(summary.total, 3);
   assert.deepEqual(summary.encounters.map(encounter => encounter.date || encounter.season), ["2025", "16/05/2026", "08/08/2026"]);
   assert.match(html, /Historial frente a Felipe Reyes/);
+  assert.match(html, /Felipe ganó/);
+  assert.doesNotMatch(html, /Felipe Reyes ganó/);
   assert.doesNotMatch(html, /2025–2026|Último cruce/);
   assert.ok(html.indexOf("08\/08\/2026") < html.indexOf("16\/05\/2026"));
   assert.ok(html.indexOf("16\/05\/2026") < html.indexOf(">2025<"));
@@ -182,6 +184,41 @@ test("reconoce a María José Valladares aunque en 2025 figure abreviada", () =>
   assert.equal(summary.total, 1);
   assert.equal(summary.playerWins + summary.rivalWins, 1);
   assert.equal(personal.playerNameKey("M. José Valladares"), personal.playerNameKey("María José Valladares"));
+  assert.equal(personal.shortPlayerName("María José Valladares"), "María José");
+});
+
+test("el comparador cara a cara reúne socios sin duplicar alias históricos", () => {
+  const historical = {
+    temporada: 2025,
+    categorias: {
+      D: [
+        { jugador1: "M. José Valladares", jugador2: "Catalina Valladares", s1: [6, 3], s2: [6, 4] }
+      ]
+    }
+  };
+  const players = personal.allKnownPlayers(["María José Valladares", "Catalina Valladares", "Felipe Reyes"], historical);
+
+  assert.equal(players.filter(player => personal.playerNameKey(player) === personal.playerNameKey("María José Valladares")).length, 1);
+  assert.deepEqual(players, ["Catalina Valladares", "Felipe Reyes", "María José Valladares"]);
+});
+
+test("el comparador cara a cara muestra marcador y todos los encuentros", () => {
+  const summary = {
+    total: 2,
+    playerWins: 1,
+    rivalWins: 1,
+    encounters: [
+      { season: "2025", winner: "Felipe Reyes", score: "6-3, 6-4" },
+      { season: "2026", date: "08/08/2026", winner: "Tomás Gómez", score: "6-4, 6-2" }
+    ]
+  };
+  const html = personal.headToHeadExplorerHtml("Tomás Gómez", "Felipe Reyes", summary);
+
+  assert.match(html, /Tomás/);
+  assert.match(html, /Felipe/);
+  assert.match(html, /08\/08\/2026/);
+  assert.match(html, />2025</);
+  assert.ok(html.indexOf("08/08/2026") < html.indexOf(">2025<"));
 });
 
 test("reconoce la corrección histórica Christian/Cristhian Linares", () => {

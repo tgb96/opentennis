@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v30-android-back';
+const CACHE_NAME = 'open-tennis-v31-head-to-head';
 
 const CORE_ASSETS = [
   './',

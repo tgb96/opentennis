@@ -60,6 +60,15 @@
     return PLAYER_NAME_ALIASES[key] || key;
   }
 
+  function shortPlayerName(value) {
+    const parts = String(value || "").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "";
+    const first = normalize(parts[0]);
+    return ["maria", "jose"].includes(first) && parts.length > 1
+      ? `${parts[0]} ${parts[1]}`
+      : parts[0];
+  }
+
   function parseDate(value) {
     const match = String(value || "").match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
     return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 12) : null;
@@ -250,6 +259,25 @@
     };
   }
 
+  function allKnownPlayers(currentPlayers, historicalData) {
+    const playersByKey = new Map();
+    (currentPlayers || []).forEach(player => {
+      if (playerNameKey(player)) playersByKey.set(playerNameKey(player), String(player).trim());
+    });
+
+    const historical = parseHistoricalResults(historicalData);
+    if (historical && historical.categorias) {
+      Object.values(historical.categorias).flat().forEach(match => {
+        [match && (match.player1 || match.jugador1), match && (match.player2 || match.jugador2)].forEach(player => {
+          const key = playerNameKey(player);
+          if (key && !playersByKey.has(key)) playersByKey.set(key, String(player).trim());
+        });
+      });
+    }
+
+    return Array.from(playersByKey.values()).sort((first, second) => first.localeCompare(second, "es"));
+  }
+
   function playerSummary(player, matches, rankings, now) {
     const key = normalize(player);
     const mine = matches.filter(match => normalize(match.player1) === key || normalize(match.player2) === key);
@@ -353,10 +381,43 @@
       <ol class="next-h2h-matches" aria-label="Encuentros registrados">
         ${encounters.map(encounter => {
           const dateLabel = encounter.date || encounter.season;
-          return `<li><time>${escapeHtml(dateLabel)}</time><span>${escapeHtml(encounter.winner)} ganó · ${escapeHtml(encounter.score)}</span></li>`;
+          const winner = playerNameKey(encounter.winner) === playerNameKey(player)
+            ? shortPlayerName(player)
+            : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
+          return `<li><time>${escapeHtml(dateLabel)}</time><span>${escapeHtml(winner)} ganó · ${escapeHtml(encounter.score)}</span></li>`;
         }).join("")}
       </ol>
     </div>`;
+  }
+
+  function headToHeadExplorerHtml(player, rival, summary) {
+    if (!rival) {
+      return '<p class="h2h-explorer-empty">No hay otro socio disponible para comparar.</p>';
+    }
+    if (!summary) {
+      return '<p class="h2h-explorer-empty">Cargando encuentros anteriores…</p>';
+    }
+    if (!summary.total) {
+      return `<div class="h2h-explorer-score">
+        <strong>${escapeHtml(shortPlayerName(player))} <b>0</b></strong><i>—</i><strong><b>0</b> ${escapeHtml(shortPlayerName(rival))}</strong>
+      </div><p class="h2h-explorer-empty">No hay enfrentamientos registrados entre ambos.</p>`;
+    }
+
+    const encounters = summary.encounters.slice().reverse();
+    return `<div class="h2h-explorer-score">
+      <strong>${escapeHtml(shortPlayerName(player))} <b>${summary.playerWins}</b></strong>
+      <i>—</i>
+      <strong><b>${summary.rivalWins}</b> ${escapeHtml(shortPlayerName(rival))}</strong>
+    </div>
+    <ol class="h2h-explorer-matches" aria-label="Historial de enfrentamientos">
+      ${encounters.map(encounter => {
+        const dateLabel = encounter.date || encounter.season;
+        const winner = playerNameKey(encounter.winner) === playerNameKey(player)
+          ? shortPlayerName(player)
+          : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
+        return `<li><time>${escapeHtml(dateLabel)}</time><span><strong>${escapeHtml(winner)}</strong> ganó · ${escapeHtml(encounter.score)}</span></li>`;
+      }).join("")}
+    </ol>`;
   }
 
   function recentResultHtml(match, player) {
@@ -384,6 +445,7 @@
     const content = document.getElementById("myOpenTennisContent");
     try {
       let historicalData = null;
+      let historicalReady = false;
       const historicalPromise = (window.OPEN_TENNIS_CACHE
         ? window.OPEN_TENNIS_CACHE.getText("data/resultados-2025.json")
         : fetch("data/resultados-2025.json").then(response => response.ok ? response.text() : ""))
@@ -401,6 +463,7 @@
       const rankings = parseRankings(texts[2]);
       const players = Array.from(new Set(matches.flatMap(match => [match.player1, match.player2]))).sort((a, b) => a.localeCompare(b, "es"));
       select.innerHTML = '<option value="">Elige tu nombre</option>' + players.map(player => '<option value="' + player.replace(/"/g, "&quot;") + '">' + player + '</option>').join("");
+      let selectedHeadToHeadRival = "";
 
       function render(player) {
         if (!player) { content.innerHTML = '<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>'; return; }
@@ -408,7 +471,7 @@
         const summary = playerSummary(player, matches, rankings, new Date());
         const next = summary.upcoming;
         const nextRival = next ? opponent(next, player) : "";
-        const headToHead = next ? (historicalData ? headToHeadSummary(player, nextRival, matches, historicalData) : null) : null;
+        const headToHead = next ? (historicalReady ? headToHeadSummary(player, nextRival, matches, historicalData) : null) : null;
         const playerParam = encodeURIComponent(player);
         const matchesPage = pageUrl("partidos.html");
         const tablesPage = pageUrl("tablas.html");
@@ -477,6 +540,31 @@
                 </div>`).join("")}
             </div>
           </section>` : "";
+        const rivals = allKnownPlayers(players, historicalData)
+          .filter(rival => playerNameKey(rival) !== playerNameKey(player));
+        if (!rivals.some(rival => playerNameKey(rival) === playerNameKey(selectedHeadToHeadRival))) {
+          selectedHeadToHeadRival = rivals.find(rival => playerNameKey(rival) === playerNameKey(nextRival)) || rivals[0] || "";
+        }
+        const explorerSummary = selectedHeadToHeadRival && historicalReady
+          ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData)
+          : null;
+        const headToHeadExplorer = `
+          <section class="home-info-card head-to-head-card" aria-labelledby="headToHeadHomeTitle">
+            <div class="home-card-heading head-to-head-heading">
+              <div>
+                <span class="home-card-kicker">Historial 2025–2026</span>
+                <h3 id="headToHeadHomeTitle">Cara a Cara</h3>
+              </div>
+              <label class="h2h-rival-label">Comparar con
+                <select id="headToHeadRivalSelect">
+                  ${rivals.map(rival => `<option value="${escapeHtml(rival)}"${playerNameKey(rival) === playerNameKey(selectedHeadToHeadRival) ? " selected" : ""}>${escapeHtml(rival)}</option>`).join("")}
+                </select>
+              </label>
+            </div>
+            <div id="headToHeadExplorerResult" class="h2h-explorer-result" aria-live="polite">
+              ${headToHeadExplorerHtml(player, selectedHeadToHeadRival, explorerSummary)}
+            </div>
+          </section>`;
         content.innerHTML = `
           <div class="personal-stats">
             <div><span>Categoría</span><strong>${summary.category ? escapeHtml(summary.category) : "—"}</strong></div>
@@ -490,14 +578,27 @@
             <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos por coordinar."}</p>
             ${next ? headToHeadHtml(player, nextRival, headToHead) : ""}
             <div class="personal-actions">
-              <a href="${matchesPage}?jugador=${playerParam}">Ver mis partidos</a>
+              <a href="${matchesPage}?jugador=${playerParam}">Ver mis siguientes partidos</a>
             </div>
           </article>
           <div class="home-personal-grid">
             ${seasonHtml}
             ${pendingHtml}
             ${rankingHtml}
+            ${headToHeadExplorer}
           </div>`;
+
+        const rivalSelect = document.getElementById("headToHeadRivalSelect");
+        const explorerResult = document.getElementById("headToHeadExplorerResult");
+        if (rivalSelect && explorerResult) {
+          rivalSelect.addEventListener("change", () => {
+            selectedHeadToHeadRival = rivalSelect.value;
+            const selectedSummary = historicalReady
+              ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData)
+              : null;
+            explorerResult.innerHTML = headToHeadExplorerHtml(player, selectedHeadToHeadRival, selectedSummary);
+          });
+        }
       }
 
       select.addEventListener("change", () => render(select.value));
@@ -507,6 +608,7 @@
       section.classList.remove("loading");
       historicalPromise.then(data => {
         historicalData = data;
+        historicalReady = true;
         if (select.value) render(select.value);
       });
     } catch (error) {
@@ -515,5 +617,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, playerNameKey, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, playerNameKey, markerUrl, pageUrl, STORAGE_KEY };
 });
