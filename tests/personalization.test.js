@@ -143,12 +143,14 @@ test("suma el historial 2025 frente al próximo rival", () => {
   assert.equal(summary.rivalWins, 1);
   assert.deepEqual(summary.last, {
     season: "2025",
+    date: "26/12/2025",
     winner: "Felipe Reyes",
-    score: "6-3, 3-6, 10-8"
+    score: "6-3, 3-6, 10-8",
+    retirement: false
   });
 });
 
-test("muestra todos los cruces con fecha completa en 2026 y solo el año en 2025", () => {
+test("muestra la fecha recuperada en 2025 y conserva el año cuando no existe fecha", () => {
   const historical = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "resultados-2025.json"), "utf8"));
   const matches = [
     {
@@ -168,14 +170,31 @@ test("muestra todos los cruces con fecha completa en 2026 y solo el año en 2025
   const html = personal.headToHeadHtml("Tomás Gómez", "Felipe Reyes", summary);
 
   assert.equal(summary.total, 3);
-  assert.deepEqual(summary.encounters.map(encounter => encounter.date || encounter.season), ["2025", "16/05/2026", "08/08/2026"]);
+  assert.deepEqual(summary.encounters.map(encounter => encounter.date || encounter.season), ["26/12/2025", "16/05/2026", "08/08/2026"]);
   assert.match(html, /Historial frente a Felipe Reyes/);
   assert.match(html, /Ganó Felipe/);
   assert.doesNotMatch(html, /Ganó Felipe Reyes/);
   assert.doesNotMatch(html, /ganó ·/);
   assert.doesNotMatch(html, /2025–2026|Último cruce/);
   assert.ok(html.indexOf("08\/08\/2026") < html.indexOf("16\/05\/2026"));
-  assert.ok(html.indexOf("16\/05\/2026") < html.indexOf(">2025<"));
+  assert.ok(html.indexOf("16\/05\/2026") < html.indexOf("26\/12\/2025"));
+});
+
+test("registra el retiro de Eduardo frente a Mauricio sin inventar el segundo set", () => {
+  const historical = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "resultados-2025.json"), "utf8"));
+  const summary = personal.headToHeadSummary("Mauricio Galaz", "Eduardo Jiménez", [], historical);
+  const html = personal.headToHeadExplorerHtml("Mauricio Galaz", "Eduardo Jiménez", summary);
+
+  assert.deepEqual(summary.encounters[0], {
+    season: "2025",
+    date: "12/01/2026",
+    winner: "Mauricio Galaz",
+    score: "7-6",
+    retirement: true
+  });
+  assert.match(html, /12\/01\/2026/);
+  assert.match(html, /Ganó Mauricio 7-6 \(retiro\)/);
+  assert.doesNotMatch(html, /7-3|6-0/);
 });
 
 test("reconoce a María José Valladares aunque en 2025 figure abreviada", () => {

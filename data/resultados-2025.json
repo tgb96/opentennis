@@ -111,7 +111,8 @@
         "pts": [
           0,
           3
-        ]
+        ],
+        "fecha": "11/10/2025"
       },
       {
         "jugador1": "Tomás Gómez",
@@ -145,7 +146,8 @@
         "pts": [
           0,
           3
-        ]
+        ],
+        "fecha": "11/10/2025"
       },
       {
         "jugador1": "Angelo Basualto",
@@ -179,7 +181,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "22/11/2025"
       },
       {
         "jugador1": "Nicolás Collao",
@@ -196,7 +199,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "22/11/2025"
       },
       {
         "jugador1": "Tomás Gómez",
@@ -213,7 +217,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "29/11/2025"
       },
       {
         "jugador1": "Felipe Reyes",
@@ -233,7 +238,8 @@
         "pts": [
           2,
           1
-        ]
+        ],
+        "fecha": "29/11/2025"
       },
       {
         "jugador1": "Tomás Gómez",
@@ -250,7 +256,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "01/12/2025"
       },
       {
         "jugador1": "Diego Fossa",
@@ -284,7 +291,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "13/12/2025"
       },
       {
         "jugador1": "Tomás Gómez",
@@ -372,7 +380,8 @@
         "pts": [
           2,
           1
-        ]
+        ],
+        "fecha": "22/12/2025"
       },
       {
         "jugador1": "Felipe Reyes",
@@ -392,7 +401,8 @@
         "pts": [
           2,
           1
-        ]
+        ],
+        "fecha": "26/12/2025"
       },
       {
         "jugador1": "Felipe Reyes",
@@ -412,7 +422,8 @@
         "pts": [
           1,
           2
-        ]
+        ],
+        "fecha": "27/12/2025"
       },
       {
         "jugador1": "Rodrigo Vega",
@@ -466,7 +477,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "30/12/2025"
       },
       {
         "jugador1": "Diego Fossa",
@@ -519,7 +531,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "06/09/2025"
       },
       {
         "jugador1": "Hernán Bravo",
@@ -536,7 +549,8 @@
         "pts": [
           0,
           3
-        ]
+        ],
+        "fecha": "06/09/2025"
       },
       {
         "jugador1": "Claudio Aedo",
@@ -553,7 +567,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "06/09/2025"
       },
       {
         "jugador1": "Paulo Barrera",
@@ -573,7 +588,8 @@
         "pts": [
           2,
           1
-        ]
+        ],
+        "fecha": "10/10/2025"
       },
       {
         "jugador1": "Hernán Bravo",
@@ -650,7 +666,8 @@
         "pts": [
           1,
           2
-        ]
+        ],
+        "fecha": "25/10/2025"
       },
       {
         "jugador1": "Marcelo López",
@@ -667,7 +684,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "13/09/2025"
       },
       {
         "jugador1": "Claudio Aedo",
@@ -684,7 +702,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "25/10/2025"
       },
       {
         "jugador1": "Paulo Barrera",
@@ -721,7 +740,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "15/11/2025"
       },
       {
         "jugador1": "Marcelo López",
@@ -755,7 +775,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "22/11/2025"
       },
       {
         "jugador1": "Paulo Barrera",
@@ -792,7 +813,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "29/11/2025"
       },
       {
         "jugador1": "Marcelo López",
@@ -826,7 +848,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "20/12/2025"
       },
       {
         "jugador1": "Hernán Bravo",
@@ -951,7 +974,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "03/01/2026"
       },
       {
         "jugador1": "Eduardo Jiménez",
@@ -992,17 +1016,17 @@
         "jugador2": "Eduardo Jiménez",
         "s1": [
           7,
-          3
+          6
         ],
-        "s2": [
-          6,
-          0
-        ],
+        "s2": null,
         "stb": null,
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "12/01/2026",
+        "estado": "Retiro",
+        "detalle": "Eduardo Jiménez se retiró durante el segundo set."
       }
     ],
     "C": [
@@ -1038,7 +1062,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "30/08/2025"
       },
       {
         "jugador1": "Oscar Morales",
@@ -1055,7 +1080,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "13/09/2025"
       },
       {
         "jugador1": "Jairo Ahumada",
@@ -1126,7 +1152,8 @@
         "pts": [
           1,
           2
-        ]
+        ],
+        "fecha": "15/11/2025"
       },
       {
         "jugador1": "Oscar Morales",
@@ -1143,7 +1170,8 @@
         "pts": [
           0,
           3
-        ]
+        ],
+        "fecha": "06/09/2025"
       },
       {
         "jugador1": "Matías Arellano",
@@ -1160,7 +1188,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "29/11/2025"
       },
       {
         "jugador1": "Matías Arellano",
@@ -1284,7 +1313,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "30/08/2025"
       },
       {
         "jugador1": "M. José Valladares",
@@ -1301,7 +1331,8 @@
         "pts": [
           0,
           3
-        ]
+        ],
+        "fecha": "30/08/2025"
       },
       {
         "jugador1": "Catalina Valladares",
@@ -1318,7 +1349,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "30/08/2025"
       },
       {
         "jugador1": "Micaela Flores",
@@ -1355,7 +1387,8 @@
         "pts": [
           1,
           2
-        ]
+        ],
+        "fecha": "13/09/2025"
       },
       {
         "jugador1": "Constanza Nuñez",
@@ -1389,7 +1422,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "11/10/2025"
       },
       {
         "jugador1": "Constanza Nuñez",
@@ -1406,7 +1440,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "15/11/2025"
       },
       {
         "jugador1": "Micaela Flores",
@@ -1423,7 +1458,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "15/11/2025"
       },
       {
         "jugador1": "M. José Valladares",
@@ -1457,7 +1493,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "29/11/2025"
       },
       {
         "jugador1": "Catalina Valladares",
@@ -1525,7 +1562,8 @@
         "pts": [
           3,
           0
-        ]
+        ],
+        "fecha": "30/12/2025"
       }
     ]
   },

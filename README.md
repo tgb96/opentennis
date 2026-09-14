@@ -98,3 +98,4 @@ Si el celular todavía muestra una versión anterior, borra los datos del sitio 
 - Página: `resultados-2025.html`
 - Datos locales: `data/resultados-2025.json`
 - Contiene las categorías A, B, C y D con sus partidos, posiciones finales, estadísticas, historiales y observaciones de cierre de temporada.
+- Los partidos con fecha respaldada por el chat incluyen `fecha` en formato `DD/MM/AAAA`; los demás muestran solamente la temporada 2025. Los retiros pueden incluir `estado` y `detalle` sin inventar el marcador del set inconcluso.

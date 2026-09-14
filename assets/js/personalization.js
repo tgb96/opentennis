@@ -224,8 +224,10 @@
         const winner = historicalWinner(match);
         encounters.push({
           season: String(historical.temporada || "2025"),
+          date: match.fecha || match.date || "",
           winner,
-          score: historicalScore(match, winner)
+          score: historicalScore(match, winner),
+          retirement: String(match.estado || "").toLowerCase() === "retiro"
         });
       });
     }
@@ -386,7 +388,8 @@
           const winner = playerNameKey(encounter.winner) === playerNameKey(player)
             ? shortPlayerName(player)
             : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
-          return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}</span></li>`;
+          const retirementLabel = encounter.retirement ? " (retiro)" : "";
+          return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}</span></li>`;
         }).join("")}
       </ol>
     </div>`;
@@ -417,7 +420,8 @@
         const winner = playerNameKey(encounter.winner) === playerNameKey(player)
           ? shortPlayerName(player)
           : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
-        return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}</span></li>`;
+        const retirementLabel = encounter.retirement ? " (retiro)" : "";
+        return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}</span></li>`;
       }).join("")}
     </ol>`;
   }

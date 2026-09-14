@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v32-winner-score';
+const CACHE_NAME = 'open-tennis-v33-historical-dates';
 
 const CORE_ASSETS = [
   './',
