@@ -9,7 +9,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=12').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=13').catch(() => {});
     });
   }
 
@@ -56,17 +56,12 @@
    * - Primer gesto atrás: no retrocede de página, muestra aviso.
    * - Segundo gesto atrás dentro de unos segundos: intenta salir/cerrar la app.
    *
-   * Nota:
-   * Los navegadores no siempre permiten cerrar una PWA con JavaScript.
-   * Por eso se intenta window.close() y luego se libera el historial hacia atrás.
+   * La navegación interna reemplaza la página actual para que cada pestaña no
+   * agregue niveles artificiales al historial de la PWA.
    */
   const setupDoubleBackToExit = () => {
-    const isTouchDevice =
-      'ontouchstart' in window ||
-      navigator.maxTouchPoints > 0 ||
-      navigator.msMaxTouchPoints > 0;
-
-    const shouldEnableBackControl = isStandalone() || isTouchDevice;
+    const isAndroid = /Android/i.test(navigator.userAgent || '');
+    const shouldEnableBackControl = isStandalone() && isAndroid;
 
     if (!shouldEnableBackControl || !window.history || !window.history.pushState) {
       return;
@@ -76,6 +71,8 @@
     let lastBackPress = 0;
     let resetTimer = null;
     let isExiting = false;
+    let pendingNavigation = '';
+    let navigationFallbackTimer = null;
 
     const showExitToast = () => {
       let toast = document.getElementById('appExitToast');
@@ -141,26 +138,31 @@
 
       window.removeEventListener('popstate', handleBackGesture);
 
-      try {
-        window.close();
-      } catch (error) {
-        // Algunos navegadores bloquean window.close().
+      // El segundo gesto ya retiró la guarda. Un único back adicional entrega
+      // el control a Android para cerrar la tarea, sin recorrer páginas previas.
+      setTimeout(() => window.history.back(), 0);
+    };
+
+    const completePendingNavigation = () => {
+      if (!pendingNavigation) return false;
+
+      const destination = pendingNavigation;
+      pendingNavigation = '';
+
+      if (navigationFallbackTimer) {
+        clearTimeout(navigationFallbackTimer);
+        navigationFallbackTimer = null;
       }
 
-      setTimeout(() => {
-        try {
-          if (window.history.length > 1) {
-            window.history.go(-window.history.length);
-          } else {
-            window.history.back();
-          }
-        } catch (error) {
-          window.history.back();
-        }
-      }, 80);
+      window.location.replace(destination);
+      return true;
     };
 
     function handleBackGesture(event) {
+      if (completePendingNavigation()) {
+        return;
+      }
+
       if (isExiting) {
         return;
       }
@@ -208,6 +210,47 @@
     );
 
     window.addEventListener('popstate', handleBackGesture);
+
+    document.addEventListener('click', event => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const link = event.target && typeof event.target.closest === 'function'
+        ? event.target.closest('a[href]')
+        : null;
+      if (!link || link.hasAttribute('download')) return;
+      if (link.target && link.target.toLowerCase() !== '_self') return;
+
+      const destination = new URL(link.href, window.location.href);
+      if (destination.origin !== window.location.origin) return;
+      if (destination.pathname.startsWith('/admin/')) return;
+      if (
+        destination.pathname === window.location.pathname &&
+        destination.search === window.location.search
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      resetBackPress();
+      pendingNavigation = destination.href;
+
+      // Primero vuelve desde la guarda a la entrada base; el popstate completa
+      // la navegación reemplazando esa entrada, por lo que el historial no crece.
+      window.history.back();
+
+      navigationFallbackTimer = setTimeout(() => {
+        completePendingNavigation();
+      }, 250);
+    }, true);
   };
 
   setupDoubleBackToExit();
