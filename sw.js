@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v26-fast-offline';
+const CACHE_NAME = 'open-tennis-v27-personal-calendar';
 
 const CORE_ASSETS = [
   './',

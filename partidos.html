@@ -20,7 +20,7 @@
   <script src="assets/js/config.js?v=6"></script>
   <script src="assets/js/data-cache.js?v=1"></script>
   <script src="assets/js/data-model.js?v=1"></script>
-  <script defer src="assets/js/app.js?v=13"></script>
+  <script defer src="assets/js/app.js?v=14"></script>
 </head>
 <body class="partidos-page v5-page">
   <div class="layout app-shell">
@@ -1325,10 +1325,12 @@ function etiquetaTipoProgramacion(fila) {
   return type !== "oficial" ? `<span class="schedule-kind">${escapeHTML(labels[type] || type)}</span>` : "";
 }
 
-function accionesPartidoHTML(fila) {
-  if (!fila || fila.esLibre) return "";
+function accionesPartidoHTML(fila, esCalendarioPersonal = false) {
+  if (!esCalendarioPersonal || !fila || fila.esLibre) return "";
   const status = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
   if (status !== "programado" || !fila.fechaSemana) return "";
+  const fechaPartido = parseFechaProgramacionSantiago(fila.fechaSemana);
+  if (fechaPartido === null || fechaPartido < inicioDiaActualSantiago()) return "";
   return `<div class="match-actions">
     <button type="button" data-match-action="calendar" data-match-id="${escapeHTML(fila.matchId)}">Agregar al calendario</button>
   </div>`;
@@ -1338,7 +1340,8 @@ function crearCardBusquedaHTML(
   fila,
   mapaSemanas,
   destacarProximo = fila._esSemanaProxima,
-  esEsteSabado = fila._esEsteSabado
+  esEsteSabado = fila._esEsteSabado,
+  esCalendarioPersonal = false
 ) {
   return `
     <div class="card-partido${destacarProximo ? " semana-proxima-card" : ""}${esEsteSabado ? " este-sabado-card" : ""}">
@@ -1349,7 +1352,7 @@ function crearCardBusquedaHTML(
       ${fila._resultadoBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
-      ${accionesPartidoHTML(fila)}
+      ${accionesPartidoHTML(fila, esCalendarioPersonal)}
     </div>
   `;
 }
@@ -1460,7 +1463,13 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
     }
 
     filasHTML += crearFilaTablaHTML(fila, mapaSemanas, esProximoJugador);
-    cardsHTML += crearCardBusquedaHTML(fila, mapaSemanas, esProximoJugador, esEsteSabadoJugador);
+    cardsHTML += crearCardBusquedaHTML(
+      fila,
+      mapaSemanas,
+      esProximoJugador,
+      esEsteSabadoJugador,
+      vista === "mine" && usaJugadorSeleccionado
+    );
 
     encontrados++;
     semanaAnterior = fila.semana;
