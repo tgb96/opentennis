@@ -1,7 +1,8 @@
 function doGet() {
   adminAssertAuthorized_();
   var template = HtmlService.createTemplateFromFile("Index");
-  template.initialData = adminGetDashboard_();
+  // La autorización se comprueba antes de servir la pantalla; los datos se cargan después.
+  template.initialData = { season: ADMIN_CONFIG.SEASON, summary: {}, matches: [], loading: true };
 
   return template.evaluate()
     .setTitle("Open Tennis Admin")

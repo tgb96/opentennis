@@ -11,6 +11,8 @@
     };
 
     var elements = {
+      startup: document.getElementById("startupStatus"), startupMessage: document.getElementById("startupMessage"),
+      startupRetry: document.getElementById("startupRetry"), dashboardContent: document.getElementById("dashboardContent"),
       season: document.getElementById("seasonLabel"), updated: document.getElementById("updatedLabel"),
       pending: document.getElementById("pendingCount"), upcoming: document.getElementById("upcomingCount"),
       played: document.getElementById("playedCount"), weekPanel: document.getElementById("weekPanel"),
@@ -347,10 +349,22 @@
         setPublicationStep(elements.publicStep, "has-warning", "La vista pública se refrescará automáticamente"); elements.verifyPublication.hidden = true; renderUndo(); showToast("Se restauró el estado anterior del partido.");
       }).withFailureHandler(function(error) { showLoading(false); showToast(errorMessage(error)); }).undoAdminLastAction(state.undo.matchId);
     }
-    function refreshDashboard() {
-      showLoading(true, "Actualizando partidos…");
-      google.script.run.withSuccessHandler(function(dashboard) { state.dashboard = dashboard; state.undo = dashboard.undo; showLoading(false); renderDashboard(); showToast("Datos actualizados."); })
-        .withFailureHandler(function(error) { showLoading(false); showToast(errorMessage(error)); }).getAdminDashboard();
+    function refreshDashboard(initial) {
+      var startup = initial === true;
+      if (startup) {
+        elements.startup.hidden = false; elements.dashboardContent.hidden = true;
+        elements.startupRetry.hidden = true; elements.refresh.disabled = true;
+        setText(elements.startupMessage, "Cargando partidos y verificando ranking…");
+      } else showLoading(true, "Actualizando partidos…");
+      google.script.run.withSuccessHandler(function(dashboard) {
+        state.dashboard = dashboard; state.undo = dashboard.undo;
+        elements.startup.hidden = true; elements.dashboardContent.hidden = false; elements.refresh.disabled = false;
+        showLoading(false); renderDashboard(); if (!startup) showToast("Datos actualizados.");
+      }).withFailureHandler(function(error) {
+        showLoading(false); elements.refresh.disabled = false;
+        if (startup) { setText(elements.startupMessage, errorMessage(error)); elements.startupRetry.hidden = false; }
+        else showToast(errorMessage(error));
+      }).getAdminDashboard();
     }
 
     elements.search.addEventListener("input", function() { state.query = elements.search.value; renderMatches(); });
@@ -364,6 +378,8 @@
     elements.verifyPublication.addEventListener("click", function() { verifyPublicData(state.lastPayload); }); elements.undo.addEventListener("click", undoLastAction);
     elements.close.addEventListener("click", function() { elements.dialog.close(); }); elements.cancel.addEventListener("click", function() { elements.dialog.close(); });
     elements.dialog.addEventListener("close", function() { state.currentMatch = null; });
-    renderDashboard();
+    elements.startupRetry.addEventListener("click", function() { refreshDashboard(true); });
+    if (state.dashboard.loading) refreshDashboard(true);
+    else renderDashboard();
   })();
 </script>

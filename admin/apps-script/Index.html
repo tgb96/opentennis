@@ -15,6 +15,10 @@
     <button id="refreshButton" class="icon-button" type="button" aria-label="Actualizar datos">↻</button>
   </header>
 
+  <nav class="club-return-nav" aria-label="Volver al club">
+    <a class="club-return-link" href="https://opentennis.cl/index.html" target="_top">← Volver al club</a>
+  </nav>
+
   <main class="shell">
     <section class="intro">
       <div>
@@ -24,6 +28,13 @@
       </div>
     </section>
 
+    <section id="startupStatus" class="startup-status" role="status" aria-live="polite" hidden>
+      <strong id="startupMessage">Cargando partidos y verificando ranking…</strong>
+      <p>Puedes volver al club mientras se completa la carga.</p>
+      <button id="startupRetry" class="secondary-button" type="button" hidden>Reintentar</button>
+    </section>
+
+    <div id="dashboardContent">
     <section class="summary" aria-label="Resumen">
       <article class="summary-card pending">
         <span>Por coordinar</span>
@@ -107,6 +118,7 @@
     </nav>
 
     <section id="matchList" class="match-list" aria-live="polite"></section>
+    </div>
   </main>
 
   <dialog id="matchDialog" class="match-dialog">

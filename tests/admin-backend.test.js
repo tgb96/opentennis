@@ -138,6 +138,24 @@ function baseSheets() {
   return { fixture, registro, rankings, spreadsheet: new MockSpreadsheet([fixture, registro, rankings]) };
 }
 
+test("el panel comprueba autorización pero no espera a leer Sheets para mostrar la pantalla", () => {
+  const context = createContext();
+  let authorized = false;
+  const template = {};
+  const output = {
+    setTitle() { return this; }, setFaviconUrl() { return this; }, addMetaTag() { return this; }
+  };
+  context.adminAssertAuthorized_ = () => { authorized = true; };
+  context.adminGetDashboard_ = () => { throw new Error("No debe leer Sheets al abrir"); };
+  context.HtmlService = { createTemplateFromFile() { assert.equal(authorized, true); return template; } };
+  template.evaluate = () => output;
+  assert.equal(context.doGet(), output);
+  assert.equal(template.initialData.loading, true);
+  assert.equal(template.initialData.matches.length, 0);
+  context.adminAssertAuthorized_ = () => { throw new Error("Sin acceso"); };
+  assert.throws(() => context.doGet(), /Sin acceso/);
+});
+
 test("setup crea encabezados y migra solo IDs inequívocos", () => {
   const context = createContext();
   const { fixture, registro, spreadsheet } = baseSheets();

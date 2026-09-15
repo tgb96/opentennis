@@ -4,6 +4,8 @@ Este módulo es una aplicación privada de Google Apps Script conectada al mismo
 
 En el inicio del club, al seleccionar Tomás Gómez, aparece un acceso «Administrador» debajo de «Cara a Cara». Abre el panel privado en otra pestaña; no concede permisos por seleccionar ese jugador. La autorización real sigue comprobándose en el servidor contra la propiedad `ADMIN_EMAILS`, que debe contener únicamente la cuenta del administrador. Nunca se publica esa lista de correos en el sitio del club.
 
+El panel incluye «← Volver al club», disponible también mientras carga los datos. Comprueba la cuenta antes de servir la pantalla y luego obtiene los partidos y la verificación del ranking mediante una llamada autorizada al servidor. No guarda una copia local de datos administrativos. Si falla la carga, muestra el error y ofrece «Reintentar» sin habilitar el registro de partidos. En Android, el alojamiento externo de Google puede abrirse como navegador integrado; el enlace de regreso no garantiza cerrar esa ventana ni recuperar la instancia original de la PWA.
+
 ## Qué resuelve
 
 - Lista partidos por coordinar, programados y jugados.
