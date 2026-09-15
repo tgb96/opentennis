@@ -2,6 +2,8 @@
 
 Este módulo es una aplicación privada de Google Apps Script conectada al mismo Google Sheets que alimenta el sitio público.
 
+En el inicio del club, al seleccionar Tomás Gómez, aparece un acceso «Administrador» debajo de «Cara a Cara». Abre el panel privado en otra pestaña; no concede permisos por seleccionar ese jugador. La autorización real sigue comprobándose en el servidor contra la propiedad `ADMIN_EMAILS`, que debe contener únicamente la cuenta del administrador. Nunca se publica esa lista de correos en el sitio del club.
+
 ## Qué resuelve
 
 - Lista partidos por coordinar, programados y jugados.

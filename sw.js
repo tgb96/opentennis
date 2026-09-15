@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v33-historical-dates';
+const CACHE_NAME = 'open-tennis-v34-profile-admin';
 
 const CORE_ASSETS = [
   './',

@@ -262,3 +262,13 @@ test("muestra cada marcador histórico desde la perspectiva del ganador", () => 
 test("reconoce la corrección histórica Christian/Cristhian Linares", () => {
   assert.equal(personal.playerNameKey("Christian Linares"), personal.playerNameKey("Cristhian Linares"));
 });
+
+test("muestra acceso al administrador solo al seleccionar Tomás y no concede permisos", () => {
+  const html = personal.adminAccessHtml("Tomás Gómez");
+  assert.match(html, />Administrador<\/a>/);
+  assert.match(html, /script\.google\.com\/macros\/s\//);
+  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  assert.doesNotMatch(html, /tgbruguera|token|password/);
+  assert.equal(personal.adminAccessHtml("Felipe Reyes"), "");
+  assert.equal(personal.adminAccessHtml(""), "");
+});

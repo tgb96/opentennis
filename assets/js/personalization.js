@@ -443,6 +443,20 @@
     </li>`;
   }
 
+  function adminAccessHtml(player) {
+    if (playerNameKey(player) !== playerNameKey("Tomás Gómez")) return "";
+    return `<section class="home-info-card home-admin-card" aria-labelledby="adminHomeTitle">
+      <div class="home-card-heading"><div>
+        <span class="home-card-kicker">Acceso privado</span>
+        <h3 id="adminHomeTitle">Gestión del club</h3>
+      </div></div>
+      <p>Ingresa con tu cuenta de Google autorizada para administrar el torneo.</p>
+      <div class="personal-actions">
+        <a href="https://script.google.com/macros/s/AKfycbwl36ghljLigbxZ8u4wc8V4AA03uVCirF5nXUd-6XgJWvwEe5Jxe3TDak7RMq1ecwwo5Q/exec" target="_blank" rel="noopener noreferrer">Administrador</a>
+      </div>
+    </section>`;
+  }
+
   async function boot() {
     if (typeof document === "undefined" || !document.getElementById("myOpenTennis")) return;
     const config = window.OPEN_TENNIS_CONFIG;
@@ -592,6 +606,7 @@
             ${pendingHtml}
             ${rankingHtml}
             ${headToHeadExplorer}
+            ${adminAccessHtml(player)}
           </div>`;
 
         const rivalSelect = document.getElementById("headToHeadRivalSelect");
@@ -623,5 +638,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, playerNameKey, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, playerNameKey, adminAccessHtml, markerUrl, pageUrl, STORAGE_KEY };
 });
