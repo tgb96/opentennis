@@ -21,7 +21,7 @@
   <script src="assets/js/data-cache.js?v=2"></script>
   <script src="assets/js/data-model.js?v=1"></script>
   <link rel="prefetch" href="resultados-2025.html" as="document" />
-  <script defer src="assets/js/app.js?v=20"></script>
+  <script defer src="assets/js/app.js?v=21"></script>
 </head>
 <body class="tablas-page v5-page">
   <div class="layout app-shell">
@@ -1391,15 +1391,17 @@
     const jugadorKey = normalizar(jugador);
     const gano = partido._ganador === jugadorKey;
     const estado = gano ? "Ganó" : "Perdió";
-    const marcador = marcadorDesdeJugador(jugador, partido);
+    const rival = nombreCorto(rivalDe(jugador, partido));
     const tipo = normalizar(`${partido.tipo || ""} ${partido.resultadoWeb || ""}`);
-    const detalle = tipo.includes("w/o") || tipo.includes("walkover")
-      ? " por W/O"
-      : tipo.includes("retiro")
-        ? " por retiro"
-        : "";
 
-    return `${estado} vs ${nombreCorto(rivalDe(jugador, partido))}${detalle} ${marcador}`;
+    if (tipo.includes("w/o") || tipo.includes("walkover")) {
+      return `${estado} vs ${rival} por W.O`;
+    }
+
+    const marcador = marcadorDesdeJugador(jugador, partido);
+    const detalle = tipo.includes("retiro") ? " por retiro" : "";
+
+    return `${estado} vs ${rival}${detalle} ${marcador}`;
   }
 
   function historialHTML(historial) {
