@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v36-scoring-rules';
+const CACHE_NAME = 'open-tennis-v37-scoring-data-refresh';
 
 const CORE_ASSETS = [
   './',

@@ -5,7 +5,9 @@
 })(typeof window !== "undefined" ? window : null, function createDefaultCache(root) {
   "use strict";
 
-  const STORAGE_PREFIX = "openTennisDataCacheV1:";
+  // Incrementar cuando una migración de datos deba reemplazar de inmediato
+  // cualquier copia histórica guardada en los dispositivos instalados.
+  const STORAGE_PREFIX = "openTennisDataCacheV2:";
 
   function createDataCache(runtime) {
     const memory = new Map();
