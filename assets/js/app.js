@@ -9,7 +9,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=16').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=17').catch(() => {});
     });
   }
 
@@ -30,9 +30,31 @@
 
   window.addEventListener('offline', () => connectivityNotice(true));
   window.addEventListener('online', () => connectivityNotice(false));
+  let dataReloadTimer = null;
+  const handleDataStatus = detail => {
+    connectivityNotice(detail && detail.available === false);
+
+    // La vista se dibuja inmediatamente con la copia local para sentirse rápida.
+    // Si en segundo plano llegó una versión distinta, se redibuja una sola vez
+    // con todos los datos recién guardados.
+    if (!detail || !detail.changed || !detail.hadCompleteCache || dataReloadTimer) return;
+
+    const lastReload = Number(sessionStorage.getItem('openTennisDataReloadAt') || 0);
+    if (Date.now() - lastReload < 5000) return;
+
+    dataReloadTimer = window.setTimeout(() => {
+      sessionStorage.setItem('openTennisDataReloadAt', String(Date.now()));
+      window.location.reload();
+    }, 300);
+  };
+
   window.addEventListener('open-tennis:data-status', event => {
-    connectivityNotice(event.detail && event.detail.available === false);
+    handleDataStatus(event.detail);
   });
+
+  if (window.OPEN_TENNIS_CACHE && typeof window.OPEN_TENNIS_CACHE.getStatus === 'function') {
+    handleDataStatus(window.OPEN_TENNIS_CACHE.getStatus());
+  }
   if (navigator.onLine === false) connectivityNotice(true);
 
   const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();

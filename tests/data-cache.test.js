@@ -80,3 +80,29 @@ test("mantiene los últimos datos cuando se pierde la conexión", async () => {
   assert.equal(await cached.refresh, null);
   assert.deepEqual(notices.at(-1), { available: false, cached: true });
 });
+
+test("avisa cuando una copia visible quedó desactualizada", async () => {
+  let current = "antes";
+  const notices = [];
+  const runtime = {
+    localStorage: fakeStorage(),
+    fetch: async () => response(current),
+    CustomEvent: function CustomEvent(type, options) {
+      this.type = type;
+      this.detail = options.detail;
+    },
+    dispatchEvent(event) { notices.push(event.detail); }
+  };
+  const cache = cacheModule.createDataCache(runtime);
+  const url = "https://datos.test/ranking";
+
+  await cache.getText(url);
+  current = "después";
+  const cached = await cache.loadMany([url]);
+  await cached.refresh;
+
+  assert.equal(notices.at(-1).available, true);
+  assert.equal(notices.at(-1).changed, true);
+  assert.equal(notices.at(-1).hadCompleteCache, true);
+  assert.deepEqual(cache.getStatus(), notices.at(-1));
+});

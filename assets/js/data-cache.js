@@ -11,6 +11,7 @@
 
   function createDataCache(runtime) {
     const memory = new Map();
+    let lastStatus = null;
 
     function hash(value) {
       let result = 2166136261;
@@ -56,6 +57,7 @@
     }
 
     function notify(state) {
+      lastStatus = state;
       if (!runtime || typeof runtime.dispatchEvent !== "function") return;
       try {
         const event = typeof runtime.CustomEvent === "function"
@@ -81,7 +83,12 @@
         const texts = await Promise.all(urls.map(fetchFresh));
         const changed = texts.some((text, index) => !previousEntries[index] || previousEntries[index].text !== text);
         const entries = texts.map((text, index) => write(urls[index], text));
-        notify({ available: true });
+        notify({
+          available: true,
+          changed,
+          hadCompleteCache: previousEntries.every(Boolean),
+          updatedAt: Math.max(...entries.map(entry => entry.updatedAt))
+        });
         return {
           texts,
           entries,
@@ -126,7 +133,11 @@
       return entry ? entry.text : null;
     }
 
-    return { loadMany, getText, peek };
+    function getStatus() {
+      return lastStatus;
+    }
+
+    return { loadMany, getText, peek, getStatus };
   }
 
   const api = createDataCache(root);

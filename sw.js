@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v37-scoring-data-refresh';
+const CACHE_NAME = 'open-tennis-v38-live-data-first';
 
 const CORE_ASSETS = [
   './',
@@ -52,6 +52,31 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   if (request.method !== 'GET') {
+    return;
+  }
+
+  const isPublishedSheet =
+    url.hostname === 'docs.google.com' &&
+    url.pathname.startsWith('/spreadsheets/d/e/');
+
+  // Los resultados, fixture y rankings deben mostrar la hoja vigente. La copia
+  // del service worker se usa únicamente si Google Sheets no responde.
+  if (isPublishedSheet) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async cache => {
+        try {
+          const response = await fetch(request);
+          if (response.ok || response.type === 'opaque') {
+            await cache.put(request, response.clone());
+          }
+          return response;
+        } catch (error) {
+          const cached = await cache.match(request);
+          if (cached) return cached;
+          throw error;
+        }
+      })
+    );
     return;
   }
 
