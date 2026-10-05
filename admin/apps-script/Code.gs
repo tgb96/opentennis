@@ -53,6 +53,99 @@ function setupSchedulingModel() {
   return adminPopulateSchedulingMetadata_(spreadsheet);
 }
 
+function migrateScoringRules2026() {
+  adminAssertAuthorized_();
+  var spreadsheet = adminGetSpreadsheet_();
+  var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
+  var columns = ADMIN_CONFIG.COLUMNS.REGISTRO;
+  var lastRow = registroSheet.getLastRow();
+  if (lastRow < 2) return { ok: true, updatedRows: 0, rows: [] };
+
+  var values = registroSheet.getRange(2, 1, lastRow - 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).getDisplayValues();
+  var updatedRows = [];
+
+  values.forEach(function(row, index) {
+    var player1 = String(row[columns.PLAYER_1] || "").trim();
+    var player2 = String(row[columns.PLAYER_2] || "").trim();
+    var winner = String(row[columns.WINNER] || "").trim();
+    var loser = String(row[columns.LOSER] || "").trim();
+    var resultType = adminNormalizeText_(row[columns.RESULT_TYPE]);
+    var resultWeb = adminNormalizeText_(row[columns.RESULT_WEB]);
+    if (!player1 || !player2) return;
+
+    var result = null;
+    var commonInput = {
+      player1: player1,
+      player2: player2,
+      set1Player1: row[columns.SET_1_PLAYER_1],
+      set1Player2: row[columns.SET_1_PLAYER_2],
+      set2Player1: row[columns.SET_2_PLAYER_1],
+      set2Player2: row[columns.SET_2_PLAYER_2],
+      stbPlayer1: row[columns.STB_PLAYER_1],
+      stbPlayer2: row[columns.STB_PLAYER_2]
+    };
+
+    if (resultType.indexOf("super tie-break") >= 0) {
+      result = adminCalculatePlayedResult_(commonInput);
+    } else if ((resultType.indexOf("w/o") >= 0 || resultType === "wo") && winner && loser) {
+      commonInput.status = adminNormalizeText_(loser) === adminNormalizeText_(player1)
+        ? ADMIN_STATUSES.WO_J1
+        : ADMIN_STATUSES.WO_J2;
+      result = adminCalculateWoResult_(commonInput);
+    } else if ((resultType.indexOf("retiro") >= 0 || resultWeb.indexOf("retiro") >= 0) && winner && loser) {
+      commonInput.status = adminNormalizeText_(loser) === adminNormalizeText_(player1)
+        ? ADMIN_STATUSES.RETIRO_J1
+        : ADMIN_STATUSES.RETIRO_J2;
+      result = adminCalculateRetirementResult_(commonInput);
+    }
+    if (!result) return;
+
+    var before = row.slice();
+    var after = row.slice();
+    after[columns.SET_1_PLAYER_1] = result.set1[0];
+    after[columns.SET_1_PLAYER_2] = result.set1[1];
+    after[columns.SET_2_PLAYER_1] = result.set2[0];
+    after[columns.SET_2_PLAYER_2] = result.set2[1];
+    after[columns.STB_PLAYER_1] = result.stb[0];
+    after[columns.STB_PLAYER_2] = result.stb[1];
+    after[columns.SETS_PLAYER_1] = result.setsWon[0];
+    after[columns.SETS_PLAYER_2] = result.setsWon[1];
+    after[columns.WINNER] = result.winner;
+    after[columns.LOSER] = result.loser;
+    after[columns.RESULT_TYPE] = result.resultType;
+    after[columns.RESULT_WEB] = result.resultWeb;
+    after[columns.POINTS_PLAYER_1] = result.points[0];
+    after[columns.POINTS_PLAYER_2] = result.points[1];
+    after[columns.POINTS_WINNER] = result.pointsWinner;
+    after[columns.POINTS_LOSER] = result.pointsLoser;
+
+    if (adminRowsEqual_(before, after)) return;
+    var rowNumber = index + 2;
+    registroSheet.getRange(rowNumber, 1, 1, ADMIN_CONFIG.REGISTRO_COLUMN_COUNT).setValues([after]);
+    adminWriteAudit_(spreadsheet, {
+      action: "MIGRAR_REGLAS_2026",
+      matchId: String(after[columns.MATCH_ID] || after[columns.LEGACY_KEY] || "fila-" + rowNumber),
+      targetRow: rowNumber,
+      before: { registro: before },
+      after: { registro: after }
+    });
+    updatedRows.push(rowNumber);
+  });
+
+  SpreadsheetApp.flush();
+  var integrity = adminGetIntegrityReport_(
+    adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID),
+    registroSheet,
+    adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.RANKINGS_GID)
+  );
+  return {
+    ok: integrity.ok,
+    updatedRows: updatedRows.length,
+    rows: updatedRows,
+    integrity: integrity
+  };
+}
+
 function adminEnsureAdminSchema_(spreadsheet) {
   var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
   var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
@@ -412,6 +505,12 @@ function adminGetRegistroRecords_(registroSheet) {
 
 function adminRecordStatus_(record) {
   if (record.resultWeb || record.winner) {
+    if (adminNormalizeText_(record.resultType).indexOf("retiro") >= 0 ||
+        adminNormalizeText_(record.resultWeb).indexOf("retiro") >= 0) {
+      return adminNormalizeText_(record.loser) === adminNormalizeText_(record.player1)
+        ? ADMIN_STATUSES.RETIRO_J1
+        : ADMIN_STATUSES.RETIRO_J2;
+    }
     if (adminNormalizeText_(record.resultType).indexOf("w/o") >= 0 ||
         adminNormalizeText_(record.resultType).indexOf("wo") >= 0) {
       if (!record.winner) return ADMIN_STATUSES.WO_AMBOS;
@@ -501,7 +600,7 @@ function adminBuildWeekSummary_(matches, todayValue) {
     played: 0
   };
   weekMatches.forEach(function(match) {
-    if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
+    if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.RETIRO_J1, ADMIN_STATUSES.RETIRO_J2, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
       result.played++;
     } else if ([ADMIN_STATUSES.POR_COORDINAR, ADMIN_STATUSES.SUSPENDIDO].indexOf(match.status) >= 0) {
       result.pending++;
@@ -523,7 +622,7 @@ function adminBuildAlerts_(matches, integrity, todayValue) {
     return match.status === ADMIN_STATUSES.PROGRAMADO && !adminDateObject_(match.date);
   });
   var playedWithoutResult = matches.filter(function(match) {
-    return [ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0 && !match.resultWeb;
+    return [ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.RETIRO_J1, ADMIN_STATUSES.RETIRO_J2, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0 && !match.resultWeb;
   });
   var alerts = [];
 
@@ -670,7 +769,7 @@ function adminGetDashboard_() {
   };
 
   publicMatches.forEach(function(match) {
-    if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
+    if ([ADMIN_STATUSES.JUGADO, ADMIN_STATUSES.RETIRO_J1, ADMIN_STATUSES.RETIRO_J2, ADMIN_STATUSES.WO_J1, ADMIN_STATUSES.WO_J2, ADMIN_STATUSES.WO_AMBOS].indexOf(match.status) >= 0) {
       summary.played++;
     } else if ([ADMIN_STATUSES.POR_COORDINAR, ADMIN_STATUSES.SUSPENDIDO].indexOf(match.status) >= 0) {
       summary.pending++;
@@ -776,9 +875,9 @@ function adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet) {
     if (completed && !pending && !isWo && !isRetirement && (!winner || !loser)) {
       issues.push("Registro fila " + rowNumber + ": el resultado está incompleto.");
     }
-    if (winner && loser && !isWo && !isRetirement) {
+    if (winner && loser) {
       try {
-        var calculated = adminCalculatePlayedResult_({
+        var calculationInput = {
           player1: player1,
           player2: player2,
           set1Player1: row[registroColumns.SET_1_PLAYER_1],
@@ -787,10 +886,32 @@ function adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet) {
           set2Player2: row[registroColumns.SET_2_PLAYER_2],
           stbPlayer1: row[registroColumns.STB_PLAYER_1],
           stbPlayer2: row[registroColumns.STB_PLAYER_2]
-        });
+        };
+        var calculated;
+        if (isWo) {
+          calculationInput.status = adminNormalizeText_(loser) === adminNormalizeText_(player1)
+            ? ADMIN_STATUSES.WO_J1
+            : ADMIN_STATUSES.WO_J2;
+          calculated = adminCalculateWoResult_(calculationInput);
+        } else if (isRetirement) {
+          calculationInput.status = adminNormalizeText_(loser) === adminNormalizeText_(player1)
+            ? ADMIN_STATUSES.RETIRO_J1
+            : ADMIN_STATUSES.RETIRO_J2;
+          calculated = adminCalculateRetirementResult_(calculationInput);
+        } else {
+          calculated = adminCalculatePlayedResult_(calculationInput);
+        }
         if (adminNormalizeText_(calculated.winner) !== adminNormalizeText_(winner) ||
             adminNormalizeText_(calculated.loser) !== adminNormalizeText_(loser) ||
-            Number(calculated.points[0]) !== points1 || Number(calculated.points[1]) !== points2) {
+            Number(calculated.points[0]) !== points1 || Number(calculated.points[1]) !== points2 ||
+            Number(calculated.setsWon[0]) !== Number(row[registroColumns.SETS_PLAYER_1] || 0) ||
+            Number(calculated.setsWon[1]) !== Number(row[registroColumns.SETS_PLAYER_2] || 0) ||
+            String(calculated.set1[0]) !== String(row[registroColumns.SET_1_PLAYER_1] || "") ||
+            String(calculated.set1[1]) !== String(row[registroColumns.SET_1_PLAYER_2] || "") ||
+            String(calculated.set2[0]) !== String(row[registroColumns.SET_2_PLAYER_1] || "") ||
+            String(calculated.set2[1]) !== String(row[registroColumns.SET_2_PLAYER_2] || "") ||
+            String(calculated.stb[0]) !== String(row[registroColumns.STB_PLAYER_1] || "") ||
+            String(calculated.stb[1]) !== String(row[registroColumns.STB_PLAYER_2] || "")) {
           issues.push("Registro fila " + rowNumber + ": el marcador no coincide con ganador o puntos.");
         }
       } catch (scoreError) {
@@ -1015,7 +1136,7 @@ function adminGetUndoState_(spreadsheet) {
   var row = sheet.getRange(sheet.getLastRow(), 1, 1, 7).getValues()[0];
   var action = String(row[2] || "").trim();
   var matchId = adminCreateMatchId_({ matchId: row[3] });
-  if (!matchId || action === "DESHACER") return unavailable;
+  if (!matchId || ["CREAR", "ACTUALIZAR", "REPROGRAMAR"].indexOf(action) < 0) return unavailable;
 
   var createdAt = row[0] instanceof Date ? row[0] : new Date(row[0]);
   var age = new Date().getTime() - createdAt.getTime();

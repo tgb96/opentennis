@@ -81,6 +81,20 @@ Durante la migración:
 
 `Reprogramado` ya no es un estado: es un tipo de programación que exige una nueva fecha. El módulo `assets/js/data-model.js` convierte variantes antiguas como "pendiente" y "postergado" en `por_coordinar` para mantener compatibilidad.
 
+## Reglas estadísticas confirmadas
+
+Estas reglas son oficiales y deben aplicarse de la misma forma en el administrador, el registro, las tablas y los detalles de cada jugador:
+
+- Un partido ganado por W/O se registra como `6-0, 6-0`. Aporta `2-0` en sets, `12-0` en games y `3-0` en puntos.
+- El super tie-break decide el ganador y mantiene el reparto de `2-1` en puntos, pero no cuenta como un set. Un partido definido por super tie-break aporta `1-1` en sets.
+- Los puntos del super tie-break no se suman como games. Los games corresponden solamente a los dos sets regulares.
+- Un retiro antes de comenzar el primer punto se trata como W/O.
+- Si el partido ya comenzó, se conserva todo el marcador efectivamente jugado y se adjudican al jugador que no se retiró todos los games restantes necesarios para completar el partido.
+- Si el jugador retirado ya había ganado un set regular, los puntos se reparten `2-1`. El set en curso se completa a favor del ganador y el super tie-break pendiente se registra `10-0`.
+- Si el jugador retirado no había ganado ningún set regular, los puntos se reparten `3-0` y se completan a favor del ganador los sets y games que falten.
+- Si el retiro ocurre con el super tie-break iniciado, se conservan los puntos disputados y se adjudican al ganador los puntos restantes hasta alcanzar un marcador válido. Si todavía no había comenzado, queda `10-0`.
+- El super tie-break de un retiro tampoco cuenta como set ni como game.
+
 ## Zona horaria
 
 Toda decisión sobre la fecha actual debe utilizar `America/Santiago`. No se debe fijar manualmente GMT-3 o GMT-4.

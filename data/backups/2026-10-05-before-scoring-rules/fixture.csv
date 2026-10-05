@@ -1,0 +1,132 @@
+Semana,Cancha,Turno,Categoría,Jugador 1,Jugador 2,Fecha,,,ID partido,Fecha oficial,Cancha oficial,Turno oficial,Tipo programación,Ronda
+1,1,1 (12:00-13:30),A,Diego Fossa,Nicolás Collao,23/05/2026,,,2026-s1-a-diego-fossa-nicolas-collao,23/05/2026,1,1 (12:00-13:30),oficial,Única
+1,1,2 (13:45-15:15),C,Aníbal Valenzuela,Paulo Barrera,23/05/2026,,,2026-s1-c-anibal-valenzuela-paulo-barrera,23/05/2026,1,2 (13:45-15:15),oficial,Única
+1,1,3 (15:30-17:00),B,Gonzalo Barros,Oscar Morales,23/05/2026,,,2026-s1-b-gonzalo-barros-oscar-morales,23/05/2026,1,3 (15:30-17:00),oficial,Única
+1,2,1 (12:00-13:30),A,Jose Astete,Felipe Reyes,23/05/2026,,,2026-s1-a-felipe-reyes-jose-astete,23/05/2026,2,1 (12:00-13:30),oficial,Única
+1,2,2 (13:45-15:15),B,Javier González,Genaro Espinoza,23/05/2026,,,2026-s1-b-genaro-espinoza-javier-gonzalez,23/05/2026,2,2 (13:45-15:15),oficial,Única
+1,2,3 (15:30-17:00),B,Matías Arellano,Hernán Bravo,23/05/2026,,,2026-s1-b-hernan-bravo-matias-arellano,23/05/2026,2,3 (15:30-17:00),oficial,Única
+2,1,1 (12:00-13:30),A,Claudio Aedo,Felipe Reyes,30/05/2026,,,2026-s2-a-claudio-aedo-felipe-reyes,30/05/2026,1,1 (12:00-13:30),oficial,Única
+2,1,2 (13:45-15:15),B,Oscar Morales,Diego Cervantes,30/05/2026,,,2026-s2-b-diego-cervantes-oscar-morales,30/05/2026,1,2 (13:45-15:15),oficial,Única
+2,1,3 (15:30-17:00),A,Tomás Gómez,Diego Fossa,30/05/2026,,,2026-s2-a-diego-fossa-tomas-gomez,30/05/2026,1,3 (15:30-17:00),oficial,Única
+2,2,1 (12:00-13:30),B,Daniel Vega,Cristhian Linares,30/05/2026,,,2026-s2-b-cristhian-linares-daniel-vega,30/05/2026,2,1 (12:00-13:30),oficial,Única
+2,2,2 (13:45-15:15),-,-,-,30/05/2026,,,,,,,,
+2,2,3 (15:30-17:00),A,Angelo Basualto,Luis Flores,30/05/2026,,,2026-s2-a-angelo-basualto-luis-flores,30/05/2026,2,3 (15:30-17:00),oficial,Única
+3,1,1 (12:00-13:30),B,Matías Arellano,Genaro Espinoza,06/06/2026,,,2026-s3-b-genaro-espinoza-matias-arellano,06/06/2026,1,1 (12:00-13:30),oficial,Única
+3,1,2 (13:45-15:15),C,Constanza Núñez,Juan Muñoz,06/06/2026,,,2026-s3-c-constanza-nunez-juan-munoz,06/06/2026,1,2 (13:45-15:15),oficial,Única
+3,1,3 (15:30-17:00),C,Roy Minda,Hernán Medel,06/06/2026,,,2026-s3-c-hernan-medel-roy-minda,06/06/2026,1,3 (15:30-17:00),oficial,Única
+3,2,1 (12:00-13:30),D,María José Valladares,Catalina Valladares,06/06/2026,,,2026-s3-d-catalina-valladares-maria-jose-valladares,06/06/2026,2,1 (12:00-13:30),oficial,Ida
+3,2,2 (13:45-15:15),D,Loreto Pezoa,Kamila Riquelme,06/06/2026,,,2026-s3-d-kamila-riquelme-loreto-pezoa,06/06/2026,2,2 (13:45-15:15),oficial,Ida
+3,2,3 (15:30-17:00),B,Jaime Valdebenito,Gonzalo Barros,06/06/2026,,,2026-s3-b-gonzalo-barros-jaime-valdebenito,06/06/2026,2,3 (15:30-17:00),oficial,Única
+4,1,1 (12:00-13:30),C,Paulo Barrera,Mauricio Bustamante,13/06/2026,,,2026-s4-c-mauricio-bustamante-paulo-barrera,13/06/2026,1,1 (12:00-13:30),oficial,Única
+4,1,2 (13:45-15:15),C,Aníbal Valenzuela,César Maturana,13/06/2026,,,2026-s4-c-anibal-valenzuela-cesar-maturana,13/06/2026,1,2 (13:45-15:15),oficial,Única
+4,1,3 (15:30-17:00),A,Nicolás Collao,Marcelo López,13/06/2026,,,2026-s4-a-marcelo-lopez-nicolas-collao,13/06/2026,1,3 (15:30-17:00),oficial,Única
+4,2,1 (12:00-13:30),B,Javier González,Hernán Bravo,13/06/2026,,,2026-s4-b-hernan-bravo-javier-gonzalez,13/06/2026,2,1 (12:00-13:30),oficial,Única
+4,2,2 (13:45-15:15),D,Sara Salas,Kamila Riquelme,13/06/2026,,,2026-s4-d-kamila-riquelme-sara-salas,13/06/2026,2,2 (13:45-15:15),oficial,Ida
+4,2,3 (15:30-17:00),A,Luis Flores,Jose Astete,13/06/2026,,,2026-s4-a-jose-astete-luis-flores,13/06/2026,2,3 (15:30-17:00),oficial,Única
+5,1,1 (12:00-13:30),B,Cristhian Linares,Diego Cervantes,20/06/2026,,,2026-s5-b-cristhian-linares-diego-cervantes,20/06/2026,1,1 (12:00-13:30),oficial,Única
+5,1,2 (13:45-15:15),A,Angelo Basualto,Felipe Reyes,20/06/2026,,,2026-s5-a-angelo-basualto-felipe-reyes,20/06/2026,1,2 (13:45-15:15),oficial,Única
+5,1,3 (15:30-17:00),C,Juan Muñoz,Roy Minda,20/06/2026,,,2026-s5-c-juan-munoz-roy-minda,20/06/2026,1,3 (15:30-17:00),oficial,Única
+5,2,1 (12:00-13:30),B,Daniel Vega,Oscar Morales,20/06/2026,,,2026-s5-b-daniel-vega-oscar-morales,20/06/2026,2,1 (12:00-13:30),oficial,Única
+5,2,2 (13:45-15:15),A,Diego Fossa,Claudio Aedo,20/06/2026,,,2026-s5-a-claudio-aedo-diego-fossa,20/06/2026,2,2 (13:45-15:15),oficial,Única
+5,2,3 (15:30-17:00),-,-,-,20/06/2026,,,,,,,,
+6,1,1 (12:00-13:30),B,Matías Arellano,Gonzalo Barros,27/06/2026,,,2026-s6-b-gonzalo-barros-matias-arellano,27/06/2026,1,1 (12:00-13:30),oficial,Única
+6,1,2 (13:45-15:15),A,Angelo Basualto,Jose Astete,27/06/2026,,,2026-s6-a-angelo-basualto-jose-astete,27/06/2026,1,2 (13:45-15:15),oficial,Única
+6,1,3 (15:30-17:00),B,Genaro Espinoza,Jaime Valdebenito,27/06/2026,,,2026-s6-b-genaro-espinoza-jaime-valdebenito,27/06/2026,1,3 (15:30-17:00),oficial,Única
+6,2,1 (12:00-13:30),A,Nicolás Collao,Luis Flores,27/06/2026,,,2026-s6-a-luis-flores-nicolas-collao,27/06/2026,2,1 (12:00-13:30),oficial,Única
+6,2,2 (13:45-15:15),D,Catalina Valladares,Loreto Pezoa,27/06/2026,,,2026-s6-d-catalina-valladares-loreto-pezoa,27/06/2026,2,2 (13:45-15:15),oficial,Ida
+6,2,3 (15:30-17:00),B,Cristhian Linares,Javier González,27/06/2026,,,2026-s6-b-cristhian-linares-javier-gonzalez,27/06/2026,2,3 (15:30-17:00),oficial,Única
+7,1,1 (12:00-13:30),C,Aníbal Valenzuela,Mauricio Bustamante,04/07/2026,,,2026-s7-c-anibal-valenzuela-mauricio-bustamante,04/07/2026,1,1 (12:00-13:30),oficial,Única
+7,1,2 (13:45-15:15),D,Sara Salas,Loreto Pezoa,04/07/2026,,,2026-s7-d-loreto-pezoa-sara-salas,04/07/2026,1,2 (13:45-15:15),oficial,Ida
+7,1,3 (15:30-17:00),B,Hernán Bravo,Jaime Valdebenito,04/07/2026,,,2026-s7-b-hernan-bravo-jaime-valdebenito,04/07/2026,1,3 (15:30-17:00),oficial,Única
+7,2,1 (12:00-13:30),C,Hernán Medel,Constanza Núñez,04/07/2026,,,2026-s7-c-constanza-nunez-hernan-medel,04/07/2026,2,1 (12:00-13:30),oficial,Única
+7,2,2 (13:45-15:15),D,María José Valladares,Kamila Riquelme,04/07/2026,,,2026-s7-d-kamila-riquelme-maria-jose-valladares,04/07/2026,2,2 (13:45-15:15),oficial,Ida
+7,2,3 (15:30-17:00),C,Paulo Barrera,Roy Minda,04/07/2026,,,2026-s7-c-paulo-barrera-roy-minda,04/07/2026,2,3 (15:30-17:00),oficial,Única
+8,1,1 (12:00-13:30),A,Jose Astete,Marcelo López,11/07/2026,,,2026-s8-a-jose-astete-marcelo-lopez,11/07/2026,1,1 (12:00-13:30),oficial,Única
+8,2,1 (12:00-13:30),B,Oscar Morales,Cristhian Linares,11/07/2026,,,2026-s8-b-cristhian-linares-oscar-morales,11/07/2026,2,1 (12:00-13:30),oficial,Única
+8,1,2 (13:45-15:15),A,Angelo Basualto,Nicolás Collao,11/07/2026,,,2026-s8-a-angelo-basualto-nicolas-collao,11/07/2026,1,2 (13:45-15:15),oficial,Única
+8,2,2 (13:45-15:15),C,César Maturana,Juan Muñoz,11/07/2026,,,2026-s8-c-cesar-maturana-juan-munoz,11/07/2026,2,2 (13:45-15:15),oficial,Única
+8,1,3 (15:30-17:00),B,Diego Cervantes,Daniel Vega,11/07/2026,,,2026-s8-b-daniel-vega-diego-cervantes,11/07/2026,1,3 (15:30-17:00),oficial,Única
+8,2,3 (15:30-17:00),A,Felipe Reyes,Luis Flores,11/07/2026,,,2026-s8-a-felipe-reyes-luis-flores,11/07/2026,2,3 (15:30-17:00),oficial,Única
+8,1,4 (17:15-18:45),A,Tomás Gómez,Claudio Aedo,11/07/2026,,,2026-s8-a-claudio-aedo-tomas-gomez,11/07/2026,1,4 (17:15-18:45),oficial,Única
+8,2,4 (17:15-18:45),B,Gonzalo Barros,Genaro Espinoza,11/07/2026,,,2026-s8-b-genaro-espinoza-gonzalo-barros,11/07/2026,2,4 (17:15-18:45),oficial,Única
+8,1,5 (19:00-20:30),D,Catalina Valladares,Sara Salas,11/07/2026,,,2026-s8-d-catalina-valladares-sara-salas,11/07/2026,1,5 (19:00-20:30),oficial,Ida
+8,2,5 (19:00-20:30),B,Matías Arellano,Javier González,11/07/2026,,,2026-s8-b-javier-gonzalez-matias-arellano,11/07/2026,2,5 (19:00-20:30),oficial,Única
+9,1,1 (12:00-13:30),B,Cristhian Linares,Gonzalo Barros,03/10/2026,W/O Jugador 2,,2026-s9-b-cristhian-linares-gonzalo-barros,26/09/2026,1,1 (12:00-13:30),oficial,Única
+9,2,1 (12:00-13:30),B,Daniel Vega,Hernán Bravo,03/10/2026,Jugado,,2026-s9-b-daniel-vega-hernan-bravo,26/09/2026,2,1 (12:00-13:30),oficial,Única
+9,1,2 (13:45-15:15),D,Sara Salas,María José Valladares,03/10/2026,Por coordinar,,2026-s9-d-maria-jose-valladares-sara-salas,26/09/2026,1,2 (13:45-15:15),oficial,Ida
+9,2,2 (13:45-15:15),A,Diego Fossa,Jose Astete,03/10/2026,Por coordinar,,2026-s9-a-diego-fossa-jose-astete,26/09/2026,2,2 (13:45-15:15),oficial,Única
+9,1,3 (15:30-17:00),A,Felipe Reyes,Tomás Gómez,03/10/2026,Por coordinar,,2026-s9-a-felipe-reyes-tomas-gomez,26/09/2026,1,3 (15:30-17:00),oficial,Única
+9,2,3 (15:30-17:00),D,Kamila Riquelme,Loreto Pezoa,03/10/2026,Por coordinar,,2026-s9-d-kamila-riquelme-loreto-pezoa,26/09/2026,2,3 (15:30-17:00),oficial,Vuelta
+9,1,4 (17:15-18:45),B,Jaime Valdebenito,Diego Cervantes,03/10/2026,Por coordinar,,2026-s9-b-diego-cervantes-jaime-valdebenito,26/09/2026,1,4 (17:15-18:45),oficial,Única
+9,1,1 (20:00),C,Hernán Medel,Paulo Barrera,05/10/2026,Programado,Por coordinar,2026-s9-c-hernan-medel-paulo-barrera,26/09/2026,2,4 (17:15-18:45),reprogramado,Única
+9,1,5 (19:00-20:30),C,Aníbal Valenzuela,Juan Muñoz,03/10/2026,,,2026-s9-c-anibal-valenzuela-juan-munoz,26/09/2026,1,5 (19:00-20:30),oficial,Única
+9,2,5 (19:00-20:30),C,Roy Minda,Constanza Núñez,03/10/2026,Por coordinar,,2026-s9-c-constanza-nunez-roy-minda,26/09/2026,2,5 (19:00-20:30),oficial,Única
+10,1,1 (12:00-13:30),C,César Maturana,Mauricio Bustamante,10/10/2026,,,2026-s10-c-cesar-maturana-mauricio-bustamante,03/10/2026,1,1 (12:00-13:30),oficial,Única
+10,2,1 (12:00-13:30),D,Catalina Valladares,María José Valladares,10/10/2026,,,2026-s10-d-catalina-valladares-maria-jose-valladares,03/10/2026,2,1 (12:00-13:30),oficial,Vuelta
+10,1,2 (13:45-15:15),A,Marcelo López,Luis Flores,10/10/2026,,,2026-s10-a-luis-flores-marcelo-lopez,03/10/2026,1,2 (13:45-15:15),oficial,Única
+10,2,2 (13:45-15:15),A,Angelo Basualto,Diego Fossa,10/10/2026,,,2026-s10-a-angelo-basualto-diego-fossa,03/10/2026,2,2 (13:45-15:15),oficial,Única
+10,1,3 (15:30-17:00),B,Hernán Bravo,Diego Cervantes,10/10/2026,,,2026-s10-b-diego-cervantes-hernan-bravo,03/10/2026,1,3 (15:30-17:00),oficial,Única
+10,2,3 (15:30-17:00),B,Matías Arellano,Daniel Vega,10/10/2026,,,2026-s10-b-daniel-vega-matias-arellano,03/10/2026,2,3 (15:30-17:00),oficial,Única
+10,1,4 (17:15-18:45),B,Genaro Espinoza,Oscar Morales,10/10/2026,,,2026-s10-b-genaro-espinoza-oscar-morales,03/10/2026,1,4 (17:15-18:45),oficial,Única
+10,2,4 (17:15-18:45),D,Kamila Riquelme,Sara Salas,10/10/2026,,,2026-s10-d-kamila-riquelme-sara-salas,03/10/2026,2,4 (17:15-18:45),oficial,Vuelta
+10,1,5 (19:00-20:30),B,Jaime Valdebenito,Javier González,10/10/2026,,,2026-s10-b-jaime-valdebenito-javier-gonzalez,03/10/2026,1,5 (19:00-20:30),oficial,Única
+10,2,5 (19:00-20:30),A,Claudio Aedo,Nicolás Collao,10/10/2026,,,2026-s10-a-claudio-aedo-nicolas-collao,03/10/2026,2,5 (19:00-20:30),oficial,Única
+11,1,1 (12:00-13:30),B,Matías Arellano,Cristhian Linares,17/10/2026,,,2026-s11-b-cristhian-linares-matias-arellano,10/10/2026,1,1 (12:00-13:30),oficial,Única
+11,2,1 (12:00-13:30),D,Loreto Pezoa,María José Valladares,17/10/2026,,,2026-s11-d-loreto-pezoa-maria-jose-valladares,10/10/2026,2,1 (12:00-13:30),oficial,Ida
+11,1,2 (13:45-15:15),A,Tomás Gómez,Jose Astete,17/10/2026,,,2026-s11-a-jose-astete-tomas-gomez,10/10/2026,1,2 (13:45-15:15),oficial,Única
+11,2,2 (13:45-15:15),C,Constanza Núñez,Paulo Barrera,17/10/2026,,,2026-s11-c-constanza-nunez-paulo-barrera,10/10/2026,2,2 (13:45-15:15),oficial,Única
+11,1,3 (15:30-17:00),C,Mauricio Bustamante,Hernán Medel,17/10/2026,,,2026-s11-c-hernan-medel-mauricio-bustamante,10/10/2026,1,3 (15:30-17:00),oficial,Única
+11,2,3 (15:30-17:00),A,Felipe Reyes,Marcelo López,17/10/2026,,,2026-s11-a-felipe-reyes-marcelo-lopez,10/10/2026,2,3 (15:30-17:00),oficial,Única
+11,1,4 (17:15-18:45),C,Roy Minda,César Maturana,17/10/2026,,,2026-s11-c-cesar-maturana-roy-minda,10/10/2026,1,4 (17:15-18:45),oficial,Única
+11,2,4 (17:15-18:45),B,Diego Cervantes,Genaro Espinoza,17/10/2026,,,2026-s11-b-diego-cervantes-genaro-espinoza,10/10/2026,2,4 (17:15-18:45),oficial,Única
+11,1,5 (19:00-20:30),B,Gonzalo Barros,Hernán Bravo,17/10/2026,,,2026-s11-b-gonzalo-barros-hernan-bravo,10/10/2026,1,5 (19:00-20:30),oficial,Única
+11,2,5 (19:00-20:30),B,Oscar Morales,Javier González,17/10/2026,,,2026-s11-b-javier-gonzalez-oscar-morales,10/10/2026,2,5 (19:00-20:30),oficial,Única
+12,1,1 (12:00-13:30),C,Aníbal Valenzuela,Constanza Núñez,24/10/2026,,,2026-s12-c-anibal-valenzuela-constanza-nunez,17/10/2026,1,1 (12:00-13:30),oficial,Única
+12,2,1 (12:00-13:30),A,Jose Astete,Claudio Aedo,24/10/2026,,,2026-s12-a-claudio-aedo-jose-astete,17/10/2026,2,1 (12:00-13:30),oficial,Única
+12,1,2 (13:45-15:15),C,Juan Muñoz,Mauricio Bustamante,24/10/2026,,,2026-s12-c-juan-munoz-mauricio-bustamante,17/10/2026,1,2 (13:45-15:15),oficial,Única
+12,2,2 (13:45-15:15),A,Nicolás Collao,Tomás Gómez,24/10/2026,,,2026-s12-a-nicolas-collao-tomas-gomez,17/10/2026,2,2 (13:45-15:15),oficial,Única
+12,1,3 (15:30-17:00),A,Diego Fossa,Felipe Reyes,24/10/2026,,,2026-s12-a-diego-fossa-felipe-reyes,17/10/2026,1,3 (15:30-17:00),oficial,Única
+12,2,3 (15:30-17:00),D,Catalina Valladares,Kamila Riquelme,24/10/2026,,,2026-s12-d-catalina-valladares-kamila-riquelme,17/10/2026,2,3 (15:30-17:00),oficial,Ida
+12,1,4 (17:15-18:45),B,Daniel Vega,Jaime Valdebenito,24/10/2026,,,2026-s12-b-daniel-vega-jaime-valdebenito,17/10/2026,1,4 (17:15-18:45),oficial,Única
+12,2,4 (17:15-18:45),A,Angelo Basualto,Marcelo López,24/10/2026,,,2026-s12-a-angelo-basualto-marcelo-lopez,17/10/2026,2,4 (17:15-18:45),oficial,Única
+12,1,5 (19:00-20:30),C,Hernán Medel,César Maturana,24/10/2026,,,2026-s12-c-cesar-maturana-hernan-medel,17/10/2026,1,5 (19:00-20:30),oficial,Única
+12,2,5 (19:00-20:30),D,Loreto Pezoa,Sara Salas,24/10/2026,,,2026-s12-d-loreto-pezoa-sara-salas,17/10/2026,2,5 (19:00-20:30),oficial,Vuelta
+13,1,1 (12:00-13:30),A,Marcelo López,Diego Fossa,31/10/2026,,,2026-s13-a-diego-fossa-marcelo-lopez,24/10/2026,1,1 (12:00-13:30),oficial,Única
+13,2,1 (12:00-13:30),B,Genaro Espinoza,Hernán Bravo,31/10/2026,,,2026-s13-b-genaro-espinoza-hernan-bravo,24/10/2026,2,1 (12:00-13:30),oficial,Única
+13,1,2 (13:45-15:15),B,Matías Arellano,Oscar Morales,31/10/2026,,,2026-s13-b-matias-arellano-oscar-morales,24/10/2026,1,2 (13:45-15:15),oficial,Única
+13,2,2 (13:45-15:15),A,Claudio Aedo,Luis Flores,31/10/2026,,,2026-s13-a-claudio-aedo-luis-flores,24/10/2026,2,2 (13:45-15:15),oficial,Única
+13,1,3 (15:30-17:00),B,Jaime Valdebenito,Cristhian Linares,31/10/2026,,,2026-s13-b-cristhian-linares-jaime-valdebenito,24/10/2026,1,3 (15:30-17:00),oficial,Única
+13,2,3 (15:30-17:00),B,Diego Cervantes,Gonzalo Barros,31/10/2026,,,2026-s13-b-diego-cervantes-gonzalo-barros,24/10/2026,2,3 (15:30-17:00),oficial,Única
+13,1,4 (17:15-18:45),C,Aníbal Valenzuela,Hernán Medel,31/10/2026,,,2026-s13-c-anibal-valenzuela-hernan-medel,24/10/2026,1,4 (17:15-18:45),oficial,Única
+13,2,4 (17:15-18:45),D,María José Valladares,Sara Salas,31/10/2026,,,2026-s13-d-maria-jose-valladares-sara-salas,24/10/2026,2,4 (17:15-18:45),oficial,Vuelta
+13,1,5 (19:00-20:30),B,Javier González,Daniel Vega,31/10/2026,,,2026-s13-b-daniel-vega-javier-gonzalez,24/10/2026,1,5 (19:00-20:30),oficial,Única
+13,2,5 (19:00-20:30),C,Mauricio Bustamante,Roy Minda,31/10/2026,,,2026-s13-c-mauricio-bustamante-roy-minda,24/10/2026,2,5 (19:00-20:30),oficial,Única
+14,1,1 (12:00-13:30),C,Paulo Barrera,Juan Muñoz,07/11/2026,,,2026-s14-c-juan-munoz-paulo-barrera,31/10/2026,1,1 (12:00-13:30),oficial,Única
+14,2,1 (12:00-13:30),D,Loreto Pezoa,Catalina Valladares,07/11/2026,,,2026-s14-d-catalina-valladares-loreto-pezoa,31/10/2026,2,1 (12:00-13:30),oficial,Vuelta
+14,1,2 (13:45-15:15),A,Angelo Basualto,Tomás Gómez,07/11/2026,,,2026-s14-a-angelo-basualto-tomas-gomez,31/10/2026,1,2 (13:45-15:15),oficial,Única
+14,2,2 (13:45-15:15),A,Jose Astete,Nicolás Collao,07/11/2026,,,2026-s14-a-jose-astete-nicolas-collao,31/10/2026,2,2 (13:45-15:15),oficial,Única
+14,1,3 (15:30-17:00),B,Matías Arellano,Diego Cervantes,07/11/2026,,,2026-s14-b-diego-cervantes-matias-arellano,31/10/2026,1,3 (15:30-17:00),oficial,Única
+14,2,3 (15:30-17:00),B,Javier González,Gonzalo Barros,07/11/2026,,,2026-s14-b-gonzalo-barros-javier-gonzalez,31/10/2026,2,3 (15:30-17:00),oficial,Única
+14,1,4 (17:15-18:45),C,Constanza Núñez,César Maturana,07/11/2026,,,2026-s14-c-cesar-maturana-constanza-nunez,31/10/2026,1,4 (17:15-18:45),oficial,Única
+14,2,4 (17:15-18:45),D,Kamila Riquelme,María José Valladares,07/11/2026,,,2026-s14-d-kamila-riquelme-maria-jose-valladares,31/10/2026,2,4 (17:15-18:45),oficial,Vuelta
+14,1,5 (19:00-20:30),B,Oscar Morales,Jaime Valdebenito,07/11/2026,Jugado,,2026-s14-b-jaime-valdebenito-oscar-morales,31/10/2026,1,5 (19:00-20:30),oficial,Única
+14,2,5 (19:00-20:30),B,Genaro Espinoza,Daniel Vega,07/11/2026,,,2026-s14-b-daniel-vega-genaro-espinoza,31/10/2026,2,5 (19:00-20:30),oficial,Única
+15,1,1 (12:00-13:30),B,Hernán Bravo,Cristhian Linares,14/11/2026,,,2026-s15-b-cristhian-linares-hernan-bravo,07/11/2026,1,1 (12:00-13:30),oficial,Única
+15,2,1 (12:00-13:30),C,César Maturana,Paulo Barrera,14/11/2026,,,2026-s15-c-cesar-maturana-paulo-barrera,07/11/2026,2,1 (12:00-13:30),oficial,Única
+15,1,2 (13:45-15:15),A,Claudio Aedo,Marcelo López,14/11/2026,,,2026-s15-a-claudio-aedo-marcelo-lopez,07/11/2026,1,2 (13:45-15:15),oficial,Única
+15,2,2 (13:45-15:15),A,Luis Flores,Tomás Gómez,14/11/2026,,,2026-s15-a-luis-flores-tomas-gomez,07/11/2026,2,2 (13:45-15:15),oficial,Única
+15,1,3 (15:30-17:00),C,Juan Muñoz,Hernán Medel,14/11/2026,,,2026-s15-c-hernan-medel-juan-munoz,07/11/2026,1,3 (15:30-17:00),oficial,Única
+15,2,3 (15:30-17:00),D,Sara Salas,Catalina Valladares,14/11/2026,,,2026-s15-d-catalina-valladares-sara-salas,07/11/2026,2,3 (15:30-17:00),oficial,Vuelta
+15,1,4 (17:15-18:45),B,Matías Arellano,Jaime Valdebenito,14/11/2026,,,2026-s15-b-jaime-valdebenito-matias-arellano,07/11/2026,1,4 (17:15-18:45),oficial,Única
+15,2,4 (17:15-18:45),C,Aníbal Valenzuela,Roy Minda,14/11/2026,,,2026-s15-c-anibal-valenzuela-roy-minda,07/11/2026,2,4 (17:15-18:45),oficial,Única
+15,1,5 (19:00-20:30),A,Felipe Reyes,Nicolás Collao,14/11/2026,,,2026-s15-a-felipe-reyes-nicolas-collao,07/11/2026,1,5 (19:00-20:30),oficial,Única
+15,2,5 (19:00-20:30),C,Mauricio Bustamante,Constanza Núñez,14/11/2026,,,2026-s15-c-constanza-nunez-mauricio-bustamante,07/11/2026,2,5 (19:00-20:30),oficial,Única
+16,1,1 (12:00-13:30),B,Cristhian Linares,Genaro Espinoza,21/11/2026,,,2026-s16-b-cristhian-linares-genaro-espinoza,14/11/2026,1,1 (12:00-13:30),oficial,Única
+16,2,1 (12:00-13:30),A,Luis Flores,Diego Fossa,21/11/2026,,,2026-s16-a-diego-fossa-luis-flores,14/11/2026,2,1 (12:00-13:30),oficial,Única
+16,1,2 (13:45-15:15),A,Angelo Basualto,Claudio Aedo,21/11/2026,,,2026-s16-a-angelo-basualto-claudio-aedo,14/11/2026,1,2 (13:45-15:15),oficial,Única
+16,2,2 (13:45-15:15),B,Gonzalo Barros,Daniel Vega,21/11/2026,,,2026-s16-b-daniel-vega-gonzalo-barros,14/11/2026,2,2 (13:45-15:15),oficial,Única
+16,1,3 (15:30-17:00),A,Marcelo López,Tomás Gómez,21/11/2026,,,2026-s16-a-marcelo-lopez-tomas-gomez,14/11/2026,1,3 (15:30-17:00),oficial,Única
+16,2,3 (15:30-17:00),B,Diego Cervantes,Javier González,21/11/2026,,,2026-s16-b-diego-cervantes-javier-gonzalez,14/11/2026,2,3 (15:30-17:00),oficial,Única
+16,1,4 (17:15-18:45),B,Hernán Bravo,Oscar Morales,21/11/2026,,,2026-s16-b-hernan-bravo-oscar-morales,14/11/2026,1,4 (17:15-18:45),oficial,Única
+16,2,4 (17:15-18:45),D,Kamila Riquelme,Catalina Valladares,21/11/2026,,,2026-s16-d-catalina-valladares-kamila-riquelme,14/11/2026,2,4 (17:15-18:45),oficial,Vuelta
+16,1,5 (19:00-20:30),D,María José Valladares,Loreto Pezoa,21/11/2026,,,2026-s16-d-loreto-pezoa-maria-jose-valladares,14/11/2026,1,5 (19:00-20:30),oficial,Vuelta

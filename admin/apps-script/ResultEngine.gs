@@ -2,6 +2,8 @@ var ADMIN_STATUSES = Object.freeze({
   PROGRAMADO: "programado",
   JUGADO: "jugado",
   POR_COORDINAR: "por_coordinar",
+  RETIRO_J1: "retiro_j1",
+  RETIRO_J2: "retiro_j2",
   WO_J1: "wo_j1",
   WO_J2: "wo_j2",
   WO_AMBOS: "wo_ambos",
@@ -66,6 +68,11 @@ function adminNormalizeStatus_(value) {
     if (/jugador\s*2|j2/.test(text)) return ADMIN_STATUSES.WO_J2;
   }
 
+  if (text.indexOf("retiro") >= 0) {
+    if (/jugador\s*1|j1/.test(text)) return ADMIN_STATUSES.RETIRO_J1;
+    if (/jugador\s*2|j2/.test(text)) return ADMIN_STATUSES.RETIRO_J2;
+  }
+
   if (text.indexOf("jugado") >= 0 || text.indexOf("finalizado") >= 0) return ADMIN_STATUSES.JUGADO;
   if (text.indexOf("por coordinar") >= 0 || text.indexOf("por_coordinar") >= 0) return ADMIN_STATUSES.POR_COORDINAR;
   if (text.indexOf("reprogram") >= 0 || text.indexOf("posterg") >= 0) return ADMIN_STATUSES.POR_COORDINAR;
@@ -79,6 +86,8 @@ function adminStatusLabel_(status) {
   labels[ADMIN_STATUSES.PROGRAMADO] = "Programado";
   labels[ADMIN_STATUSES.JUGADO] = "Jugado";
   labels[ADMIN_STATUSES.POR_COORDINAR] = "Por coordinar";
+  labels[ADMIN_STATUSES.RETIRO_J1] = "Retiro Jugador 1";
+  labels[ADMIN_STATUSES.RETIRO_J2] = "Retiro Jugador 2";
   labels[ADMIN_STATUSES.WO_J1] = "W/O Jugador 1";
   labels[ADMIN_STATUSES.WO_J2] = "W/O Jugador 2";
   labels[ADMIN_STATUSES.WO_AMBOS] = "W/O ambos";
@@ -168,6 +177,70 @@ function adminSuperTieBreakWinner_(score1, score2) {
   return score1 > score2 ? 0 : 1;
 }
 
+function adminOptionalScore_(value, label) {
+  if (value === "" || value === null || typeof value === "undefined") return 0;
+  return adminToScore_(value, label);
+}
+
+function adminTryRegularSetWinner_(score1, score2) {
+  try {
+    return adminRegularSetWinner_(score1, score2, "El set");
+  } catch (error) {
+    return null;
+  }
+}
+
+function adminCompleteSetForWinner_(score, winnerIndex) {
+  var loserIndex = winnerIndex === 0 ? 1 : 0;
+  var completed = [Number(score[0] || 0), Number(score[1] || 0)];
+  var existingWinner = adminTryRegularSetWinner_(completed[0], completed[1]);
+
+  if (existingWinner !== null) {
+    if (existingWinner !== winnerIndex) {
+      throw new Error("No se puede adjudicar un set que ya terminó a favor del jugador retirado.");
+    }
+    return completed;
+  }
+
+  if (completed[0] > 7 || completed[1] > 7) {
+    throw new Error("El marcador parcial del set no es válido.");
+  }
+
+  var loserScore = completed[loserIndex];
+  var target = loserScore <= 4 ? 6 : 7;
+  completed[winnerIndex] = Math.max(completed[winnerIndex], target);
+
+  if (adminTryRegularSetWinner_(completed[0], completed[1]) !== winnerIndex) {
+    throw new Error("No se pudo completar el set a favor del ganador.");
+  }
+  return completed;
+}
+
+function adminCompleteSuperTieBreakForWinner_(score, winnerIndex) {
+  var loserIndex = winnerIndex === 0 ? 1 : 0;
+  var completed = [Number(score[0] || 0), Number(score[1] || 0)];
+  var existingWinner = null;
+
+  try {
+    existingWinner = adminSuperTieBreakWinner_(completed[0], completed[1]);
+  } catch (error) {
+    existingWinner = null;
+  }
+  if (existingWinner !== null) {
+    if (existingWinner !== winnerIndex) {
+      throw new Error("El super tie-break ya terminó a favor del jugador retirado.");
+    }
+    return completed;
+  }
+
+  var loserScore = completed[loserIndex];
+  completed[winnerIndex] = Math.max(completed[winnerIndex], loserScore + 2, 10);
+  if (adminSuperTieBreakWinner_(completed[0], completed[1]) !== winnerIndex) {
+    throw new Error("No se pudo completar el super tie-break a favor del ganador.");
+  }
+  return completed;
+}
+
 function adminCalculatePlayedResult_(input) {
   var players = [String(input.player1 || "").trim(), String(input.player2 || "").trim()];
   if (!players[0] || !players[1] || players[0] === players[1]) {
@@ -205,7 +278,6 @@ function adminCalculatePlayedResult_(input) {
       adminToScore_(input.stbPlayer2, "Super tie-break / Jugador 2")
     ];
     matchWinner = adminSuperTieBreakWinner_(stb[0], stb[1]);
-    setsWon[matchWinner]++;
     resultType = "Super tie-break";
     points[matchWinner] = 2;
     points[matchWinner === 0 ? 1 : 0] = 1;
@@ -263,18 +335,114 @@ function adminCalculateWoResult_(input) {
 
   return {
     status: status,
-    set1: ["", ""],
-    set2: ["", ""],
+    set1: winnerIndex === 0 ? [6, 0] : [0, 6],
+    set2: winnerIndex === 0 ? [6, 0] : [0, 6],
     stb: ["", ""],
     setsWon: setsWon,
     winner: players[winnerIndex],
     loser: players[loserIndex],
     winnerIndex: winnerIndex,
     resultType: "W/O",
-    resultWeb: "Ganador " + players[winnerIndex] + " por W/O",
+    resultWeb: "Ganador " + players[winnerIndex] + " por W/O 6-0 6-0",
     points: points,
     pointsWinner: 3,
     pointsLoser: 0
+  };
+}
+
+function adminCalculateRetirementResult_(input) {
+  var players = [String(input.player1 || "").trim(), String(input.player2 || "").trim()];
+  var status = String(input.status || "");
+  if (!players[0] || !players[1] || players[0] === players[1]) {
+    throw new Error("El partido necesita dos jugadores distintos.");
+  }
+  if ([ADMIN_STATUSES.RETIRO_J1, ADMIN_STATUSES.RETIRO_J2].indexOf(status) < 0) {
+    throw new Error("Selecciona qué jugador se retiró.");
+  }
+
+  var retireeIndex = status === ADMIN_STATUSES.RETIRO_J1 ? 0 : 1;
+  var winnerIndex = retireeIndex === 0 ? 1 : 0;
+  var loserIndex = retireeIndex;
+  var rawSet1 = [
+    adminOptionalScore_(input.set1Player1, "Set 1 / Jugador 1"),
+    adminOptionalScore_(input.set1Player2, "Set 1 / Jugador 2")
+  ];
+  var rawSet2 = [
+    adminOptionalScore_(input.set2Player1, "Set 2 / Jugador 1"),
+    adminOptionalScore_(input.set2Player2, "Set 2 / Jugador 2")
+  ];
+  var rawStb = [
+    adminOptionalScore_(input.stbPlayer1, "Super tie-break / Jugador 1"),
+    adminOptionalScore_(input.stbPlayer2, "Super tie-break / Jugador 2")
+  ];
+
+  var hasStarted = rawSet1[0] + rawSet1[1] + rawSet2[0] + rawSet2[1] + rawStb[0] + rawStb[1] > 0;
+  if (!hasStarted) throw new Error("Si el partido no comenzó, regístralo como W/O.");
+
+  var set1Winner = adminTryRegularSetWinner_(rawSet1[0], rawSet1[1]);
+  var set2Winner = adminTryRegularSetWinner_(rawSet2[0], rawSet2[1]);
+  var set1 = rawSet1.slice();
+  var set2 = rawSet2.slice();
+  var stb = ["", ""];
+  var completedWinners = [];
+  if (set1Winner !== null) completedWinners.push(set1Winner);
+  if (set2Winner !== null) completedWinners.push(set2Winner);
+
+  if (completedWinners.filter(function(index) { return index === retireeIndex; }).length >= 2) {
+    throw new Error("El jugador retirado ya aparece como ganador del partido.");
+  }
+  if (completedWinners.filter(function(index) { return index === winnerIndex; }).length >= 2) {
+    throw new Error("El partido ya estaba terminado antes del retiro.");
+  }
+
+  if (set1Winner === null) {
+    if (rawSet2[0] || rawSet2[1] || rawStb[0] || rawStb[1]) {
+      throw new Error("Completa primero el marcador parcial del primer set.");
+    }
+    set1 = adminCompleteSetForWinner_(rawSet1, winnerIndex);
+    set2 = winnerIndex === 0 ? [6, 0] : [0, 6];
+  } else if (set2Winner === null) {
+    if (rawStb[0] || rawStb[1]) {
+      throw new Error("El segundo set todavía no está definido.");
+    }
+    set2 = adminCompleteSetForWinner_(rawSet2, winnerIndex);
+  }
+
+  var setsWon = [0, 0];
+  [set1, set2].forEach(function(set) {
+    setsWon[adminRegularSetWinner_(set[0], set[1], "El set completado por retiro")]++;
+  });
+
+  var retireeWonSet = setsWon[retireeIndex] > 0;
+  if (setsWon[0] === 1 && setsWon[1] === 1) {
+    stb = adminCompleteSuperTieBreakForWinner_(rawStb, winnerIndex);
+  } else if (rawStb[0] || rawStb[1]) {
+    throw new Error("El super tie-break solo corresponde cuando cada jugador tiene un set.");
+  }
+
+  var points = [0, 0];
+  points[winnerIndex] = retireeWonSet ? 2 : 3;
+  points[retireeIndex] = retireeWonSet ? 1 : 0;
+  var scoreParts = [set1, set2];
+  if (stb[0] !== "") scoreParts.push(stb);
+  var scoreWinnerFirst = scoreParts.map(function(score) {
+    return score[winnerIndex] + "-" + score[loserIndex];
+  }).join(" ");
+
+  return {
+    status: status,
+    set1: set1,
+    set2: set2,
+    stb: stb,
+    setsWon: setsWon,
+    winner: players[winnerIndex],
+    loser: players[loserIndex],
+    winnerIndex: winnerIndex,
+    resultType: "Retiro",
+    resultWeb: "Ganador " + players[winnerIndex] + " por retiro " + scoreWinnerFirst,
+    points: points,
+    pointsWinner: points[winnerIndex],
+    pointsLoser: points[loserIndex]
   };
 }
 
@@ -286,6 +454,18 @@ function adminBuildRegistroRow_(match, input) {
     result = adminCalculatePlayedResult_({
       player1: match.player1,
       player2: match.player2,
+      set1Player1: input.set1Player1,
+      set1Player2: input.set1Player2,
+      set2Player1: input.set2Player1,
+      set2Player2: input.set2Player2,
+      stbPlayer1: input.stbPlayer1,
+      stbPlayer2: input.stbPlayer2
+    });
+  } else if ([ADMIN_STATUSES.RETIRO_J1, ADMIN_STATUSES.RETIRO_J2].indexOf(status) >= 0) {
+    result = adminCalculateRetirementResult_({
+      player1: match.player1,
+      player2: match.player2,
+      status: status,
       set1Player1: input.set1Player1,
       set1Player2: input.set1Player2,
       set2Player1: input.set2Player1,

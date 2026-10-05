@@ -759,10 +759,16 @@ function resultadoResumido(registro) {
 
   const ganadorCorto = abreviarNombre(ganador);
   const marcador = extraerMarcador(resultadoWeb);
+  const tipo = limpiarNombre(registro.tipoResultado || resultadoWeb);
+  const detalle = tipo.includes("w/o") || tipo.includes("walkover")
+    ? " por W/O"
+    : tipo.includes("retiro")
+      ? " por retiro"
+      : "";
 
   return marcador
-    ? `Ganador ${ganadorCorto} ${marcador}`
-    : `Ganador ${ganadorCorto}`;
+    ? `Ganador ${ganadorCorto}${detalle} ${marcador}`
+    : `Ganador ${ganadorCorto}${detalle}`;
 }
 
 function claveExacta(j1, j2) {
@@ -1719,6 +1725,7 @@ function leerRegistro(csv) {
       jugador2,
       pendiente: String(cols[3] || "").trim(),
       observaciones: String(cols[4] || "").trim(),
+      tipoResultado: String(cols[15] || "").trim(),
       resultadoWeb: String(cols[16] || "").trim(),
       ganador: String(cols[13] || "").trim(),
       claveExacta: claveExacta(jugador1, jugador2),

@@ -249,21 +249,24 @@ test("los 56 registros reales se relacionan sin ambigüedad con el fixture", () 
   const scheduling = context.adminPopulateSchedulingMetadata_(spreadsheet);
   context.PropertiesService = {
     getScriptProperties() {
-      return { getProperty() { return "spreadsheet-test"; } };
+      return { getProperty(name) { return name === "ADMIN_EMAILS" ? "admin@example.com" : "spreadsheet-test"; } };
     }
   };
   context.SpreadsheetApp.openById = () => spreadsheet;
+  context.Session = { getActiveUser() { return { getEmail() { return "admin@example.com"; } }; } };
   context.Utilities = {
     formatDate(date, timeZone, pattern) {
       return pattern === "d/M/yyyy" ? "26/8/2026" : "26/8/2026 18:00";
     }
   };
+  const scoringMigration = context.migrateScoringRules2026();
 
   const dashboard = context.adminGetDashboard_();
 
   assert.equal(migration.fixtureIdsCreated, 129);
   assert.equal(migration.registroIdsCreated, 56);
   assert.equal(scheduling.rowsInitialized, 129);
+  assert.equal(scoringMigration.updatedRows, 12);
   assert.equal(dashboard.matches.length, 129);
   assert.deepEqual(
     {
@@ -287,6 +290,15 @@ test("la auditoría detecta un ranking desactualizado y un ID duplicado", () => 
   const spreadsheet = new MockSpreadsheet([fixture, registro, rankings]);
   context.adminEnsureAdminSchema_(spreadsheet);
   context.adminPopulateMatchIds_(spreadsheet);
+  context.PropertiesService = {
+    getScriptProperties() {
+      return { getProperty(name) { return name === "ADMIN_EMAILS" ? "admin@example.com" : "spreadsheet-test"; } };
+    }
+  };
+  context.Session = { getActiveUser() { return { getEmail() { return "admin@example.com"; } }; } };
+  context.SpreadsheetApp.openById = () => spreadsheet;
+  context.Utilities = { formatDate() { return "26/8/2026 18:00"; } };
+  context.migrateScoringRules2026();
   registro.rows[2][22] = registro.rows[1][22];
   rankings.rows[2][2] = "999";
 

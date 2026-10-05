@@ -10,9 +10,10 @@ El panel incluye «← Volver al club», disponible también mientras carga los 
 
 - Lista partidos por coordinar, programados y jugados.
 - Busca por jugador y filtra por categoría.
-- Registra resultados normales y super tie-breaks.
-- Calcula ganador, sets, texto público y puntos `3–0` o `2–1`.
-- Registra partidos por coordinar, nuevas fechas, suspensiones y W/O.
+- Registra resultados normales, super tie-breaks y retiros.
+- Calcula ganador, sets, texto público y puntos `3–0` o `2–1`. El super tie-break decide el partido, pero no se suma como set ni como game.
+- Registra partidos por coordinar, nuevas fechas, suspensiones y W/O. Los W/O quedan como `6-0, 6-0` para las estadísticas.
+- En un retiro conserva lo jugado y completa los games restantes a favor del ganador; si el retirado ganó un set, el reparto es `2–1` y el super tie-break se completa a `10-0` cuando aún no había comenzado.
 - Conserva la programación oficial y separa el tipo Oficial, Adelantado, Reprogramado o Recuperación.
 - Actualiza la fila existente en vez de crear un duplicado.
 - Guarda cada creación o corrección en `Admin Auditoría`.

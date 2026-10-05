@@ -48,7 +48,7 @@ test("calcula super tie-break con el marcador desde la perspectiva del ganador",
   assert.equal(result.resultType, "Super tie-break");
   assert.equal(result.resultWeb, "Ganador Cristhian Linares 2-6 6-2 10-2");
   assert.deepEqual(Array.from(result.points), [1, 2]);
-  assert.deepEqual(Array.from(result.setsWon), [1, 2]);
+  assert.deepEqual(Array.from(result.setsWon), [1, 1]);
 });
 
 test("rechaza sets y super tie-breaks incompletos", () => {
@@ -65,8 +65,80 @@ test("W/O del jugador 1 entrega la victoria al jugador 2", () => {
 
   assert.equal(result.winner, "Jugador Dos");
   assert.equal(result.loser, "Jugador Uno");
-  assert.equal(result.resultWeb, "Ganador Jugador Dos por W/O");
+  assert.equal(result.resultWeb, "Ganador Jugador Dos por W/O 6-0 6-0");
   assert.deepEqual(Array.from(result.points), [0, 3]);
+  assert.deepEqual(Array.from(result.set1), [0, 6]);
+  assert.deepEqual(Array.from(result.set2), [0, 6]);
+  assert.deepEqual(Array.from(result.setsWon), [0, 2]);
+});
+
+test("completa el retiro de Diego conservando lo jugado", () => {
+  const result = context.adminCalculateRetirementResult_({
+    player1: "Cristhian Linares",
+    player2: "Diego Cervantes",
+    status: "retiro_j2",
+    set1Player1: 6,
+    set1Player2: 7,
+    set2Player1: 2,
+    set2Player2: 3,
+    stbPlayer1: "",
+    stbPlayer2: ""
+  });
+
+  assert.equal(result.winner, "Cristhian Linares");
+  assert.equal(result.loser, "Diego Cervantes");
+  assert.equal(result.resultType, "Retiro");
+  assert.equal(result.resultWeb, "Ganador Cristhian Linares por retiro 6-7 6-3 10-0");
+  assert.deepEqual(Array.from(result.set1), [6, 7]);
+  assert.deepEqual(Array.from(result.set2), [6, 3]);
+  assert.deepEqual(Array.from(result.stb), [10, 0]);
+  assert.deepEqual(Array.from(result.setsWon), [1, 1]);
+  assert.deepEqual(Array.from(result.points), [2, 1]);
+});
+
+test("completa un retiro sin set ganado como triunfo 3–0", () => {
+  const result = context.adminCalculateRetirementResult_({
+    player1: "Jugador Uno",
+    player2: "Jugador Dos",
+    status: "retiro_j1",
+    set1Player1: 3,
+    set1Player2: 2,
+    set2Player1: "",
+    set2Player2: ""
+  });
+
+  assert.equal(result.winner, "Jugador Dos");
+  assert.equal(result.resultWeb, "Ganador Jugador Dos por retiro 6-3 6-0");
+  assert.deepEqual(Array.from(result.set1), [3, 6]);
+  assert.deepEqual(Array.from(result.set2), [0, 6]);
+  assert.deepEqual(Array.from(result.setsWon), [0, 2]);
+  assert.deepEqual(Array.from(result.points), [0, 3]);
+});
+
+test("conserva un super tie-break iniciado y entrega los puntos restantes", () => {
+  const result = context.adminCalculateRetirementResult_({
+    player1: "Jugador Uno",
+    player2: "Jugador Dos",
+    status: "retiro_j2",
+    set1Player1: 6,
+    set1Player2: 4,
+    set2Player1: 3,
+    set2Player2: 6,
+    stbPlayer1: 7,
+    stbPlayer2: 5
+  });
+
+  assert.deepEqual(Array.from(result.stb), [10, 5]);
+  assert.deepEqual(Array.from(result.setsWon), [1, 1]);
+  assert.deepEqual(Array.from(result.points), [2, 1]);
+});
+
+test("un retiro antes de jugar debe registrarse como W/O", () => {
+  assert.throws(() => context.adminCalculateRetirementResult_({
+    player1: "Jugador Uno",
+    player2: "Jugador Dos",
+    status: "retiro_j1"
+  }), /W\/O/);
 });
 
 test("construye exactamente las 23 columnas del registro", () => {

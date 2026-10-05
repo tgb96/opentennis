@@ -1392,8 +1392,14 @@
     const gano = partido._ganador === jugadorKey;
     const estado = gano ? "Ganó" : "Perdió";
     const marcador = marcadorDesdeJugador(jugador, partido);
+    const tipo = normalizar(`${partido.tipo || ""} ${partido.resultadoWeb || ""}`);
+    const detalle = tipo.includes("w/o") || tipo.includes("walkover")
+      ? " por W/O"
+      : tipo.includes("retiro")
+        ? " por retiro"
+        : "";
 
-    return `${estado} vs ${nombreCorto(rivalDe(jugador, partido))} ${marcador}`;
+    return `${estado} vs ${nombreCorto(rivalDe(jugador, partido))}${detalle} ${marcador}`;
   }
 
   function historialHTML(historial) {
