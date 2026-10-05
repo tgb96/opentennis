@@ -20,7 +20,7 @@
   <script src="assets/js/config.js?v=7"></script>
   <script src="assets/js/data-cache.js?v=2"></script>
   <script src="assets/js/data-model.js?v=1"></script>
-  <script defer src="assets/js/app.js?v=21"></script>
+  <script defer src="assets/js/app.js?v=22"></script>
 </head>
 <body class="partidos-page v5-page">
   <div class="layout app-shell">
@@ -643,6 +643,7 @@ let publicRows = [];
 let publicWeeks = {};
 let publicView = "mine";
 let publicRowsById = new Map();
+let ultimoDiaProgramacion = null;
 
 const RE_TILDES = /[\u0300-\u036f]/g;
 const RE_NBSP = /\u00a0/g;
@@ -968,6 +969,22 @@ function marcarSemanaProxima(filas, semanaProxima) {
       parseFechaProgramacionSantiago(filas[i].fechaSemana) === proximoSabado
     );
   }
+}
+
+function actualizarProgramacionSiCambioElDia(forzar = false) {
+  if (!publicRows.length) return;
+
+  const hoySantiago = inicioDiaActualSantiago();
+  if (!forzar && hoySantiago === ultimoDiaProgramacion) return;
+
+  ultimoDiaProgramacion = hoySantiago;
+  marcarSemanaProxima(publicRows, obtenerSemanaProxima(publicRows));
+
+  renderBusqueda(publicRows, publicWeeks, publicPlayerSelect.value, publicView);
+  renderPendientesDesktop(publicRows, publicWeeks);
+  renderPendientesMobile(publicRows, publicWeeks);
+  renderCompletaDesktop(publicRows, publicWeeks);
+  renderCompletaMobile(publicRows, publicWeeks);
 }
 
 function filaCorrespondeJugador(fila, jugadorNormalizado) {
@@ -1981,6 +1998,7 @@ async function iniciar() {
 
     cruzarDatos(filas, registros);
     marcarSemanaProxima(filas, obtenerSemanaProxima(filas));
+    ultimoDiaProgramacion = inicioDiaActualSantiago();
     prepararFilas(filas, mapaSemanas);
 
     configurarExperienciaPersonal(filas, mapaSemanas);
@@ -2013,6 +2031,13 @@ async function iniciar() {
     accordionSemanas.innerHTML = `<div class="mensaje">No se pudo cargar la programación completa.</div>`;
   }
 }
+
+window.addEventListener("pageshow", () => actualizarProgramacionSiCambioElDia());
+window.addEventListener("focus", () => actualizarProgramacionSiCambioElDia());
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) actualizarProgramacionSiCambioElDia();
+});
+window.setInterval(() => actualizarProgramacionSiCambioElDia(), 60000);
 
 iniciar();
 </script>

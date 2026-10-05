@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v39-compact-wo-history';
+const CACHE_NAME = 'open-tennis-v40-current-schedule-date';
 
 const CORE_ASSETS = [
   './',

@@ -7,6 +7,10 @@ const appSource = fs.readFileSync(
   path.join(__dirname, "..", "assets", "js", "app.js"),
   "utf8"
 );
+const matchesSource = fs.readFileSync(
+  path.join(__dirname, "..", "partidos.html"),
+  "utf8"
+);
 
 test("el doble atrás se limita a la aplicación instalada en Android", () => {
   assert.match(appSource, /isStandalone\(\) && isAndroid/);
@@ -21,4 +25,11 @@ test("el segundo atrás no recorre todo el historial previo", () => {
 test("la navegación interna reemplaza la entrada base de la PWA", () => {
   assert.match(appSource, /window\.location\.replace\(destination\)/);
   assert.match(appSource, /pendingNavigation = destination\.href/);
+});
+
+test("la próxima fecha se recalcula al retomar la aplicación o cambiar el día", () => {
+  assert.match(matchesSource, /function actualizarProgramacionSiCambioElDia/);
+  assert.match(matchesSource, /visibilitychange/);
+  assert.match(matchesSource, /window\.addEventListener\("focus"/);
+  assert.match(matchesSource, /obtenerSemanaProxima\(publicRows\)/);
 });
