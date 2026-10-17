@@ -95,6 +95,37 @@ function adminStatusLabel_(status) {
   return labels[status] || labels[ADMIN_STATUSES.PROGRAMADO];
 }
 
+function adminIsFinalStatus_(status) {
+  return [
+    ADMIN_STATUSES.JUGADO,
+    ADMIN_STATUSES.RETIRO_J1,
+    ADMIN_STATUSES.RETIRO_J2,
+    ADMIN_STATUSES.WO_J1,
+    ADMIN_STATUSES.WO_J2,
+    ADMIN_STATUSES.WO_AMBOS
+  ].indexOf(status) >= 0;
+}
+
+function adminSanitizeNotesForStatus_(value, status) {
+  var note = String(value || "").trim();
+  if (!note || !adminIsFinalStatus_(status)) return note;
+
+  var normalized = adminNormalizeText_(note)
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  var obsoleteStatusNotes = [
+    "programado",
+    "por_coordinar",
+    "nueva_fecha_por_coordinar",
+    "pendiente",
+    "postergado",
+    "reprogramado",
+    "suspendido"
+  ];
+
+  return obsoleteStatusNotes.indexOf(normalized) >= 0 ? "" : note;
+}
+
 function adminScheduleTypeLabel_(type) {
   var labels = {};
   labels[ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL] = "Oficial";
@@ -494,7 +525,7 @@ function adminBuildRegistroRow_(match, input) {
     return row;
   }
 
-  row[4] = String(input.notes || "").trim();
+  row[4] = adminSanitizeNotesForStatus_(input.notes, status);
   row[5] = result.set1[0];
   row[6] = result.set1[1];
   row[7] = result.set2[0];

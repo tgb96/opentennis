@@ -1027,7 +1027,7 @@ function adminSaveMatch_(payload) {
   var fixtureBefore = fixtureSheet.getRange(match.sourceRow, 1, 1, fixtureColumns.ROUND + 1).getDisplayValues()[0];
   var fixtureAfter = fixtureBefore.slice();
   fixtureAfter[fixtureColumns.STATUS] = adminStatusLabel_(payload.status);
-  fixtureAfter[fixtureColumns.NOTES] = String(payload.notes || "").trim();
+  fixtureAfter[fixtureColumns.NOTES] = adminSanitizeNotesForStatus_(payload.notes, payload.status);
   fixtureAfter[fixtureColumns.SCHEDULE_TYPE] = scheduleType;
 
   if (payload.status === ADMIN_STATUSES.PROGRAMADO) {

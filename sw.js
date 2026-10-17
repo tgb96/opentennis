@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v40-current-schedule-date';
+const CACHE_NAME = 'open-tennis-v41-final-state-precedence';
 
 const CORE_ASSETS = [
   './',

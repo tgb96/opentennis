@@ -111,6 +111,33 @@
     return STATUS_LABELS[normalized] || STATUS_LABELS[MATCH_STATUSES.PROGRAMADO];
   }
 
+  function isAdministrativeStatusNote(value) {
+    const note = normalizeText(value)
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    return [
+      "programado",
+      "por_coordinar",
+      "nueva_fecha_por_coordinar",
+      "pendiente",
+      "postergado",
+      "reprogramado",
+      "suspendido"
+    ].includes(note);
+  }
+
+  function visibleMatchNote(value, effectiveStatus) {
+    const note = String(value || "").trim();
+    const status = normalizeStatus(effectiveStatus);
+
+    if (status === MATCH_STATUSES.JUGADO && isAdministrativeStatusNote(note)) {
+      return "";
+    }
+
+    return note;
+  }
+
   function findDuplicateMatchIds(matches) {
     const seen = new Set();
     const duplicates = new Set();
@@ -134,6 +161,8 @@
     resolveMatchId,
     normalizeStatus,
     statusLabel,
+    isAdministrativeStatusNote,
+    visibleMatchNote,
     findDuplicateMatchIds
   });
 });

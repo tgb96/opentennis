@@ -1199,9 +1199,10 @@ function fechaFinal(fila) {
 function observacionFinal(fila) {
   if (fila._observacion !== undefined) return fila._observacion;
 
-  const obs = fila.registro && fila.registro.observaciones
+  const obsOriginal = fila.registro && fila.registro.observaciones
     ? fila.registro.observaciones
     : fila.observaciones || "";
+  const obs = OPEN_TENNIS_DATA.visibleMatchNote(obsOriginal, estadoFinal(fila));
 
   const fecha = fechaFinal(fila);
 

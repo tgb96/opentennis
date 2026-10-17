@@ -37,6 +37,13 @@ test("normaliza los estados admitidos", () => {
   assert.equal(data.normalizeStatus(""), data.MATCH_STATUSES.PROGRAMADO);
 });
 
+test("oculta un estado pendiente obsoleto cuando el partido ya fue jugado", () => {
+  assert.equal(data.visibleMatchNote("Por coordinar", "Jugado"), "");
+  assert.equal(data.visibleMatchNote("Nueva fecha por coordinar", "Jugado"), "");
+  assert.equal(data.visibleMatchNote("Se jugó con luz artificial", "Jugado"), "Se jugó con luz artificial");
+  assert.equal(data.visibleMatchNote("Por coordinar", "Por coordinar"), "Por coordinar");
+});
+
 test("detecta IDs de partido duplicados", () => {
   const matches = [
     { matchId: "partido-1" },

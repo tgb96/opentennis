@@ -59,7 +59,9 @@
     }
     function visibleNotes(match) {
       var notes = String(match.notes || "").trim();
-      if (match.status === "por_coordinar" && ["pendiente", "postergado", "reprogramado"].indexOf(normalize(notes)) >= 0) return "";
+      var normalized = normalize(notes).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+      var statusOnlyNotes = ["programado", "por_coordinar", "nueva_fecha_por_coordinar", "pendiente", "postergado", "reprogramado", "suspendido"];
+      if (statusOnlyNotes.indexOf(normalized) >= 0 && (match.status === "por_coordinar" || PLAYED_STATUSES.indexOf(match.status) >= 0)) return "";
       return notes;
     }
 

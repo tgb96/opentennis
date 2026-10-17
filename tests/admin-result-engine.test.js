@@ -161,6 +161,34 @@ test("construye exactamente las 23 columnas del registro", () => {
   assert.equal(row[22], "2026-s1-a-jugador-dos-jugador-uno");
 });
 
+test("elimina la observación pendiente al registrar el resultado definitivo", () => {
+  const row = context.adminBuildRegistroRow_({
+    player1: "Felipe Reyes",
+    player2: "Tomás Gómez",
+    date: "3/10/2026",
+    matchId: "2026-s9-a-felipe-reyes-tomas-gomez"
+  }, {
+    status: "jugado",
+    date: "17/10/2026",
+    notes: "Por coordinar",
+    set1Player1: 6,
+    set1Player2: 0,
+    set2Player1: 6,
+    set2Player2: 2
+  });
+
+  assert.equal(row[3], "");
+  assert.equal(row[4], "");
+  assert.equal(row[16], "Ganador Felipe Reyes 6-0 6-2");
+});
+
+test("conserva una observación real de un partido jugado", () => {
+  assert.equal(
+    context.adminSanitizeNotesForStatus_("Se jugó con luz artificial", "jugado"),
+    "Se jugó con luz artificial"
+  );
+});
+
 test("separa por coordinar del tipo reprogramado", () => {
   assert.equal(context.adminNormalizeStatus_("Pendiente"), "por_coordinar");
   assert.equal(context.adminStatusLabel_("por_coordinar"), "Por coordinar");
