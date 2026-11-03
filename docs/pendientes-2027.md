@@ -23,3 +23,19 @@ Este antecedente es una solución excepcional de 2026 y no debe convertirse auto
 - La regla debe incorporarse a las bases públicas antes de comenzar el torneo.
 
 Estado: criterio deportivo definido; falta implementarlo en el administrador y publicarlo en las bases.
+
+## Abandono definitivo antes de completar la competencia
+
+### Antecedente de 2026
+
+Felipe Reyes abandonó la escalerilla después de disputar y ganar tres partidos de la categoría A. Las bases 2026 establecen que sus partidos restantes deben darse por perdidos y otorgar tres puntos a cada rival, pero no regulan el efecto sobre los encuentros ya disputados.
+
+La aplicación literal de esa regla produce una diferencia entre quienes lo enfrentaron antes del abandono y quienes todavía no lo habían hecho. La resolución adoptada para 2026 debe tratarse como un caso de esa temporada y no como la regla futura.
+
+### Regla que debe incorporarse a las bases 2027
+
+> **Abandono definitivo de la competencia.** Si un participante se retira, renuncia o abandona definitivamente la escalerilla antes de completar la totalidad de sus partidos programados, quedará fuera de la clasificación. Todos sus encuentros, tanto los ya disputados como los pendientes, quedarán sin efecto para el cálculo de puntos, partidos jugados, sets, games, desempates, ascensos, descensos y repechajes de los demás participantes. Los partidos ya disputados podrán conservarse solamente como antecedente histórico, identificados como anulados por abandono y sin efecto deportivo. Los partidos pendientes se cancelarán y no se registrarán como W/O ni otorgarán puntos. La organización publicará la tabla corregida y comunicará formalmente la decisión.
+
+Esta regla debe regir desde el inicio de la temporada 2027 y no aplicarse retroactivamente a temporadas anteriores.
+
+Estado: regla solicitada para 2027; falta incorporarla a las bases públicas y adaptar el administrador para anular en conjunto los resultados y partidos pendientes del participante.
