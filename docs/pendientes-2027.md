@@ -28,9 +28,13 @@ Estado: criterio deportivo definido; falta implementarlo en el administrador y p
 
 ### Antecedente de 2026
 
-Felipe Reyes abandonó la escalerilla después de disputar y ganar tres partidos de la categoría A. Las bases 2026 establecen que sus partidos restantes deben darse por perdidos y otorgar tres puntos a cada rival, pero no regulan el efecto sobre los encuentros ya disputados.
+Felipe Reyes renunció al club y abandonó la escalerilla después de disputar y ganar tres partidos de la categoría A. Las bases 2026 establecen que sus partidos restantes deben darse por perdidos y otorgar tres puntos a cada rival, pero no regulan el efecto sobre los encuentros ya disputados.
 
-La aplicación literal de esa regla produce una diferencia entre quienes lo enfrentaron antes del abandono y quienes todavía no lo habían hecho. La resolución adoptada para 2026 debe tratarse como un caso de esa temporada y no como la regla futura.
+La aplicación literal de esa regla produce una diferencia entre quienes lo enfrentaron antes del abandono y quienes todavía no lo habían hecho. La directiva resolvió extender el W/O a todos los rivales de Felipe, incluidos quienes ya habían disputado su partido, apoyándose conjuntamente en el apartado **Importante** de la sección III sobre los partidos restantes y en la regla de **Casos no contemplados** de la sección II.
+
+Para la clasificación 2026, cada rival recibirá un único W/O administrativo por `6-0, 6-0`, tres puntos, dos sets y doce games. Los tres resultados efectivamente jugados se conservarán en el historial como antecedentes sin efecto clasificatorio y se mostrarán antes de la resolución administrativa. Felipe permanecerá al final de la tabla, con la indicación `Renunció al club`, en zona de descenso directo. La fecha efectiva de la renuncia está pendiente de confirmación.
+
+Esta resolución es excepcional para 2026 y no debe confundirse con la regla general propuesta para 2027.
 
 ### Regla que debe incorporarse a las bases 2027
 
