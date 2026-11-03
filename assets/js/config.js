@@ -5,7 +5,7 @@
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub";
   // Cambiar esta revisión cuando una migración de datos deba invalidar también
   // las respuestas antiguas guardadas por versiones previas del service worker.
-  const DATA_REVISION = "20261005-scoring-v1";
+  const DATA_REVISION = "20261103-withdrawal-v1";
 
   const fixtureUrl = `${SHEET_BASE_URL}?gid=0&single=true&output=csv&rev=${DATA_REVISION}`;
   const registroUrl = `${SHEET_BASE_URL}?gid=1046180821&single=true&output=csv&rev=${DATA_REVISION}`;

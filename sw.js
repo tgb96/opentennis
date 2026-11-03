@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v42-withdrawal-resolution';
+const CACHE_NAME = 'open-tennis-v43-withdrawal-complete';
 
 const CORE_ASSETS = [
   './',
@@ -75,6 +75,33 @@ self.addEventListener('fetch', event => {
         } catch (error) {
           const cached = await cache.match(request);
           if (cached) return cached;
+          throw error;
+        }
+      })
+    );
+    return;
+  }
+
+  const isCriticalAppAsset =
+    url.origin === self.location.origin &&
+    (request.mode === 'navigate' || /\.(?:html|js|css)$/.test(url.pathname));
+
+  // Las pantallas y la lógica crítica buscan primero la versión publicada.
+  // Así una PWA instalada recibe correcciones reglamentarias sin desinstalarse.
+  if (isCriticalAppAsset) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async cache => {
+        try {
+          const response = await fetch(request, { cache: 'no-store' });
+          if (response.ok) await cache.put(request, response.clone());
+          return response;
+        } catch (error) {
+          const cached = await cache.match(request, { ignoreSearch: false });
+          if (cached) return cached;
+          if (request.mode === 'navigate') {
+            const fallback = await cache.match('./index.html');
+            if (fallback) return fallback;
+          }
           throw error;
         }
       })

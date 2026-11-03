@@ -92,7 +92,8 @@
     const source = (rankings || []).slice();
     const categoryA = source.filter(row => String(row.category || row.categoria || "").toUpperCase() === "A");
     const felipe = categoryA.find(row => key(row.player || row.jugador) === key(WITHDRAWAL.player));
-    if (!felipe || (Number(felipe.played || felipe.jugados) >= 8 && Number(felipe.points || felipe.puntos) === 0)) return source;
+    if (!felipe) return source;
+    const alreadyResolved = Number(felipe.played || felipe.jugados) >= 8 && Number(felipe.points || felipe.puntos) === 0;
 
     const alreadyPlayed = new Set(WITHDRAWAL.archived.flatMap(match => [key(match.player1), key(match.player2)]));
     const adjusted = categoryA.map(row => {
@@ -101,10 +102,15 @@
       const oldPoints = Number(row.points || row.puntos || 0);
       const oldPlayed = Number(row.played || row.jugados || 0);
       const isFelipe = playerKey === key(WITHDRAWAL.player);
-      const points = isFelipe ? Math.max(0, oldPoints - 9) : oldPoints + 3;
-      const played = isFelipe ? 8 : oldPlayed + (alreadyPlayed.has(playerKey) ? 0 : 1);
+      const points = alreadyResolved ? oldPoints : (isFelipe ? 0 : oldPoints + 3);
+      const played = alreadyResolved ? oldPlayed : (isFelipe ? 8 : oldPlayed + (alreadyPlayed.has(playerKey) ? 0 : 1));
       return Object.assign({}, row, { points, played, _previousPosition: oldPosition });
-    }).sort((a, b) => Number(b.points) - Number(a.points) || a._previousPosition - b._previousPosition)
+    }).sort((a, b) => {
+      const aIsFelipe = key(a.player || a.jugador) === key(WITHDRAWAL.player);
+      const bIsFelipe = key(b.player || b.jugador) === key(WITHDRAWAL.player);
+      if (aIsFelipe !== bIsFelipe) return aIsFelipe ? 1 : -1;
+      return Number(b.points) - Number(a.points) || a._previousPosition - b._previousPosition;
+    })
       .map((row, index) => {
         const position = index + 1;
         const clean = Object.assign({}, row, { position, posicion: String(position), puntos: String(row.points), jugados: String(row.played) });
@@ -116,8 +122,27 @@
     return source.map(row => String(row.category || row.categoria || "").toUpperCase() === "A" ? adjusted[aIndex++] : row);
   }
 
-  function applyToTableRecords(records) {
-    return (records || []).map(record => {
+  function applyToTableRecords(records, fixture) {
+    const source = (records || []).slice();
+    const existingIds = new Set(source.map(record => matchIdOf(record)).filter(Boolean));
+
+    (fixture || []).forEach(match => {
+      const resolution = resolutionForMatch(match);
+      const matchId = matchIdOf(match);
+      if (!resolution || existingIds.has(matchId)) return;
+      const player1 = match.jugador1 || match.player1;
+      const player2 = match.jugador2 || match.player2;
+      source.push({
+        matchId,
+        jugador1: player1,
+        jugador2: player2,
+        _j1: key(player1),
+        _j2: key(player2)
+      });
+      existingIds.add(matchId);
+    });
+
+    return source.map(record => {
       const resolution = resolutionForMatch(record);
       if (!resolution) return record;
       const player1 = record.jugador1 || record.player1;
