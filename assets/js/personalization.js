@@ -2,10 +2,13 @@
   const model = typeof module !== "undefined" && module.exports
     ? require("./data-model.js")
     : root && root.OPEN_TENNIS_DATA;
-  const api = factory(model);
+  const events = typeof module !== "undefined" && module.exports
+    ? require("./season-events.js")
+    : root && root.OPEN_TENNIS_EVENTS;
+  const api = factory(model, events);
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) root.OPEN_TENNIS_PERSONAL = api;
-})(typeof window !== "undefined" ? window : null, function createPersonalization(dataModel) {
+})(typeof window !== "undefined" ? window : null, function createPersonalization(dataModel, seasonEvents) {
   "use strict";
 
   const STORAGE_KEY = "openTennisPlayerV1";
@@ -213,7 +216,7 @@
       .join(", ");
   }
 
-  function headToHeadSummary(player, rival, matches, historicalData) {
+  function headToHeadSummary(player, rival, matches, historicalData, eventSource) {
     if (!player || !rival) return { total: 0, playerWins: 0, rivalWins: 0, encounters: [], last: null };
 
     const encounters = [];
@@ -242,6 +245,19 @@
       });
     });
 
+    if (eventSource) {
+      eventSource.archivedForPlayers(player, rival).forEach(match => {
+        encounters.push({
+          season: "2026",
+          date: match.date,
+          winner: match.winner,
+          score: match.score,
+          classification: false,
+          note: "Resultado jugado, sin efecto clasificatorio"
+        });
+      });
+    }
+
     encounters.sort((first, second) => {
       const firstDate = parseDate(first.date);
       const secondDate = parseDate(second.date);
@@ -252,8 +268,8 @@
 
     const playerKey = playerNameKey(player);
     const rivalKey = playerNameKey(rival);
-    const playerWins = encounters.filter(encounter => playerNameKey(encounter.winner) === playerKey).length;
-    const rivalWins = encounters.filter(encounter => playerNameKey(encounter.winner) === rivalKey).length;
+    const playerWins = encounters.filter(encounter => encounter.classification !== false && playerNameKey(encounter.winner) === playerKey).length;
+    const rivalWins = encounters.filter(encounter => encounter.classification !== false && playerNameKey(encounter.winner) === rivalKey).length;
     return {
       total: encounters.length,
       playerWins,
@@ -389,7 +405,8 @@
             ? shortPlayerName(player)
             : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
           const retirementLabel = encounter.retirement ? " (retiro)" : "";
-          return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}</span></li>`;
+          const note = encounter.note ? `<small>${escapeHtml(encounter.note)}</small>` : "";
+          return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}${note}</span></li>`;
         }).join("")}
       </ol>
     </div>`;
@@ -421,7 +438,8 @@
           ? shortPlayerName(player)
           : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
         const retirementLabel = encounter.retirement ? " (retiro)" : "";
-        return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}</span></li>`;
+        const note = encounter.note ? `<small>${escapeHtml(encounter.note)}</small>` : "";
+        return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}${note}</span></li>`;
       }).join("")}
     </ol>`;
   }
@@ -479,8 +497,10 @@
           if (!response.ok) throw new Error("No se pudieron cargar los datos");
           return response.text();
         }));
-      const matches = joinMatches(parseFixture(texts[0]), parseRecords(texts[1]));
-      const rankings = parseRankings(texts[2]);
+      const joinedMatches = joinMatches(parseFixture(texts[0]), parseRecords(texts[1]));
+      const matches = seasonEvents ? seasonEvents.applyToPersonalMatches(joinedMatches) : joinedMatches;
+      const parsedRankings = parseRankings(texts[2]);
+      const rankings = seasonEvents ? seasonEvents.applyToRankings(parsedRankings) : parsedRankings;
       const players = Array.from(new Set(matches.flatMap(match => [match.player1, match.player2]))).sort((a, b) => a.localeCompare(b, "es"));
       select.innerHTML = '<option value="">Elige tu nombre</option>' + players.map(player => '<option value="' + player.replace(/"/g, "&quot;") + '">' + player + '</option>').join("");
       let selectedHeadToHeadRival = "";
@@ -491,11 +511,18 @@
         const summary = playerSummary(player, matches, rankings, new Date());
         const next = summary.upcoming;
         const nextRival = next ? opponent(next, player) : "";
-        const headToHead = next ? (historicalReady ? headToHeadSummary(player, nextRival, matches, historicalData) : null) : null;
+        const headToHead = next ? (historicalReady ? headToHeadSummary(player, nextRival, matches, historicalData, seasonEvents) : null) : null;
         const playerParam = encodeURIComponent(player);
         const matchesPage = pageUrl("partidos.html");
         const tablesPage = pageUrl("tablas.html");
         const tableRows = categoryPreview(summary.categoryRanking, player);
+        const withdrawal = seasonEvents ? seasonEvents.withdrawalForPlayer(player) : null;
+        const withdrawalHtml = withdrawal ? `
+          <section class="home-info-card home-withdrawal-card" aria-label="Situación de la temporada">
+            <span class="home-card-kicker">Situación de la temporada</span>
+            <h3>Renunció al club</h3>
+            <p>Felipe renunció el ${escapeHtml(withdrawal.date)}. Por resolución de la directiva, todos sus partidos se computan como W/O para sus rivales; los resultados jugados siguen visibles solo como antecedente.</p>
+          </section>` : "";
         const seasonHtml = `
           <section class="home-info-card season-card" aria-labelledby="seasonHomeTitle">
             <div class="home-card-heading season-heading">
@@ -566,7 +593,7 @@
           selectedHeadToHeadRival = rivals.find(rival => playerNameKey(rival) === playerNameKey(nextRival)) || rivals[0] || "";
         }
         const explorerSummary = selectedHeadToHeadRival && historicalReady
-          ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData)
+          ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData, seasonEvents)
           : null;
         const headToHeadExplorer = `
           <section class="home-info-card head-to-head-card" aria-labelledby="headToHeadHomeTitle">
@@ -606,6 +633,7 @@
             ${pendingHtml}
             ${rankingHtml}
             ${headToHeadExplorer}
+            ${withdrawalHtml}
             ${adminAccessHtml(player)}
           </div>`;
 
@@ -615,7 +643,7 @@
           rivalSelect.addEventListener("change", () => {
             selectedHeadToHeadRival = rivalSelect.value;
             const selectedSummary = historicalReady
-              ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData)
+              ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData, seasonEvents)
               : null;
             explorerResult.innerHTML = headToHeadExplorerHtml(player, selectedHeadToHeadRival, selectedSummary);
           });

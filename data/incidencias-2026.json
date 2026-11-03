@@ -1,0 +1,44 @@
+{
+  "temporada": "2026",
+  "retiros": [
+    {
+      "jugador": "Felipe Reyes",
+      "categoria": "A",
+      "fecha": "29/10/2026",
+      "etiqueta": "Renunció al club",
+      "fundamento": [
+        "Sección II, regla 1: casos no contemplados",
+        "Sección III, apartado Importante: retiro del campeonato"
+      ],
+      "resolucion": "La directiva aplicó un W/O administrativo 6-0, 6-0 a favor de cada rival, tanto en los partidos pendientes como en los ya disputados. Los resultados jugados se conservan solo como antecedente histórico y no afectan la clasificación.",
+      "partidosJugadosSinEfecto": [
+        {
+          "matchId": "2026-s8-a-felipe-reyes-luis-flores",
+          "fecha": "11/07/2026",
+          "jugador1": "Felipe Reyes",
+          "jugador2": "Luis Flores",
+          "ganador": "Felipe Reyes",
+          "marcador": "6-1, 6-1"
+        },
+        {
+          "matchId": "2026-s9-a-felipe-reyes-tomas-gomez",
+          "fecha": "17/10/2026",
+          "jugador1": "Felipe Reyes",
+          "jugador2": "Tomás Gómez",
+          "ganador": "Felipe Reyes",
+          "marcador": "6-0, 6-2"
+        },
+        {
+          "matchId": "2026-s11-a-felipe-reyes-marcelo-lopez",
+          "fecha": "24/10/2026",
+          "jugador1": "Felipe Reyes",
+          "jugador2": "Marcelo López",
+          "ganador": "Felipe Reyes",
+          "marcador": "6-1, 6-1"
+        }
+      ],
+      "partidosPendientes": 5,
+      "partidosDisputados": 3
+    }
+  ]
+}

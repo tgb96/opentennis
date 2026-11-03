@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v41-final-state-precedence';
+const CACHE_NAME = 'open-tennis-v42-withdrawal-resolution';
 
 const CORE_ASSETS = [
   './',
@@ -16,7 +16,9 @@ const CORE_ASSETS = [
   './assets/js/data-model.js',
   './assets/js/pwa-install.js',
   './assets/js/personalization.js',
+  './assets/js/season-events.js',
   './data/resultados-2025.json',
+  './data/incidencias-2026.json',
   './assets/icons/icon-192.png?v=2',
   './assets/icons/icon-512.png?v=2',
   './assets/icons/icon-maskable-192.png?v=2',

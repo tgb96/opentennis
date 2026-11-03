@@ -32,7 +32,7 @@ Felipe Reyes renunció al club y abandonó la escalerilla después de disputar y
 
 La aplicación literal de esa regla produce una diferencia entre quienes lo enfrentaron antes del abandono y quienes todavía no lo habían hecho. La directiva resolvió extender el W/O a todos los rivales de Felipe, incluidos quienes ya habían disputado su partido, apoyándose conjuntamente en el apartado **Importante** de la sección III sobre los partidos restantes y en la regla de **Casos no contemplados** de la sección II.
 
-Para la clasificación 2026, cada rival recibirá un único W/O administrativo por `6-0, 6-0`, tres puntos, dos sets y doce games. Los tres resultados efectivamente jugados se conservarán en el historial como antecedentes sin efecto clasificatorio y se mostrarán antes de la resolución administrativa. Felipe permanecerá al final de la tabla, con la indicación `Renunció al club`, en zona de descenso directo. La fecha efectiva de la renuncia está pendiente de confirmación.
+Para la clasificación 2026, cada rival recibirá un único W/O administrativo por `6-0, 6-0`, tres puntos, dos sets y doce games. Los tres resultados efectivamente jugados se conservarán en el historial como antecedentes sin efecto clasificatorio y se mostrarán antes de la resolución administrativa. Felipe permanecerá al final de la tabla, con la indicación `Renunció al club`, en zona de descenso directo. La fecha efectiva de la renuncia fue el **29 de octubre de 2026**.
 
 Esta resolución es excepcional para 2026 y no debe confundirse con la regla general propuesta para 2027.
 

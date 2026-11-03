@@ -2844,3 +2844,11 @@ body:not(.index-page) .app {
     right: 32px !important;
   }
 }
+.home-withdrawal-card {
+  border-color: #d29b72;
+  background: #fff3e8;
+}
+.home-withdrawal-card h3 { margin: 4px 0 8px; color: #8b341f; }
+.home-withdrawal-card p { margin: 0; line-height: 1.5; }
+.next-h2h-matches small,
+.h2h-explorer-matches small { display: block; margin-top: 2px; color: #8b4a32; font-size: .72rem; font-weight: 700; }

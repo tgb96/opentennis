@@ -20,6 +20,7 @@
   <script src="assets/js/config.js?v=7"></script>
   <script src="assets/js/data-cache.js?v=2"></script>
   <script src="assets/js/data-model.js?v=1"></script>
+  <script src="assets/js/season-events.js?v=1"></script>
   <script defer src="assets/js/app.js?v=22"></script>
 </head>
 <body class="partidos-page v5-page">
@@ -260,6 +261,8 @@ td:first-child {
   font-weight: 800;
   line-height: 1.25;
 }
+
+.archive-result-box { margin-top: 8px; padding: 9px 11px; border: 1px solid #d8a27e; border-radius: 12px; color: #7d3d29; background: #fff2e8; font-size: 12px; line-height: 1.4; }
 
 .resultado-tabla {
   font-size: 13px;
@@ -1262,6 +1265,10 @@ function prepararFila(fila, mapaSemanas) {
   fila._resultadoBoxHTML = resultado
     ? `<div class="resultado-box"><span class="info-icon">🏆</span>${escapeHTML(resultado)}</div>`
     : "";
+  const antecedente = window.OPEN_TENNIS_EVENTS && window.OPEN_TENNIS_EVENTS.archivedForMatch(fila.matchId);
+  fila._antecedenteBoxHTML = antecedente
+    ? `<div class="archive-result-box"><strong>Resultado jugado originalmente:</strong> ${escapeHTML(abreviarNombre(antecedente.winner))} ganó ${escapeHTML(antecedente.score)}. Sin efecto clasificatorio desde el 29/10/2026.</div>`
+    : "";
   fila._fechaBoxHTML = mostrarFechaJugado
     ? `<div class="fecha-box"><span class="info-icon">📅</span>Jugado el ${escapeHTML(fecha)}</div>`
     : "";
@@ -1374,6 +1381,7 @@ function crearCardBusquedaHTML(
       <div class="card-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
       <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
       ${fila._resultadoBoxHTML || ""}
+      ${fila._antecedenteBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
       ${accionesPartidoHTML(fila, esCalendarioPersonal)}
@@ -1397,6 +1405,7 @@ function crearPartidoMovilHTML(fila) {
       <div class="partido-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
       <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
       ${fila._resultadoBoxHTML || ""}
+      ${fila._antecedenteBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
       ${accionesPartidoHTML(fila)}
@@ -1416,6 +1425,7 @@ function crearPartidoPendienteMovilHTML(fila, mapaSemanas) {
       <div class="partido-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
       <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
       ${fila._resultadoBoxHTML || ""}
+      ${fila._antecedenteBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
       ${fila._observacionBoxHTML || ""}
       ${accionesPartidoHTML(fila)}
@@ -1818,6 +1828,28 @@ function prepararFilas(filas, mapaSemanas) {
   }
 }
 
+function aplicarResolucionRetiro(filas) {
+  const events = window.OPEN_TENNIS_EVENTS;
+  if (!events) return;
+  filas.forEach(fila => {
+    const resolution = events.resolutionForMatch(fila);
+    if (!resolution) return;
+    fila.registro = {
+      matchId: fila.matchId,
+      fecha: events.WITHDRAWAL.date,
+      jugador1: fila.jugador1,
+      jugador2: fila.jugador2,
+      pendiente: "",
+      observaciones: "Resolución directiva · renuncia al club",
+      tipoResultado: "W/O",
+      resultadoWeb: `Ganador ${resolution.winner} por W/O 6-0 6-0`,
+      ganador: resolution.winner,
+      claveExacta: claveExacta(fila.jugador1, fila.jugador2),
+      claveOrdenada: claveOrdenada(fila.jugador1, fila.jugador2)
+    };
+  });
+}
+
 function activarAccordionMobile(contenedor = accordionSemanas) {
   if (!contenedor) return;
 
@@ -1998,6 +2030,7 @@ async function iniciar() {
     const registros = leerRegistro(registroCSV);
 
     cruzarDatos(filas, registros);
+    aplicarResolucionRetiro(filas);
     marcarSemanaProxima(filas, obtenerSemanaProxima(filas));
     ultimoDiaProgramacion = inicioDiaActualSantiago();
     prepararFilas(filas, mapaSemanas);

@@ -20,6 +20,7 @@
   <script src="assets/js/config.js?v=7"></script>
   <script src="assets/js/data-cache.js?v=2"></script>
   <script src="assets/js/data-model.js?v=1"></script>
+  <script src="assets/js/season-events.js?v=1"></script>
   <link rel="prefetch" href="resultados-2025.html" as="document" />
   <script defer src="assets/js/app.js?v=22"></script>
 </head>
@@ -658,6 +659,11 @@
   overflow-wrap: anywhere;
 }
 
+.retiro-badge { display: inline-flex; margin-left: 7px; padding: 3px 7px; border: 1px solid #d09a75; border-radius: 999px; color: #87351f; background: #fff0e5; font-size: 10px; font-weight: 900; vertical-align: middle; }
+.detalle-retiro { border-color: #d09a75 !important; background: #fff3e9 !important; }
+.detalle-retiro strong { color: #87351f; }
+.historial-sin-efecto { color: #8b4a32; font-style: italic; }
+
 .card-zona {
   margin-top: 3px;
   max-width: 100%;
@@ -898,6 +904,7 @@
 
   const OPEN_TENNIS_CONFIG = window.OPEN_TENNIS_CONFIG;
   const OPEN_TENNIS_DATA = window.OPEN_TENNIS_DATA;
+  const OPEN_TENNIS_EVENTS = window.OPEN_TENNIS_EVENTS;
   const RANKINGS_URL = OPEN_TENNIS_CONFIG.RANKINGS_URL;
   const REGISTRO_URL = OPEN_TENNIS_CONFIG.REGISTRO_URL;
   const FIXTURE_URL = OPEN_TENNIS_CONFIG.FIXTURE_URL;
@@ -1477,7 +1484,15 @@
       ? `vs ${nombreCorto(rivalDe(jugador, proximo))} · Semana ${proximo.semana}${proximo.fechaSemana ? ` · ${proximo.fechaSemana}` : ""} · Cancha ${proximo.cancha} · Turno ${proximo.turno}`
       : "Sin próximos partidos programados";
 
-    const historial = jugados.map(r => historialPartidoTexto(jugador, r));
+    const archivados = OPEN_TENNIS_EVENTS
+      ? OPEN_TENNIS_EVENTS.WITHDRAWAL.archived.filter(partido => [normalizar(partido.player1), normalizar(partido.player2)].includes(jugadorKey))
+      : [];
+    const historialArchivado = archivados.map(partido => {
+      const rival = normalizar(partido.player1) === jugadorKey ? partido.player2 : partido.player1;
+      const gano = normalizar(partido.winner) === jugadorKey;
+      return `${gano ? "Ganó" : "Perdió"} vs ${nombreCorto(rival)} ${partido.score} · Resultado jugado, sin efecto clasificatorio`;
+    });
+    const historial = historialArchivado.concat(jugados.map(r => historialPartidoTexto(jugador, r)));
 
     const stats = {
       sets: `${setsGanados}-${setsPerdidos}`,
@@ -1505,6 +1520,7 @@
   }
 
   function detalleHTML(jugador, stats, zona) {
+    const retiro = OPEN_TENNIS_EVENTS && OPEN_TENNIS_EVENTS.withdrawalForPlayer(jugador);
     return `
       <div class="detalle-box">
         <div class="detalle-grid">
@@ -1544,6 +1560,8 @@
           ${historialHTML(stats.historial)}
         </div>
 
+        ${retiro ? `<div class="detalle-extra detalle-retiro"><strong>Renunció al club el ${escaparHTML(retiro.date)}</strong><br>La directiva aplicó W/O 6-0, 6-0 a favor de todos sus rivales. Los tres resultados disputados se conservan arriba solo como antecedente y no afectan la tabla.</div>` : ""}
+
         <div class="detalle-extra">
           <strong>📅 Próximo partido:</strong> ${escaparHTML(stats.proximo)}
         </div>
@@ -1551,8 +1569,9 @@
     `;
   }
 
-  function detalleMobileHTML(stats, zona) {
+  function detalleMobileHTML(jugador, stats, zona) {
     const proximo = dividirProximoPartido(stats.proximo);
+    const retiro = OPEN_TENNIS_EVENTS && OPEN_TENNIS_EVENTS.withdrawalForPlayer(jugador);
 
     return `
       <div class="mobile-detalle-grid">
@@ -1594,6 +1613,8 @@
           ${historialHTML(stats.historial)}
         </div>
       </div>
+
+      ${retiro ? `<div class="mobile-detalle-extra detalle-retiro"><div class="detalle-icono">ℹ️</div><div><strong>Renunció al club el ${escaparHTML(retiro.date)}</strong><span class="mobile-detalle-extra-linea">Todos sus partidos se resolvieron por W/O para sus rivales. Los resultados jugados quedan solo como antecedente.</span></div></div>` : ""}
 
       <div class="mobile-detalle-extra">
         <div class="detalle-icono">📅</div>
@@ -1829,7 +1850,7 @@
     const filasDesktop = jugadores.map(j => `
       <tr class="fila-jugador" data-detalle="${escaparHTML(j.detalleId)}" data-player-key="${escaparHTML(j._jugadorKey)}">
         <td class="posicion">${escaparHTML(j.posicion)}</td>
-        <td>${escaparHTML(j.jugador)}</td>
+        <td>${escaparHTML(j.jugador)}${OPEN_TENNIS_EVENTS && OPEN_TENNIS_EVENTS.withdrawalForPlayer(j.jugador) ? '<span class="retiro-badge">Renunció al club</span>' : ''}</td>
         <td class="puntos">${escaparHTML(j.puntos)}</td>
         <td class="jugados">${escaparHTML(j.stats.jugados)}</td>
         <td>${zonaHTML(j.zona)}</td>
@@ -1848,7 +1869,7 @@
           <div class="card-posicion">${escaparHTML(j.posicion)}</div>
 
           <div class="card-info">
-            <div class="card-nombre">${escaparHTML(j.jugador)}</div>
+            <div class="card-nombre">${escaparHTML(j.jugador)}${OPEN_TENNIS_EVENTS && OPEN_TENNIS_EVENTS.withdrawalForPlayer(j.jugador) ? '<span class="retiro-badge">Renunció al club</span>' : ''}</div>
             ${j.zona ? `<div class="card-zona">${zonaHTML(j.zona)}</div>` : ""}
           </div>
 
@@ -1865,7 +1886,7 @@
         </div>
 
         <div class="card-desplegable">
-          ${detalleMobileHTML(j.stats, j.zona)}
+          ${detalleMobileHTML(j.jugador, j.stats, j.zona)}
         </div>
       </div>
     `).join("");
@@ -1999,7 +2020,15 @@
 
       const filasRanking = parseCSV(rankingCSV);
       const categorias = detectarRankings(filasRanking);
-      const registros = leerRegistro(registroCSV);
+      if (OPEN_TENNIS_EVENTS) {
+        categorias.forEach(categoria => {
+          categoria.jugadores = OPEN_TENNIS_EVENTS.applyToRankings(
+            categoria.jugadores.map(jugador => ({ ...jugador, categoria: categoria.nombre }))
+          );
+        });
+      }
+      const registrosLeidos = leerRegistro(registroCSV);
+      const registros = OPEN_TENNIS_EVENTS ? OPEN_TENNIS_EVENTS.applyToTableRecords(registrosLeidos) : registrosLeidos;
       const fixture = leerFixture(fixtureCSV);
 
       prepararIndices(registros, fixture);
