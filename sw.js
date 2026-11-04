@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v43-withdrawal-complete';
+const CACHE_NAME = 'open-tennis-v44-ranking-category-fix';
 
 const CORE_ASSETS = [
   './',

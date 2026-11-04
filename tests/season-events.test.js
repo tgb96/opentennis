@@ -53,6 +53,19 @@ test("Felipe queda último con cero puntos y ocho partidos", () => {
   assert.deepEqual([jose.position, jose.points, jose.played], [1, 15, 5]);
 });
 
+test("corrige la categoría cuando la tabla la llama CATEGORIA A", () => {
+  const ranking = events.applyToRankings([
+    { categoria: "CATEGORIA A", posicion: "1", jugador: "Jose Astete", puntos: "12", jugados: "4" },
+    { categoria: "CATEGORIA A", posicion: "2", jugador: "Felipe Reyes", puntos: "9", jugados: "3" },
+    { categoria: "CATEGORIA A", posicion: "3", jugador: "Nicolás Collao", puntos: "8", jugados: "4" }
+  ]);
+  assert.deepEqual(ranking.map(row => [row.jugador, row.puntos, row.jugados, row.posicion]), [
+    ["Jose Astete", "15", "5", "1"],
+    ["Nicolás Collao", "11", "5", "2"],
+    ["Felipe Reyes", "0", "8", "3"]
+  ]);
+});
+
 test("mantiene a Felipe último si la hoja ya tiene 0 puntos y 8 jugados", () => {
   const ranking = events.applyToRankings([
     { category: "A", position: 1, player: "Felipe Reyes", points: 0, played: 8 },

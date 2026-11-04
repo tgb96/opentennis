@@ -38,6 +38,12 @@
       .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
   }
 
+  function categoryCode(row) {
+    const value = String(row && (row.category || row.categoria) || "").toUpperCase().trim();
+    const match = value.match(/(?:CATEGORIA\s+)?([A-D])$/);
+    return match ? match[1] : value;
+  }
+
   function matchIdOf(match) {
     return String(match && (match.matchId || match.id) || "").trim().toLowerCase();
   }
@@ -90,7 +96,7 @@
 
   function applyToRankings(rankings) {
     const source = (rankings || []).slice();
-    const categoryA = source.filter(row => String(row.category || row.categoria || "").toUpperCase() === "A");
+    const categoryA = source.filter(row => categoryCode(row) === "A");
     const felipe = categoryA.find(row => key(row.player || row.jugador) === key(WITHDRAWAL.player));
     if (!felipe) return source;
     const alreadyResolved = Number(felipe.played || felipe.jugados) >= 8 && Number(felipe.points || felipe.puntos) === 0;
@@ -119,7 +125,7 @@
       });
 
     let aIndex = 0;
-    return source.map(row => String(row.category || row.categoria || "").toUpperCase() === "A" ? adjusted[aIndex++] : row);
+    return source.map(row => categoryCode(row) === "A" ? adjusted[aIndex++] : row);
   }
 
   function applyToTableRecords(records, fixture) {
