@@ -38,7 +38,14 @@
         }
       ],
       "partidosPendientes": 5,
-      "partidosDisputados": 3
+      "partidosDisputados": 3,
+      "horariosLiberados": [
+        "2026-s1-a-felipe-reyes-jose-astete",
+        "2026-s2-a-claudio-aedo-felipe-reyes",
+        "2026-s5-a-angelo-basualto-felipe-reyes",
+        "2026-s12-a-diego-fossa-felipe-reyes",
+        "2026-s15-a-felipe-reyes-nicolas-collao"
+      ]
     }
   ]
 }

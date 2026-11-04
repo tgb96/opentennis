@@ -6,6 +6,14 @@ test("la resolución alcanza los ocho partidos de Felipe", () => {
   assert.equal(events.WITHDRAWAL.date, "29/10/2026");
   assert.equal(events.WITHDRAWAL.matchIds.filter(id => id.includes("angelo-basualto")).length, 1);
   assert.equal(new Set(events.WITHDRAWAL.matchIds.filter(id => id.startsWith("2026-"))).size, 8);
+  assert.equal(events.WITHDRAWAL.pendingMatchIds.length, 5);
+  assert.equal(events.WITHDRAWAL.archived.length, 3);
+  assert.equal(events.WITHDRAWAL.pendingMatchIds.filter(id => events.archivedForMatch(id)).length, 0);
+});
+
+test("libera solamente los cinco horarios que Felipe tenía pendientes", () => {
+  assert.equal(events.WITHDRAWAL.matchIds.filter(id => events.isReleasedSlot(id)).length, 5);
+  assert.equal(events.WITHDRAWAL.archived.filter(match => events.isReleasedSlot(match)).length, 0);
 });
 
 test("un partido pendiente se transforma en W/O para el rival", () => {
@@ -37,6 +45,31 @@ test("completa el octavo registro aunque no exista todavía en la hoja", () => {
   assert.equal(records[0].ganador, "Nicolás Collao");
   assert.equal(records[0].resultadoWeb, "Ganador Nicolás Collao por W/O 6-0 6-0");
   assert.deepEqual([records[0].setsJ1, records[0].setsJ2, records[0].ptsJ1, records[0].ptsJ2], [0, 2, 0, 3]);
+});
+
+test("los ocho W/O cuadran en puntos, sets y games", () => {
+  const pairs = [
+    ["Jose Astete", "Felipe Reyes"], ["Claudio Aedo", "Felipe Reyes"],
+    ["Angelo Basualto", "Felipe Reyes"], ["Felipe Reyes", "Luis Flores"],
+    ["Felipe Reyes", "Tomás Gómez"], ["Felipe Reyes", "Marcelo López"],
+    ["Diego Fossa", "Felipe Reyes"], ["Felipe Reyes", "Nicolás Collao"]
+  ];
+  const fixture = events.WITHDRAWAL.matchIds.map((matchId, index) => ({
+    matchId, jugador1: pairs[index][0], jugador2: pairs[index][1]
+  }));
+  const records = events.applyToTableRecords([], fixture);
+  const totals = { points: 0, setsWon: 0, setsLost: 0, gamesWon: 0, gamesLost: 0 };
+  records.forEach(record => {
+    const felipeIsPlayer1 = events.key(record.jugador1) === events.key("Felipe Reyes");
+    totals.points += felipeIsPlayer1 ? record.ptsJ1 : record.ptsJ2;
+    totals.setsWon += felipeIsPlayer1 ? record.setsJ1 : record.setsJ2;
+    totals.setsLost += felipeIsPlayer1 ? record.setsJ2 : record.setsJ1;
+    totals.gamesWon += Number(felipeIsPlayer1 ? record.s1j1 : record.s1j2) + Number(felipeIsPlayer1 ? record.s2j1 : record.s2j2);
+    totals.gamesLost += Number(felipeIsPlayer1 ? record.s1j2 : record.s1j1) + Number(felipeIsPlayer1 ? record.s2j2 : record.s2j1);
+  });
+  assert.equal(records.length, 8);
+  assert.deepEqual(totals, { points: 0, setsWon: 0, setsLost: 16, gamesWon: 0, gamesLost: 96 });
+  assert.equal(new Set(records.map(record => record.ganador)).size, 8);
 });
 
 test("Felipe queda último con cero puntos y ocho partidos", () => {

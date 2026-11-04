@@ -20,8 +20,8 @@
   <script src="assets/js/config.js?v=7"></script>
   <script src="assets/js/data-cache.js?v=2"></script>
   <script src="assets/js/data-model.js?v=1"></script>
-  <script src="assets/js/season-events.js?v=3"></script>
-  <script defer src="assets/js/app.js?v=24"></script>
+  <script src="assets/js/season-events.js?v=4"></script>
+  <script defer src="assets/js/app.js?v=25"></script>
 </head>
 <body class="partidos-page v5-page">
   <div class="layout app-shell">
@@ -1280,14 +1280,16 @@ function prepararFila(fila, mapaSemanas) {
 }
 
 function crearFilaTablaHTML(fila, mapaSemanas, destacarProximo = fila._esSemanaProxima) {
+  const jugador1 = fila.esLibre ? "Horario libre" : fila.jugador1;
+  const jugador2 = fila.esLibre ? "—" : fila.jugador2;
   return `
     <tr class="${destacarProximo ? "fila-semana-proxima" : ""}">
       <td>${escapeHTML(fila.semana)}</td>
       <td>${escapeHTML(fila.cancha)}</td>
       <td>${escapeHTML(fila.turno)}</td>
       <td>${escapeHTML(fila.categoria)}</td>
-      <td><span class="jugador-nombre">${escapeHTML(fila.jugador1)}</span></td>
-      <td><span class="jugador-nombre">${escapeHTML(fila.jugador2)}</span></td>
+      <td><span class="jugador-nombre">${escapeHTML(jugador1)}</span></td>
+      <td><span class="jugador-nombre">${escapeHTML(jugador2)}</span></td>
       <td>
         <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>
         ${fila._resultadoTablaHTML || ""}
@@ -1311,8 +1313,8 @@ function crearFilaTabla(fila, mapaSemanas) {
     <td>${escapeHTML(fila.cancha)}</td>
     <td>${escapeHTML(fila.turno)}</td>
     <td>${escapeHTML(fila.categoria)}</td>
-    <td><span class="jugador-nombre">${escapeHTML(fila.jugador1)}</span></td>
-    <td><span class="jugador-nombre">${escapeHTML(fila.jugador2)}</span></td>
+    <td><span class="jugador-nombre">${escapeHTML(fila.esLibre ? "Horario libre" : fila.jugador1)}</span></td>
+    <td><span class="jugador-nombre">${escapeHTML(fila.esLibre ? "—" : fila.jugador2)}</span></td>
     <td>
       <span class="estado ${claseEstado(estado)}">${escapeHTML(estado)}</span>
       ${fila._resultadoTablaHTML || (resultadoFinal(fila) ? `<span class="resultado-tabla">${escapeHTML(resultadoFinal(fila))}</span>` : "")}
@@ -1347,6 +1349,9 @@ function crearSeparador(textoSemana, tipo, mapaSemanas, esSemanaProxima = false,
 }
 
 function jugadoresHTML(j1, j2) {
+  if (String(j1 || "").trim() === "-" && String(j2 || "").trim() === "-") {
+    return '<span class="jugador-nombre">Horario libre</span>';
+  }
   return `<span class="jugador-nombre">${escapeHTML(j1)}</span> vs <span class="jugador-nombre">${escapeHTML(j2)}</span>`;
 }
 
@@ -1555,7 +1560,7 @@ function renderCompletaDesktop(filas, mapaSemanas) {
       );
     }
 
-    html += crearFilaTablaHTML(fila, mapaSemanas);
+    html += crearFilaTablaHTML(filaParaProgramacion(fila), mapaSemanas);
     semanaAnterior = fila.semana;
   }
 
@@ -1629,7 +1634,7 @@ function renderCompletaMobile(filas, mapaSemanas) {
       html += `
         <div class="cancha-card">
           <div class="cancha-titulo">▦ Cancha ${escapeHTML(cancha)}</div>
-          ${filasCancha.map(crearPartidoMovilHTML).join("")}
+          ${filasCancha.map(fila => crearPartidoMovilHTML(filaParaProgramacion(fila))).join("")}
         </div>
       `;
     });
@@ -1847,7 +1852,35 @@ function aplicarResolucionRetiro(filas) {
       claveExacta: claveExacta(fila.jugador1, fila.jugador2),
       claveOrdenada: claveOrdenada(fila.jugador1, fila.jugador2)
     };
+
+    if (events.isReleasedSlot(fila)) fila._horarioLiberado = true;
   });
+}
+
+function filaParaProgramacion(fila) {
+  if (!fila || !fila._horarioLiberado) return fila;
+  return {
+    ...fila,
+    esLibre: true,
+    jugador1: "-",
+    jugador2: "-",
+    categoria: "",
+    registro: null,
+    estadoFixture: "Horario libre",
+    observaciones: "Horario liberado por renuncia al club",
+    _estado: "Horario libre",
+    _estadoClase: claseEstado("Horario libre"),
+    _resultado: "",
+    _observacion: "Horario liberado por renuncia al club",
+    _fecha: "",
+    _resultadoTablaHTML: "",
+    _resultadoBoxHTML: "",
+    _antecedenteBoxHTML: "",
+    _fechaTablaHTML: "",
+    _fechaBoxHTML: "",
+    _observacionTablaHTML: '<span class="observacion-tabla">Horario liberado por renuncia al club</span>',
+    _observacionBoxHTML: '<div class="observacion-box"><span class="info-icon">🎾</span>Disponible para adelantar o recuperar otro partido</div>'
+  };
 }
 
 function activarAccordionMobile(contenedor = accordionSemanas) {

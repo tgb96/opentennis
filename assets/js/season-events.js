@@ -20,6 +20,13 @@
       "2026-s12-a-diego-fossa-felipe-reyes",
       "2026-s15-a-felipe-reyes-nicolas-collao"
     ]),
+    pendingMatchIds: Object.freeze([
+      "2026-s1-a-felipe-reyes-jose-astete",
+      "2026-s2-a-claudio-aedo-felipe-reyes",
+      "2026-s5-a-angelo-basualto-felipe-reyes",
+      "2026-s12-a-diego-fossa-felipe-reyes",
+      "2026-s15-a-felipe-reyes-nicolas-collao"
+    ]),
     archived: Object.freeze([
       { matchId: "2026-s8-a-felipe-reyes-luis-flores", date: "11/07/2026", player1: "Felipe Reyes", player2: "Luis Flores", winner: "Felipe Reyes", score: "6-1, 6-1" },
       { matchId: "2026-s9-a-felipe-reyes-tomas-gomez", date: "17/10/2026", player1: "Felipe Reyes", player2: "Tomás Gómez", winner: "Felipe Reyes", score: "6-0, 6-2" },
@@ -62,6 +69,11 @@
   function archivedForMatch(matchOrId) {
     const id = typeof matchOrId === "string" ? matchOrId.toLowerCase() : matchIdOf(matchOrId);
     return WITHDRAWAL.archived.find(item => item.matchId === id) || null;
+  }
+
+  function isReleasedSlot(matchOrId) {
+    const id = typeof matchOrId === "string" ? matchOrId.toLowerCase() : matchIdOf(matchOrId);
+    return WITHDRAWAL.pendingMatchIds.includes(id);
   }
 
   function archivedForPlayers(player, rival) {
@@ -172,5 +184,5 @@
     return key(player) === key(WITHDRAWAL.player) ? WITHDRAWAL : null;
   }
 
-  return { WITHDRAWAL, RANKING_A, key, resolutionForMatch, archivedForMatch, archivedForPlayers, applyToPersonalMatches, applyToRankings, applyToTableRecords, withdrawalForPlayer };
+  return { WITHDRAWAL, RANKING_A, key, resolutionForMatch, archivedForMatch, archivedForPlayers, isReleasedSlot, applyToPersonalMatches, applyToRankings, applyToTableRecords, withdrawalForPlayer };
 });
