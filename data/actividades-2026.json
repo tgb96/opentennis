@@ -18,7 +18,8 @@
       "address": "Caletera Ote. Gral. San Martín 8521, Chicureo, Colina, Región Metropolitana",
       "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Caletera+Ote.+Gral.+San+Mart%C3%ADn+8521%2C+Chicureo%2C+Colina%2C+Regi%C3%B3n+Metropolitana",
       "poster": "assets/events/interclub-facutenis-2026.png",
-      "clubLogo": "assets/icons/icon-512.png",
+      "externalLogo": "assets/events/logo-facutenis.png",
+      "clubLogo": "assets/img/logo-open-tennis.png",
       "dressCode": "Asistir con la polera oficial del club, ojalá verde.",
       "format": [
         "Partidos a dos sets con punto de oro (no ad).",

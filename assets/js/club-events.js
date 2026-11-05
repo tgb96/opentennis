@@ -76,9 +76,9 @@
 
   function logoLockup(event) {
     return `<div class="club-event-logos" aria-label="FacuTenis versus Open Tennis Huechuraba">
-      <span class="club-event-logo-crop"><img src="${escapeHtml(event.poster)}" alt="Logo FacuTenis"></span>
+      <img class="club-event-logo club-event-logo-facu" src="${escapeHtml(event.externalLogo)}" alt="Logo FacuTenis">
       <strong>VS</strong>
-      <img class="club-event-logo-open" src="${escapeHtml(event.clubLogo)}" alt="Logo Open Tennis Huechuraba">
+      <img class="club-event-logo club-event-logo-open" src="${escapeHtml(event.clubLogo)}" alt="Logo Open Tennis Huechuraba">
     </div>`;
   }
 

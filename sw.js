@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v46-club-events';
+const CACHE_NAME = 'open-tennis-v47-club-logos';
 
 const CORE_ASSETS = [
   './',
@@ -22,6 +22,8 @@ const CORE_ASSETS = [
   './data/incidencias-2026.json',
   './data/actividades-2026.json',
   './assets/events/interclub-facutenis-2026.png',
+  './assets/events/logo-facutenis.png',
+  './assets/img/logo-open-tennis.png',
   './assets/icons/icon-192.png?v=2',
   './assets/icons/icon-512.png?v=2',
   './assets/icons/icon-maskable-192.png?v=2',

@@ -2634,26 +2634,15 @@ body:not(.index-page) .app {
 .club-event-card-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .club-event-logos { display:flex; align-items:center; gap:8px; }
 .club-event-logos > strong { color:#efb080; font:900 14px/1 Inter,sans-serif; }
-.club-event-logo-crop,
-.club-event-logo-open {
+.club-event-logo {
   display:block;
   flex:0 0 54px;
-  width:54px;
-  height:54px;
-  border:2px solid rgba(255,255,255,.88);
-  border-radius:50%;
-  background:#fff;
-  box-shadow:0 6px 14px rgba(0,0,0,.18);
-}
-.club-event-logo-crop { position:relative; overflow:hidden; }
-.club-event-logo-crop img {
-  position:absolute;
-  width:230px !important;
+  width:54px !important;
   max-width:none !important;
-  height:auto !important;
-  transform:translate(-39px,-14px);
+  height:54px !important;
+  object-fit:contain;
+  filter:drop-shadow(0 6px 7px rgba(0,0,0,.24));
 }
-.club-event-logo-open { object-fit:contain; }
 .club-event-badge { padding:7px 10px; border-radius:999px; color:#0b2f25; background:#f9d997; font-size:10px; font-weight:900; white-space:nowrap; }
 .club-event-kicker { display:block; color:#efb080; font-size:10px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
 .club-event-card h3 { margin:5px 0 8px; color:#fff; font:700 24px/1.08 Oswald,sans-serif; }
@@ -2718,14 +2707,12 @@ body:not(.index-page) .app {
 @media (max-width:700px) {
   .club-event-card { padding:14px; border-radius:18px; }
   .club-event-card h3 { font-size:22px; }
-  .club-event-logo-crop,.club-event-logo-open { flex-basis:48px; width:48px; height:48px; }
-  .club-event-logo-crop img { width:205px !important; transform:translate(-35px,-12px); }
+  .club-event-logo { flex-basis:48px; width:48px !important; height:48px !important; }
   .club-event-dialog { width:calc(100vw - 12px); max-height:calc(100dvh - 12px); border-radius:20px; }
   .club-event-dialog-shell { padding:15px; }
   .club-event-dialog-header { align-items:flex-start; gap:10px; padding-right:38px; }
   .club-event-dialog-header .club-event-logos { gap:5px; }
-  .club-event-dialog-header .club-event-logo-crop,.club-event-dialog-header .club-event-logo-open { flex-basis:40px; width:40px; height:40px; }
-  .club-event-dialog-header .club-event-logo-crop img { width:171px !important; transform:translate(-29px,-10px); }
+  .club-event-dialog-header .club-event-logo { flex-basis:40px; width:40px !important; height:40px !important; }
   .club-event-dialog-header h2 { font-size:21px; }
   .club-event-dialog-grid { grid-template-columns:1fr; gap:14px; }
   .club-event-facts { grid-template-columns:1fr; }
