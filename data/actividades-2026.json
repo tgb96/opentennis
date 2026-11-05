@@ -1,0 +1,46 @@
+{
+  "season": "2026",
+  "events": [
+    {
+      "id": "interclub-facutenis-2026-11-07",
+      "type": "interclub",
+      "title": "FacuTenis vs Open Tennis Huechuraba",
+      "shortTitle": "Interclub vs FacuTenis",
+      "editionLabel": "Nuestro primer interclub",
+      "publishedFrom": "2026-11-05",
+      "eventDate": "2026-11-07",
+      "featuredUntil": "2026-11-11",
+      "dateLabel": "Sábado 7 de noviembre de 2026",
+      "timeLabel": "Desde las 13:00",
+      "startDateTime": "2026-11-07T13:00:00-03:00",
+      "endDateTime": "2026-11-07T17:00:00-03:00",
+      "venue": "FacuTenis",
+      "address": "Caletera Ote. Gral. San Martín 8521, Chicureo, Colina, Región Metropolitana",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Caletera+Ote.+Gral.+San+Mart%C3%ADn+8521%2C+Chicureo%2C+Colina%2C+Regi%C3%B3n+Metropolitana",
+      "poster": "assets/events/interclub-facutenis-2026.png",
+      "clubLogo": "assets/icons/icon-512.png",
+      "dressCode": "Asistir con la polera oficial del club, ojalá verde.",
+      "format": [
+        "Partidos a dos sets con punto de oro (no ad).",
+        "Si se requiere definición, se jugará un tie-break con diferencia mínima de dos puntos."
+      ],
+      "status": "scheduled",
+      "matches": [
+        { "id": "ic01", "time": "13:00", "externalPlayer": "Juan Piña", "clubPlayer": "Angelo Basualto", "result": null, "winner": null },
+        { "id": "ic02", "time": "13:00", "externalPlayer": "Diego Laso", "clubPlayer": "Marcelo López", "result": null, "winner": null },
+        { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": null, "winner": null },
+        { "id": "ic04", "time": "13:00", "externalPlayer": "Vicente Serey", "clubPlayer": "Jose Astete", "result": null, "winner": null },
+        { "id": "ic05", "time": "13:30", "externalPlayer": "Rodrigo Vega", "clubPlayer": "Tomás Gómez", "result": null, "winner": null },
+        { "id": "ic06", "time": "13:30", "externalPlayer": "Paulina Rodríguez", "clubPlayer": "Constanza Núñez", "result": null, "winner": null },
+        { "id": "ic07", "time": "14:15", "externalPlayer": "Gonzalo Leyton", "clubPlayer": "Genaro Espinoza", "result": null, "winner": null },
+        { "id": "ic08", "time": "14:15", "externalPlayer": "Camilo Fuentes", "clubPlayer": "Javier González", "result": null, "winner": null },
+        { "id": "ic09", "time": "14:15", "externalPlayer": "Jorge Ríos", "clubPlayer": "Claudio Aedo", "result": null, "winner": null },
+        { "id": "ic10", "time": "14:15", "externalPlayer": "Fernando Inostroza", "clubPlayer": "Daniel Vega", "result": null, "winner": null },
+        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": null, "winner": null },
+        { "id": "ic12", "time": "14:45", "externalPlayer": "César Ramos", "clubPlayer": "Hernán Bravo", "result": null, "winner": null },
+        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": null, "winner": null },
+        { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": null, "winner": null }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v45-released-withdrawal-slots';
+const CACHE_NAME = 'open-tennis-v46-club-events';
 
 const CORE_ASSETS = [
   './',
@@ -17,8 +17,11 @@ const CORE_ASSETS = [
   './assets/js/pwa-install.js',
   './assets/js/personalization.js',
   './assets/js/season-events.js',
+  './assets/js/club-events.js',
   './data/resultados-2025.json',
   './data/incidencias-2026.json',
+  './data/actividades-2026.json',
+  './assets/events/interclub-facutenis-2026.png',
   './assets/icons/icon-192.png?v=2',
   './assets/icons/icon-512.png?v=2',
   './assets/icons/icon-maskable-192.png?v=2',

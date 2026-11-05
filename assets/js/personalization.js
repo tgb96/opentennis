@@ -5,10 +5,13 @@
   const events = typeof module !== "undefined" && module.exports
     ? require("./season-events.js")
     : root && root.OPEN_TENNIS_EVENTS;
-  const api = factory(model, events);
+  const clubEvents = typeof module !== "undefined" && module.exports
+    ? require("./club-events.js")
+    : root && root.OPEN_TENNIS_CLUB_EVENTS;
+  const api = factory(model, events, clubEvents);
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) root.OPEN_TENNIS_PERSONAL = api;
-})(typeof window !== "undefined" ? window : null, function createPersonalization(dataModel, seasonEvents) {
+})(typeof window !== "undefined" ? window : null, function createPersonalization(dataModel, seasonEvents, clubEvents) {
   "use strict";
 
   const STORAGE_KEY = "openTennisPlayerV1";
@@ -484,11 +487,18 @@
     try {
       let historicalData = null;
       let historicalReady = false;
+      let clubEventData = null;
+      let clubEventReady = false;
       const historicalPromise = (window.OPEN_TENNIS_CACHE
         ? window.OPEN_TENNIS_CACHE.getText("data/resultados-2025.json")
         : fetch("data/resultados-2025.json").then(response => response.ok ? response.text() : ""))
         .then(text => text ? JSON.parse(text) : null)
         .catch(() => null);
+      const clubEventPromise = (window.OPEN_TENNIS_CACHE
+        ? window.OPEN_TENNIS_CACHE.getText("data/actividades-2026.json?v=1")
+        : fetch("data/actividades-2026.json?v=1").then(response => response.ok ? response.text() : ""))
+        .then(text => text ? JSON.parse(text) : { events: [] })
+        .catch(() => ({ events: [] }));
       const dataUrls = [config.FIXTURE_URL, config.REGISTRO_URL, config.RANKINGS_URL];
       const texts = window.OPEN_TENNIS_CACHE
         ? (await window.OPEN_TENNIS_CACHE.loadMany(dataUrls)).texts
@@ -505,8 +515,18 @@
       select.innerHTML = '<option value="">Elige tu nombre</option>' + players.map(player => '<option value="' + player.replace(/"/g, "&quot;") + '">' + player + '</option>').join("");
       let selectedHeadToHeadRival = "";
 
+      function clubEventView(player) {
+        return clubEvents && clubEventReady
+          ? clubEvents.renderHome(clubEventData, player, new Date())
+          : { featuredHtml: "", archiveHtml: "", dialogHtml: "" };
+      }
+
       function render(player) {
-        if (!player) { content.innerHTML = '<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>'; return; }
+        const eventView = clubEventView(player);
+        if (!player) {
+          content.innerHTML = `${eventView.featuredHtml}<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>${eventView.archiveHtml}${eventView.dialogHtml}`;
+          return;
+        }
         localStorage.setItem(STORAGE_KEY, player);
         const summary = playerSummary(player, matches, rankings, new Date());
         const next = summary.upcoming;
@@ -619,6 +639,7 @@
             <div><span>Puntos</span><strong>${summary.ranking ? summary.ranking.points : "—"}</strong></div>
             <div><span>Por coordinar</span><strong>${summary.pending.length}</strong></div>
           </div>
+          ${eventView.featuredHtml}
           <article class="next-match-card">
             <span class="personal-kicker">${next ? "Tu próximo partido" : "Tu calendario"}</span>
             <h2>${next ? escapeHtml(player) + " vs " + escapeHtml(nextRival) : "No hay una próxima fecha confirmada"}</h2>
@@ -635,7 +656,9 @@
             ${headToHeadExplorer}
             ${withdrawalHtml}
             ${adminAccessHtml(player)}
-          </div>`;
+          </div>
+          ${eventView.archiveHtml}
+          ${eventView.dialogHtml}`;
 
         const rivalSelect = document.getElementById("headToHeadRivalSelect");
         const explorerResult = document.getElementById("headToHeadExplorerResult");
@@ -650,6 +673,43 @@
         }
       }
 
+      content.addEventListener("click", event => {
+        const openButton = event.target.closest("[data-club-event-open]");
+        if (openButton) {
+          const eventId = openButton.getAttribute("data-club-event-open");
+          const dialog = Array.from(content.querySelectorAll("[data-club-event-dialog]"))
+            .find(item => item.getAttribute("data-club-event-dialog") === eventId);
+          if (dialog && typeof dialog.showModal === "function") dialog.showModal();
+          return;
+        }
+
+        const closeButton = event.target.closest("[data-club-event-close]");
+        if (closeButton) {
+          const dialog = closeButton.closest("dialog");
+          if (dialog) dialog.close();
+          return;
+        }
+
+        const calendarButton = event.target.closest("[data-club-event-calendar]");
+        if (calendarButton && clubEvents && clubEventData) {
+          const eventId = calendarButton.getAttribute("data-club-event-calendar");
+          const clubEvent = (clubEventData.events || []).find(item => item.id === eventId);
+          if (!clubEvent) return;
+          const blob = new Blob([clubEvents.calendarText(clubEvent)], { type: "text/calendar;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `${eventId}.ics`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          return;
+        }
+
+        if (event.target.matches("dialog.club-event-dialog")) event.target.close();
+      });
+
       select.addEventListener("change", () => render(select.value));
       const saved = localStorage.getItem(STORAGE_KEY) || "";
       if (players.includes(saved)) select.value = saved;
@@ -659,6 +719,11 @@
         historicalData = data;
         historicalReady = true;
         if (select.value) render(select.value);
+      });
+      clubEventPromise.then(data => {
+        clubEventData = data;
+        clubEventReady = true;
+        render(select.value);
       });
     } catch (error) {
       content.innerHTML = '<p class="personal-empty">No pudimos cargar tus datos. Intenta nuevamente en unos minutos.</p>';

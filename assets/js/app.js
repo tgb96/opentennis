@@ -9,7 +9,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=22', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js?v=23', { updateViaCache: 'none' })
         .then(registration => registration.update())
         .catch(() => {});
     });
