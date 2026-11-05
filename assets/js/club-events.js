@@ -75,10 +75,14 @@
   }
 
   function logoLockup(event) {
+    const externalLogo = event.externalLogo || "assets/events/logo-facutenis.png";
+    const clubLogo = event.clubLogo && !/assets\/icons\/icon-512\.png/.test(event.clubLogo)
+      ? event.clubLogo
+      : "assets/img/logo-open-tennis.png";
     return `<div class="club-event-logos" aria-label="FacuTenis versus Open Tennis Huechuraba">
-      <img class="club-event-logo club-event-logo-facu" src="${escapeHtml(event.externalLogo)}" alt="Logo FacuTenis">
+      <img class="club-event-logo club-event-logo-facu" src="${escapeHtml(externalLogo)}" alt="Logo FacuTenis">
       <strong>VS</strong>
-      <img class="club-event-logo club-event-logo-open" src="${escapeHtml(event.clubLogo)}" alt="Logo Open Tennis Huechuraba">
+      <img class="club-event-logo club-event-logo-open" src="${escapeHtml(clubLogo)}" alt="Logo Open Tennis Huechuraba">
     </div>`;
   }
 

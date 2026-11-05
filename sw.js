@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v47-club-logos';
+const CACHE_NAME = 'open-tennis-v48-club-logos';
 
 const CORE_ASSETS = [
   './',
