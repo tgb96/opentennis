@@ -1944,8 +1944,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
-  <link rel="stylesheet" href="assets/css/scoreboard.css?v=12" />
-  <script defer src="assets/js/app.js?v=29"></script>
+  <link rel="stylesheet" href="assets/css/scoreboard.css?v=13" />
+  <script defer src="assets/js/app.js?v=30"></script>
 </head>
 
 <body class="marcador-page v5-page">
@@ -1974,14 +1974,22 @@
           </select>
         </div>
 
-        <div>
+        <div class="setup-player">
           <div class="label">Jugador A</div>
-          <select id="playerASelect"></select>
+          <select id="playerASelect" aria-controls="customPlayerAField"></select>
+          <div class="custom-player-field" id="customPlayerAField" hidden>
+            <label class="custom-player-label" for="customPlayerAInput">Nombre manual</label>
+            <input class="custom-player-input" id="customPlayerAInput" type="text" maxlength="40" autocomplete="off" placeholder="Escribe el nombre">
+          </div>
         </div>
 
-        <div>
+        <div class="setup-player">
           <div class="label">Jugador B</div>
-          <select id="playerBSelect"></select>
+          <select id="playerBSelect" aria-controls="customPlayerBField"></select>
+          <div class="custom-player-field" id="customPlayerBField" hidden>
+            <label class="custom-player-label" for="customPlayerBInput">Nombre manual</label>
+            <input class="custom-player-input" id="customPlayerBInput" type="text" maxlength="40" autocomplete="off" placeholder="Escribe el nombre">
+          </div>
         </div>
 
         <div>
@@ -2223,6 +2231,7 @@
     const STORAGE_KEY = "openTennisMarcadorStateV2";
     const MATCH_INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
     const POINT_LABELS = ["0", "15", "30", "40"];
+    const CUSTOM_PLAYER_VALUE = "__custom_player__";
 
     let history = [];
     let matchActive = false;
@@ -2847,16 +2856,81 @@
       }[char]));
     }
 
+    function cleanPlayerName(value) {
+      return String(value || "").trim().replace(/\s+/g, " ");
+    }
+
+    function playerNameKey(value) {
+      return cleanPlayerName(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase("es");
+    }
+
+    function getPlayerSetupElements(side) {
+      return {
+        select: document.getElementById("player" + side + "Select"),
+        field: document.getElementById("customPlayer" + side + "Field"),
+        input: document.getElementById("customPlayer" + side + "Input")
+      };
+    }
+
+    function getSetupPlayerName(side) {
+      const elements = getPlayerSetupElements(side);
+      return elements.select.value === CUSTOM_PLAYER_VALUE
+        ? cleanPlayerName(elements.input.value)
+        : cleanPlayerName(elements.select.value);
+    }
+
+    function toggleCustomPlayerField(side, focus = false) {
+      const elements = getPlayerSetupElements(side);
+      const isCustom = elements.select.value === CUSTOM_PLAYER_VALUE;
+      elements.field.hidden = !isCustom;
+
+      if (isCustom && focus) {
+        requestAnimationFrame(() => elements.input.focus());
+      }
+    }
+
+    function setPlayerSetupValue(side, category, selectedName, fallbackName) {
+      const players = CLUB_PLAYERS[category];
+      const elements = getPlayerSetupElements(side);
+      const name = cleanPlayerName(selectedName);
+      const isOfficial = Boolean(name) && players.includes(name);
+
+      if (isOfficial) {
+        elements.select.value = name;
+        elements.input.value = "";
+        elements.field.hidden = true;
+        return;
+      }
+
+      if (name) {
+        elements.select.value = CUSTOM_PLAYER_VALUE;
+        elements.input.value = name;
+        elements.field.hidden = false;
+        return;
+      }
+
+      elements.select.value = fallbackName;
+      elements.input.value = "";
+      elements.field.hidden = true;
+    }
+
     function populatePlayers(category, selectedA, selectedB) {
       const playerA = document.getElementById("playerASelect");
       const playerB = document.getElementById("playerBSelect");
       const players = CLUB_PLAYERS[category];
+      const options = players
+        .map(player => '<option value="' + escapeHtml(player) + '">' + escapeHtml(player) + '</option>')
+        .concat('<option value="' + CUSTOM_PLAYER_VALUE + '">✍️ Otro jugador…</option>')
+        .join("");
 
-      playerA.innerHTML = players.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-      playerB.innerHTML = players.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+      playerA.innerHTML = options;
+      playerB.innerHTML = options;
 
-      playerA.value = selectedA && players.includes(selectedA) ? selectedA : players[0];
-      playerB.value = selectedB && players.includes(selectedB) ? selectedB : players[Math.min(1, players.length - 1)];
+      setPlayerSetupValue("A", category, selectedA, players[0]);
+      setPlayerSetupValue("B", category, selectedB, players[Math.min(1, players.length - 1)]);
 
       ensureDistinctPlayerSelects();
     }
@@ -2866,8 +2940,11 @@
       const playerB = document.getElementById("playerBSelect");
       const category = document.getElementById("categorySelect").value;
       const players = CLUB_PLAYERS[category];
+      let nameA = getSetupPlayerName("A");
+      let nameB = getSetupPlayerName("B");
+      let duplicate = Boolean(nameA && nameB && playerNameKey(nameA) === playerNameKey(nameB));
 
-      if (playerA.value === playerB.value) {
+      if (duplicate && playerA.value !== CUSTOM_PLAYER_VALUE && playerB.value !== CUSTOM_PLAYER_VALUE) {
         const replacement = players.find(p => p !== playerA.value) || players[0];
 
         if (changed === "A") {
@@ -2877,15 +2954,46 @@
         }
 
         showToast("No se puede elegir el mismo jugador dos veces. Se corrigió automáticamente.");
+        nameA = getSetupPlayerName("A");
+        nameB = getSetupPlayerName("B");
+        duplicate = false;
+      } else if (duplicate && changed) {
+        showToast("Los jugadores deben tener nombres distintos.");
       }
 
       [...playerA.options].forEach(option => {
-        option.disabled = option.value === playerB.value;
+        option.disabled = option.value !== CUSTOM_PLAYER_VALUE &&
+          playerNameKey(option.value) === playerNameKey(nameB);
       });
 
       [...playerB.options].forEach(option => {
-        option.disabled = option.value === playerA.value;
+        option.disabled = option.value !== CUSTOM_PLAYER_VALUE &&
+          playerNameKey(option.value) === playerNameKey(nameA);
       });
+
+      return !duplicate;
+    }
+
+    function validateSetupPlayers(options = {}) {
+      const announce = options.announce !== false;
+      const names = [getSetupPlayerName("A"), getSetupPlayerName("B")];
+
+      for (let index = 0; index < names.length; index++) {
+        if (names[index]) continue;
+        const side = index === 0 ? "A" : "B";
+        if (announce) showToast("Escribe el nombre del jugador " + side + ".");
+        getPlayerSetupElements(side).input.focus();
+        return null;
+      }
+
+      if (playerNameKey(names[0]) === playerNameKey(names[1])) {
+        if (announce) showToast("Los jugadores deben tener nombres distintos.");
+        const side = document.getElementById("playerBSelect").value === CUSTOM_PLAYER_VALUE ? "B" : "A";
+        getPlayerSetupElements(side).select.focus();
+        return null;
+      }
+
+      return names;
     }
 
     function isMatchDirty() {
@@ -2901,31 +3009,39 @@
       }) || state.points[0] || state.points[1];
     }
 
-    function createMatchFromSetup() {
+    function createMatchFromSetup(validatedPlayers = null) {
       const category = document.getElementById("categorySelect").value;
-      const pA = document.getElementById("playerASelect").value;
-      const pB = document.getElementById("playerBSelect").value;
+      const selectedPlayers = validatedPlayers || [getSetupPlayerName("A"), getSetupPlayerName("B")];
+      const pA = selectedPlayers[0] || "Jugador A";
+      const pB = selectedPlayers[1] || "Jugador B";
 
       const state = createInitialState();
       state.category = category;
       state.players = [pA, pB];
       state.matchId = prefilledMatchId;
-      state.log = [{ text: `Partido iniciado: ${pA} vs ${pB}`, type: "info" }];
+      state.log = [{ text: "Partido iniciado: " + pA + " vs " + pB, type: "info" }];
 
       return state;
     }
 
     function resetMatchWithSetup(options = {}) {
+      const players = validateSetupPlayers({ announce: options.announce !== false });
+      if (!players) return false;
+
       ensureDistinctPlayerSelects();
-      history = [createMatchFromSetup()];
+      history = [createMatchFromSetup(players)];
       saveMatch();
       render();
 
       if (options.toast) showToast(options.toast);
       if (options.vibrate !== false) vibrate(35);
+      return true;
     }
 
     function startNewMatch() {
+      const players = validateSetupPlayers();
+      if (!players) return;
+
       if (matchActive && isMatchDirty()) {
         const ok = confirm("¿Seguro que quieres crear un nuevo partido? Se borrará el marcador actual guardado en este celular.");
         if (!ok) return;
@@ -2933,7 +3049,7 @@
 
       ensureDistinctPlayerSelects();
       clearSavedMatch();
-      history = [createMatchFromSetup()];
+      history = [createMatchFromSetup(players)];
       saveMatch();
       setMatchActive(true);
       render();
@@ -2963,6 +3079,19 @@
 
     function handleSetupChange(type) {
       if (ignoreSetupEvents) return;
+      const playerSide = type === "playerA" ? "A" : type === "playerB" ? "B" : null;
+
+      if (playerSide) {
+        const elements = getPlayerSetupElements(playerSide);
+        const needsName = elements.select.value === CUSTOM_PLAYER_VALUE &&
+          !cleanPlayerName(elements.input.value);
+        toggleCustomPlayerField(playerSide, needsName);
+
+        if (needsName) {
+          if (!matchActive) history = [createMatchFromSetup()];
+          return;
+        }
+      }
 
       if (!matchActive) {
         if (type === "category") {
@@ -3002,6 +3131,13 @@
       }
 
       resetMatchWithSetup({ toast: "Jugadores actualizados" });
+    }
+
+    function handleCustomPlayerInput(side, committed = false) {
+      if (ignoreSetupEvents) return;
+
+      if (committed) ensureDistinctPlayerSelects(side);
+      if (!matchActive) history = [createMatchFromSetup()];
     }
 
     function switchServerManual() {
@@ -3404,8 +3540,6 @@
       ignoreSetupEvents = true;
       document.getElementById("categorySelect").value = state.category;
       populatePlayers(state.category, labelA, labelB);
-      document.getElementById("playerASelect").value = labelA;
-      document.getElementById("playerBSelect").value = labelB;
       ensureDistinctPlayerSelects();
       ignoreSetupEvents = false;
 
@@ -3541,6 +3675,16 @@
       document.getElementById("categorySelect").addEventListener("change", () => handleSetupChange("category"));
       document.getElementById("playerASelect").addEventListener("change", () => handleSetupChange("playerA"));
       document.getElementById("playerBSelect").addEventListener("change", () => handleSetupChange("playerB"));
+      ["A", "B"].forEach(side => {
+        const input = getPlayerSetupElements(side).input;
+        input.addEventListener("input", () => handleCustomPlayerInput(side));
+        input.addEventListener("change", () => handleCustomPlayerInput(side, true));
+        input.addEventListener("keydown", event => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          startNewMatch();
+        });
+      });
 
       document.getElementById("pointA").addEventListener("click", () => {
         requestWakeLock();

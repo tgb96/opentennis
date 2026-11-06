@@ -24,3 +24,12 @@ test("las tarjetas de partidos no recuperan el botón Abrir marcador", () => {
   const html = fs.readFileSync(path.join(root, "partidos.html"), "utf8");
   assert.doesNotMatch(html, />Abrir marcador</);
 });
+
+test("el marcador permite escribir nombres que no estén en el listado oficial", () => {
+  const html = fs.readFileSync(path.join(root, "marcador.html"), "utf8");
+  assert.match(html, /id="customPlayerAInput"/);
+  assert.match(html, /id="customPlayerBInput"/);
+  assert.match(html, /Otro jugador…/);
+  assert.match(html, /const CUSTOM_PLAYER_VALUE = "__custom_player__"/);
+  assert.match(html, /function validateSetupPlayers/);
+});
