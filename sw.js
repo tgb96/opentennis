@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v48-club-logos';
+const CACHE_NAME = 'open-tennis-v49-scoreboard-navigation';
 
 const CORE_ASSETS = [
   './',
