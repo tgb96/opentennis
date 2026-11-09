@@ -29,22 +29,21 @@
       "finalResult": "Empate 7–7",
       "finalScore": "7–7",
       "finalLabel": "Empate",
-      "comebackText": "Del 5–7 al 7–7 con victorias de Nicolás y Matías.",
       "matches": [
-        { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": "Perdió", "winner": "Omar Álvarez" },
-        { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": "Ganó", "winner": "Aníbal Valenzuela" },
-        { "id": "ic06", "time": "13:30", "externalPlayer": "Paulina Rodríguez", "clubPlayer": "Constanza Núñez", "result": "Perdió", "winner": "Paulina Rodríguez" },
-        { "id": "ic01", "time": "13:00", "externalPlayer": "Juan Piña", "clubPlayer": "Angelo Basualto", "result": "Perdió", "winner": "Juan Piña" },
-        { "id": "ic04", "time": "13:00", "externalPlayer": "Vicente Serey", "clubPlayer": "Jose Astete", "result": "Ganó", "winner": "Jose Astete" },
-        { "id": "ic02", "time": "13:00", "externalPlayer": "Diego Laso", "clubPlayer": "Marcelo López", "result": "Perdió", "winner": "Diego Laso" },
-        { "id": "ic05", "time": "13:30", "externalPlayer": "Rodrigo Vega", "clubPlayer": "Tomás Gómez", "result": "Perdió", "winner": "Rodrigo Vega" },
-        { "id": "ic07", "time": "14:15", "externalPlayer": "Gonzalo Leyton", "clubPlayer": "Genaro Espinoza", "result": "Perdió", "winner": "Gonzalo Leyton" },
-        { "id": "ic08", "time": "14:15", "externalPlayer": "Camilo Fuentes", "clubPlayer": "Javier González", "result": "Perdió", "winner": "Camilo Fuentes" },
-        { "id": "ic09", "time": "14:15", "externalPlayer": "Jorge Ríos", "clubPlayer": "Claudio Aedo", "result": "Ganó", "winner": "Claudio Aedo" },
-        { "id": "ic10", "time": "14:15", "externalPlayer": "Fernando Inostroza", "clubPlayer": "Daniel Vega", "result": "Ganó", "winner": "Daniel Vega" },
-        { "id": "ic12", "time": "14:45", "externalPlayer": "César Ramos", "clubPlayer": "Hernán Bravo", "result": "Ganó", "winner": "Hernán Bravo" },
-        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": "Ganó", "winner": "Nicolás Collao", "decisive": true },
-        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": "Ganó", "winner": "Matías Arellano", "decisive": true }
+        { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": "Perdió", "winner": "Omar Álvarez", "score": "1–0" },
+        { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": "Ganó", "winner": "Aníbal Valenzuela", "score": "1–1" },
+        { "id": "ic06", "time": "13:30", "externalPlayer": "Paulina Rodríguez", "clubPlayer": "Constanza Núñez", "result": "Perdió", "winner": "Paulina Rodríguez", "score": "2–1" },
+        { "id": "ic01", "time": "13:00", "externalPlayer": "Juan Piña", "clubPlayer": "Angelo Basualto", "result": "Perdió", "winner": "Juan Piña", "score": "3–1" },
+        { "id": "ic04", "time": "13:00", "externalPlayer": "Vicente Serey", "clubPlayer": "Jose Astete", "result": "Ganó", "winner": "Jose Astete", "score": "3–2" },
+        { "id": "ic02", "time": "13:00", "externalPlayer": "Diego Laso", "clubPlayer": "Marcelo López", "result": "Perdió", "winner": "Diego Laso", "score": "4–2" },
+        { "id": "ic05", "time": "13:30", "externalPlayer": "Rodrigo Vega", "clubPlayer": "Tomás Gómez", "result": "Perdió", "winner": "Rodrigo Vega", "score": "5–2" },
+        { "id": "ic07", "time": "14:15", "externalPlayer": "Gonzalo Leyton", "clubPlayer": "Genaro Espinoza", "result": "Perdió", "winner": "Gonzalo Leyton", "score": "6–2" },
+        { "id": "ic08", "time": "14:15", "externalPlayer": "Camilo Fuentes", "clubPlayer": "Javier González", "result": "Perdió", "winner": "Camilo Fuentes", "score": "7–2" },
+        { "id": "ic09", "time": "14:15", "externalPlayer": "Jorge Ríos", "clubPlayer": "Claudio Aedo", "result": "Ganó", "winner": "Claudio Aedo", "score": "7–3" },
+        { "id": "ic10", "time": "14:15", "externalPlayer": "Fernando Inostroza", "clubPlayer": "Daniel Vega", "result": "Ganó", "winner": "Daniel Vega", "score": "7–4" },
+        { "id": "ic12", "time": "14:45", "externalPlayer": "César Ramos", "clubPlayer": "Hernán Bravo", "result": "Ganó", "winner": "Hernán Bravo", "score": "7–5" },
+        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": "Ganó", "winner": "Nicolás Collao", "score": "7–6" },
+        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": "Ganó", "winner": "Matías Arellano", "score": "7–7" }
       ]
     }
   ]

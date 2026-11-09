@@ -94,11 +94,12 @@
     const result = match.result
       ? `<span class="club-event-player-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</span>`
       : (eventPhase === "followup" ? '<span class="club-event-player-result is-pending">Resultado por registrar</span>' : "");
-    return `<div class="club-event-player-match${match.decisive ? " is-decisive" : ""}">
+    const score = match.score ? `<span class="club-event-score" title="Marcador acumulado: FacuTenis–Open Tennis">${escapeHtml(match.score)}</span>` : "";
+    return `<div class="club-event-player-match${won ? " is-win" : ""}">
       <span>Tu partido interclub</span>
       <div class="club-event-player-match-row">
         <strong><time>${escapeHtml(match.time)}</time> · ${escapeHtml(match.externalPlayer)} vs ${escapeHtml(match.clubPlayer)}</strong>
-        ${result}
+        <span class="club-event-match-badges">${score}${result}</span>
       </div>
     </div>`;
   }
@@ -127,7 +128,6 @@
         <strong>${escapeHtml(event.finalScore || event.finalResult)}</strong>
         <small>${escapeHtml(event.finalLabel || "")}</small>
       </div>` : ""}
-      ${eventPhase === "followup" && event.comebackText ? `<p class="club-event-comeback"><strong>Remontada final</strong><span>${escapeHtml(event.comebackText)}</span></p>` : ""}
       ${match ? playerMatchHtml(match, eventPhase) : (eventPhase === "followup" && event.finalResult ? "" : `<p class="club-event-status">${escapeHtml(status)}</p>`)}
       <button class="club-event-open" type="button" data-club-event-open="${escapeHtml(event.id)}">${eventPhase === "followup" ? "Ver resultados y programación" : "Ver información y programación"}</button>
     </article>`;
@@ -139,9 +139,10 @@
     const result = match.result
       ? `<strong class="club-event-match-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</strong>`
       : (eventPhase === "followup" ? '<span class="club-event-match-result is-pending">Resultado por registrar</span>' : "");
-    return `<li class="club-event-match${selected ? " is-player" : ""}${match.decisive ? " is-decisive" : ""}">
+    const score = match.score ? `<span class="club-event-score" title="Marcador acumulado: FacuTenis–Open Tennis">${escapeHtml(match.score)}</span>` : "";
+    return `<li class="club-event-match${selected ? " is-player" : ""}${won ? " is-win" : ""}">
       <span>${escapeHtml(match.externalPlayer)} <i>vs</i> ${escapeHtml(match.clubPlayer)}</span>
-      ${result}
+      <span class="club-event-match-badges">${score}${result}</span>
     </li>`;
   }
 
@@ -166,7 +167,6 @@
         <div class="club-event-dialog-grid">
           <div class="club-event-detail-main">
             ${match ? playerMatchHtml(match, eventPhase) : ""}
-            ${event.comebackText && eventPhase !== "upcoming" ? `<p class="club-event-dialog-story"><strong>Remontada final</strong><span>${escapeHtml(event.comebackText)}</span></p>` : ""}
             <div class="club-event-facts">
               <p><strong>📅 Fecha</strong><span>${escapeHtml(event.dateLabel)} · ${escapeHtml(event.timeLabel)}</span></p>
               <p><strong>📍 Lugar</strong><span>${escapeHtml(event.address)}</span></p>
@@ -177,7 +177,7 @@
               <a href="${escapeHtml(event.mapsUrl)}" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
               <button type="button" data-club-event-calendar="${escapeHtml(event.id)}">Agregar al calendario</button>
             </div>
-            <div class="club-event-schedule"><h3>${eventPhase === "upcoming" ? "Programación de partidos" : "Resultados de los partidos"}</h3>${schedule}</div>
+            <div class="club-event-schedule"><h3>${eventPhase === "upcoming" ? "Programación de partidos" : "Resultados de los partidos"}</h3>${eventPhase === "upcoming" ? "" : '<p class="club-event-score-legend">Marcador acumulado: FacuTenis–Open Tennis</p>'}${schedule}</div>
           </div>
           <figure class="club-event-poster"><img src="${escapeHtml(event.poster)}" alt="Afiche oficial del interclub FacuTenis versus Open Tennis Huechuraba"></figure>
         </div>
