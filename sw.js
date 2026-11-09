@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v50-custom-scoreboard-players';
+const CACHE_NAME = 'open-tennis-v51-interclub-results';
 
 const CORE_ASSETS = [
   './',

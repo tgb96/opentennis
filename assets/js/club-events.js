@@ -64,7 +64,9 @@
       if (!groups.has(match.time)) groups.set(match.time, []);
       groups.get(match.time).push(match);
     });
-    return Array.from(groups.entries()).map(([time, matches]) => ({ time, matches }));
+    return Array.from(groups.entries())
+      .sort(([timeA], [timeB]) => timeA.localeCompare(timeB))
+      .map(([time, matches]) => ({ time, matches }));
   }
 
   function resultStats(event) {
@@ -104,7 +106,9 @@
     const kicker = eventPhase === "followup" ? "Resultados del interclub" : "Interclub de visita";
     const badge = eventPhase === "followup" ? "Hasta el 11 de noviembre" : "Este sábado";
     const status = eventPhase === "followup"
-      ? (stats.completed ? `${stats.completed} de ${stats.total} resultados registrados` : "Resultados por registrar")
+      ? (stats.completed === stats.total && event.finalResult
+        ? event.finalResult
+        : (stats.completed ? `${stats.completed} de ${stats.total} resultados registrados` : "Resultados por registrar"))
       : `${stats.total} partidos · 4 bloques`;
     return `<article class="club-event-card" data-club-event-id="${escapeHtml(event.id)}">
       <div class="club-event-card-top">
@@ -115,7 +119,8 @@
       <h3>FacuTenis vs Open Tennis</h3>
       <p class="club-event-meta">📅 ${escapeHtml(event.dateLabel)} · ${escapeHtml(event.timeLabel)}</p>
       <p class="club-event-meta">📍 ${escapeHtml(event.venue)} · Chicureo, Colina</p>
-      ${match ? playerMatchHtml(match, eventPhase) : `<p class="club-event-status">${escapeHtml(status)}</p>`}
+      ${eventPhase === "followup" && event.finalResult ? `<p class="club-event-status"><strong>Resultado final · ${escapeHtml(event.finalResult)}</strong></p>` : ""}
+      ${match ? playerMatchHtml(match, eventPhase) : (eventPhase === "followup" && event.finalResult ? "" : `<p class="club-event-status">${escapeHtml(status)}</p>`)}
       <button class="club-event-open" type="button" data-club-event-open="${escapeHtml(event.id)}">${eventPhase === "followup" ? "Ver resultados y programación" : "Ver información y programación"}</button>
     </article>`;
   }
@@ -134,10 +139,15 @@
 
   function dialogHtml(event, player, eventPhase) {
     const match = findPlayerMatch(event, player);
-    const schedule = groupedMatches(event).map(group => `<section class="club-event-block">
-      <h4>${escapeHtml(group.time)}</h4>
-      <ul>${group.matches.map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
-    </section>`).join("");
+    const schedule = eventPhase === "upcoming"
+      ? groupedMatches(event).map(group => `<section class="club-event-block">
+          <h4>${escapeHtml(group.time)}</h4>
+          <ul>${group.matches.map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
+        </section>`).join("")
+      : `<section class="club-event-block club-event-results-order">
+          <h4>Orden de los resultados</h4>
+          <ul>${(event.matches || []).map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
+        </section>`;
     const dialogId = `clubEventDialog-${event.id}`;
     return `<dialog class="club-event-dialog" id="${escapeHtml(dialogId)}" data-club-event-dialog="${escapeHtml(event.id)}" aria-labelledby="${escapeHtml(dialogId)}-title">
       <div class="club-event-dialog-shell">
@@ -159,7 +169,7 @@
               <a href="${escapeHtml(event.mapsUrl)}" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
               <button type="button" data-club-event-calendar="${escapeHtml(event.id)}">Agregar al calendario</button>
             </div>
-            <div class="club-event-schedule"><h3>Programación de partidos</h3>${schedule}</div>
+            <div class="club-event-schedule"><h3>${eventPhase === "upcoming" ? "Programación de partidos" : "Resultados de los partidos"}</h3>${schedule}</div>
           </div>
           <figure class="club-event-poster"><img src="${escapeHtml(event.poster)}" alt="Afiche oficial del interclub FacuTenis versus Open Tennis Huechuraba"></figure>
         </div>

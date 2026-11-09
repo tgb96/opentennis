@@ -2654,6 +2654,7 @@ body:not(.index-page) .app {
 .club-event-player-match time { display:inline-grid; place-items:center; min-width:48px; padding:4px 7px; border-radius:8px; color:#0b2f25; background:#f9d997; font-size:12px; }
 .club-event-player-result { color:#dff2e6; font-size:11px; font-weight:800; }
 .club-event-player-result.is-pending { color:#f6d7c4; }
+.club-event-dialog .club-event-player-result { color:#2d754d; }
 .club-event-open { min-height:42px; margin-top:13px; padding:10px 13px; border:0; border-radius:12px; color:#fff; background:#cf552b; box-shadow:0 7px 16px rgba(93,32,12,.25); font:850 12px/1.1 Inter,sans-serif; cursor:pointer; }
 
 .club-event-dialog { width:min(960px,calc(100vw - 24px)); max-width:none; max-height:calc(100dvh - 24px); margin:auto; padding:0; border:0; border-radius:24px; color:#20372e; background:#fff9ef; box-shadow:0 28px 80px rgba(0,0,0,.35); }

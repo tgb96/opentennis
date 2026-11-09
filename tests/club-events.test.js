@@ -26,7 +26,7 @@ test("la programación tiene catorce partidos en cuatro bloques", () => {
 });
 
 test("personaliza la tarjeta con el partido del jugador elegido", () => {
-  assert.deepEqual(clubEvents.findPlayerMatch(interclub, "Tomás Gómez"), interclub.matches[4]);
+  assert.equal(clubEvents.findPlayerMatch(interclub, "Tomás Gómez").id, "ic05");
   assert.equal(clubEvents.findPlayerMatch(interclub, "José Astete").clubPlayer, "Jose Astete");
   assert.equal(clubEvents.findPlayerMatch(interclub, "Christian Linares").clubPlayer, "Cristhian Linares");
   assert.equal(clubEvents.findPlayerMatch(interclub, "Felipe Reyes"), null);
@@ -38,15 +38,26 @@ test("personaliza la tarjeta con el partido del jugador elegido", () => {
   assert.match(view.dialogHtml, /is-player/);
 });
 
-test("no altera la escalerilla y admite resultados posteriores", () => {
+test("registra el empate sin alterar la escalerilla ni inventar marcadores", () => {
   const source = fs.readFileSync(path.join(__dirname, "..", "assets", "js", "club-events.js"), "utf8");
   assert.doesNotMatch(source, /FIXTURE_URL|REGISTRO_URL|RANKINGS_URL|applyToRankings/);
-  assert.deepEqual(clubEvents.resultStats(interclub), { total: 14, completed: 0, clubWins: 0 });
+  assert.deepEqual(clubEvents.resultStats(interclub), { total: 14, completed: 14, clubWins: 7 });
+  assert.equal(interclub.finalResult, "Empate 7–7");
+  assert.ok(interclub.matches.every(match => ["Ganó", "Perdió"].includes(match.result)));
+  assert.deepEqual(interclub.matches.map(match => match.clubPlayer), [
+    "Cristhian Linares", "Aníbal Valenzuela", "Constanza Núñez", "Angelo Basualto",
+    "Jose Astete", "Marcelo López", "Tomás Gómez", "Genaro Espinoza",
+    "Javier González", "Claudio Aedo", "Daniel Vega", "Hernán Bravo",
+    "Nicolás Collao", "Matías Arellano"
+  ]);
+  assert.deepEqual(interclub.matches.slice(-2).map(match => match.result), ["Ganó", "Ganó"]);
 
-  const withResult = JSON.parse(JSON.stringify(interclub));
-  withResult.matches[0].result = "6-4, 6-3";
-  withResult.matches[0].winner = "Angelo Basualto";
-  assert.deepEqual(clubEvents.resultStats(withResult), { total: 14, completed: 1, clubWins: 1 });
+  const view = clubEvents.renderHome(data, "Tomás Gómez", "2026-11-08");
+  assert.match(view.featuredHtml, /Resultado final · Empate 7–7/);
+  assert.match(view.featuredHtml, /Resultado: Perdió/);
+  assert.match(view.dialogHtml, /Orden de los resultados/);
+  assert.ok(view.dialogHtml.indexOf("Cristhian Linares") < view.dialogHtml.indexOf("Aníbal Valenzuela"));
+  assert.ok(view.dialogHtml.indexOf("Nicolás Collao") < view.dialogHtml.indexOf("Matías Arellano"));
 });
 
 test("genera un calendario con fecha, lugar y nombre correctos", () => {
@@ -62,5 +73,5 @@ test("desde el 12 queda visible dentro del archivo de actividades", () => {
   assert.equal(view.featuredHtml, "");
   assert.match(view.archiveHtml, /Actividades del club/);
   assert.match(view.archiveHtml, /Nuestro primer interclub/);
-  assert.match(view.dialogHtml, /Programación de partidos/);
+  assert.match(view.dialogHtml, /Resultados de los partidos/);
 });

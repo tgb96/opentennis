@@ -25,22 +25,23 @@
         "Partidos a dos sets con punto de oro (no ad).",
         "Si se requiere definición, se jugará un tie-break con diferencia mínima de dos puntos."
       ],
-      "status": "scheduled",
+      "status": "completed",
+      "finalResult": "Empate 7–7",
       "matches": [
-        { "id": "ic01", "time": "13:00", "externalPlayer": "Juan Piña", "clubPlayer": "Angelo Basualto", "result": null, "winner": null },
-        { "id": "ic02", "time": "13:00", "externalPlayer": "Diego Laso", "clubPlayer": "Marcelo López", "result": null, "winner": null },
-        { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": null, "winner": null },
-        { "id": "ic04", "time": "13:00", "externalPlayer": "Vicente Serey", "clubPlayer": "Jose Astete", "result": null, "winner": null },
-        { "id": "ic05", "time": "13:30", "externalPlayer": "Rodrigo Vega", "clubPlayer": "Tomás Gómez", "result": null, "winner": null },
-        { "id": "ic06", "time": "13:30", "externalPlayer": "Paulina Rodríguez", "clubPlayer": "Constanza Núñez", "result": null, "winner": null },
-        { "id": "ic07", "time": "14:15", "externalPlayer": "Gonzalo Leyton", "clubPlayer": "Genaro Espinoza", "result": null, "winner": null },
-        { "id": "ic08", "time": "14:15", "externalPlayer": "Camilo Fuentes", "clubPlayer": "Javier González", "result": null, "winner": null },
-        { "id": "ic09", "time": "14:15", "externalPlayer": "Jorge Ríos", "clubPlayer": "Claudio Aedo", "result": null, "winner": null },
-        { "id": "ic10", "time": "14:15", "externalPlayer": "Fernando Inostroza", "clubPlayer": "Daniel Vega", "result": null, "winner": null },
-        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": null, "winner": null },
-        { "id": "ic12", "time": "14:45", "externalPlayer": "César Ramos", "clubPlayer": "Hernán Bravo", "result": null, "winner": null },
-        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": null, "winner": null },
-        { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": null, "winner": null }
+        { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": "Perdió", "winner": "Omar Álvarez" },
+        { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": "Ganó", "winner": "Aníbal Valenzuela" },
+        { "id": "ic06", "time": "13:30", "externalPlayer": "Paulina Rodríguez", "clubPlayer": "Constanza Núñez", "result": "Perdió", "winner": "Paulina Rodríguez" },
+        { "id": "ic01", "time": "13:00", "externalPlayer": "Juan Piña", "clubPlayer": "Angelo Basualto", "result": "Perdió", "winner": "Juan Piña" },
+        { "id": "ic04", "time": "13:00", "externalPlayer": "Vicente Serey", "clubPlayer": "Jose Astete", "result": "Ganó", "winner": "Jose Astete" },
+        { "id": "ic02", "time": "13:00", "externalPlayer": "Diego Laso", "clubPlayer": "Marcelo López", "result": "Perdió", "winner": "Diego Laso" },
+        { "id": "ic05", "time": "13:30", "externalPlayer": "Rodrigo Vega", "clubPlayer": "Tomás Gómez", "result": "Perdió", "winner": "Rodrigo Vega" },
+        { "id": "ic07", "time": "14:15", "externalPlayer": "Gonzalo Leyton", "clubPlayer": "Genaro Espinoza", "result": "Perdió", "winner": "Gonzalo Leyton" },
+        { "id": "ic08", "time": "14:15", "externalPlayer": "Camilo Fuentes", "clubPlayer": "Javier González", "result": "Perdió", "winner": "Camilo Fuentes" },
+        { "id": "ic09", "time": "14:15", "externalPlayer": "Jorge Ríos", "clubPlayer": "Claudio Aedo", "result": "Ganó", "winner": "Claudio Aedo" },
+        { "id": "ic10", "time": "14:15", "externalPlayer": "Fernando Inostroza", "clubPlayer": "Daniel Vega", "result": "Ganó", "winner": "Daniel Vega" },
+        { "id": "ic12", "time": "14:45", "externalPlayer": "César Ramos", "clubPlayer": "Hernán Bravo", "result": "Ganó", "winner": "Hernán Bravo" },
+        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": "Ganó", "winner": "Nicolás Collao" },
+        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": "Ganó", "winner": "Matías Arellano" }
       ]
     }
   ]
