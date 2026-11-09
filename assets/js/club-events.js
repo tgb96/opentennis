@@ -90,13 +90,16 @@
 
   function playerMatchHtml(match, eventPhase) {
     if (!match) return "";
+    const won = match.result === "Ganó";
     const result = match.result
-      ? `<span class="club-event-player-result">Resultado: ${escapeHtml(match.result)}</span>`
+      ? `<span class="club-event-player-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</span>`
       : (eventPhase === "followup" ? '<span class="club-event-player-result is-pending">Resultado por registrar</span>' : "");
     return `<div class="club-event-player-match">
       <span>Tu partido interclub</span>
-      <strong><time>${escapeHtml(match.time)}</time> · ${escapeHtml(match.externalPlayer)} vs ${escapeHtml(match.clubPlayer)}</strong>
-      ${result}
+      <div class="club-event-player-match-row">
+        <strong><time>${escapeHtml(match.time)}</time> · ${escapeHtml(match.externalPlayer)} vs ${escapeHtml(match.clubPlayer)}</strong>
+        ${result}
+      </div>
     </div>`;
   }
 
@@ -104,7 +107,7 @@
     const match = findPlayerMatch(event, player);
     const stats = resultStats(event);
     const kicker = eventPhase === "followup" ? "Resultados del interclub" : "Interclub de visita";
-    const badge = eventPhase === "followup" ? "Hasta el 11 de noviembre" : "Este sábado";
+    const badge = eventPhase === "followup" ? "Finalizado" : "Este sábado";
     const status = eventPhase === "followup"
       ? (stats.completed === stats.total && event.finalResult
         ? event.finalResult
@@ -119,7 +122,11 @@
       <h3>FacuTenis vs Open Tennis</h3>
       <p class="club-event-meta">📅 ${escapeHtml(event.dateLabel)} · ${escapeHtml(event.timeLabel)}</p>
       <p class="club-event-meta">📍 ${escapeHtml(event.venue)} · Chicureo, Colina</p>
-      ${eventPhase === "followup" && event.finalResult ? `<p class="club-event-status"><strong>Resultado final · ${escapeHtml(event.finalResult)}</strong></p>` : ""}
+      ${eventPhase === "followup" && event.finalResult ? `<div class="club-event-final-score">
+        <span>Resultado final</span>
+        <strong>${escapeHtml(event.finalScore || event.finalResult)}</strong>
+        <small>${escapeHtml(event.finalLabel || "")}</small>
+      </div>` : ""}
       ${match ? playerMatchHtml(match, eventPhase) : (eventPhase === "followup" && event.finalResult ? "" : `<p class="club-event-status">${escapeHtml(status)}</p>`)}
       <button class="club-event-open" type="button" data-club-event-open="${escapeHtml(event.id)}">${eventPhase === "followup" ? "Ver resultados y programación" : "Ver información y programación"}</button>
     </article>`;
@@ -127,8 +134,9 @@
 
   function matchHtml(match, player, eventPhase) {
     const selected = playerKey(match.clubPlayer) === playerKey(player);
+    const won = match.result === "Ganó";
     const result = match.result
-      ? `<strong class="club-event-match-result">${escapeHtml(match.result)}</strong>`
+      ? `<strong class="club-event-match-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</strong>`
       : (eventPhase === "followup" ? '<span class="club-event-match-result is-pending">Resultado por registrar</span>' : "");
     return `<li class="club-event-match${selected ? " is-player" : ""}">
       <span>${escapeHtml(match.externalPlayer)} <i>vs</i> ${escapeHtml(match.clubPlayer)}</span>

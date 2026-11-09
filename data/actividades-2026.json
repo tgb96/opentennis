@@ -27,6 +27,8 @@
       ],
       "status": "completed",
       "finalResult": "Empate 7–7",
+      "finalScore": "7–7",
+      "finalLabel": "Empate",
       "matches": [
         { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": "Perdió", "winner": "Omar Álvarez" },
         { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": "Ganó", "winner": "Aníbal Valenzuela" },

@@ -43,6 +43,7 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.doesNotMatch(source, /FIXTURE_URL|REGISTRO_URL|RANKINGS_URL|applyToRankings/);
   assert.deepEqual(clubEvents.resultStats(interclub), { total: 14, completed: 14, clubWins: 7 });
   assert.equal(interclub.finalResult, "Empate 7–7");
+  assert.equal(interclub.finalScore, "7–7");
   assert.ok(interclub.matches.every(match => ["Ganó", "Perdió"].includes(match.result)));
   assert.deepEqual(interclub.matches.map(match => match.clubPlayer), [
     "Cristhian Linares", "Aníbal Valenzuela", "Constanza Núñez", "Angelo Basualto",
@@ -53,9 +54,14 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.deepEqual(interclub.matches.slice(-2).map(match => match.result), ["Ganó", "Ganó"]);
 
   const view = clubEvents.renderHome(data, "Tomás Gómez", "2026-11-08");
-  assert.match(view.featuredHtml, /Resultado final · Empate 7–7/);
-  assert.match(view.featuredHtml, /Resultado: Perdió/);
+  assert.match(view.featuredHtml, /Finalizado/);
+  assert.doesNotMatch(view.featuredHtml, /Hasta el 11 de noviembre/);
+  assert.match(view.featuredHtml, /club-event-final-score/);
+  assert.match(view.featuredHtml, />7–7</);
+  assert.match(view.featuredHtml, /club-event-player-result is-loss">Derrota/);
   assert.match(view.dialogHtml, /Orden de los resultados/);
+  assert.match(view.dialogHtml, /club-event-match-result is-win">Victoria/);
+  assert.match(view.dialogHtml, /club-event-match-result is-loss">Derrota/);
   assert.ok(view.dialogHtml.indexOf("Cristhian Linares") < view.dialogHtml.indexOf("Aníbal Valenzuela"));
   assert.ok(view.dialogHtml.indexOf("Nicolás Collao") < view.dialogHtml.indexOf("Matías Arellano"));
 });

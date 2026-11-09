@@ -495,8 +495,8 @@
         .then(text => text ? JSON.parse(text) : null)
         .catch(() => null);
       const clubEventPromise = (window.OPEN_TENNIS_CACHE
-        ? window.OPEN_TENNIS_CACHE.getText("data/actividades-2026.json?v=4")
-        : fetch("data/actividades-2026.json?v=4").then(response => response.ok ? response.text() : ""))
+        ? window.OPEN_TENNIS_CACHE.getText("data/actividades-2026.json?v=5")
+        : fetch("data/actividades-2026.json?v=5").then(response => response.ok ? response.text() : ""))
         .then(text => text ? JSON.parse(text) : { events: [] })
         .catch(() => ({ events: [] }));
       const dataUrls = [config.FIXTURE_URL, config.REGISTRO_URL, config.RANKINGS_URL];
