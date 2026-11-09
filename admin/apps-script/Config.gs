@@ -20,6 +20,18 @@ var ADMIN_CONFIG = Object.freeze({
       "2026-s15-a-felipe-reyes-nicolas-collao"
     ])
   }),
+  INTERCLUB_RECOVERY: Object.freeze({
+    DATE: "12/12/2026",
+    NOTES: "Jornada extraordinaria · recuperación por interclub del 07/11/2026",
+    MATCH_IDS: Object.freeze([
+      "2026-s14-a-angelo-basualto-tomas-gomez",
+      "2026-s14-a-jose-astete-nicolas-collao",
+      "2026-s14-b-diego-cervantes-matias-arellano",
+      "2026-s14-b-gonzalo-barros-javier-gonzalez",
+      "2026-s14-c-cesar-maturana-constanza-nunez",
+      "2026-s14-b-daniel-vega-genaro-espinoza"
+    ])
+  }),
   PUBLIC_DATA_URLS: Object.freeze({
     FIXTURE: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=0&single=true&output=csv",
     REGISTRO: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1046180821&single=true&output=csv",

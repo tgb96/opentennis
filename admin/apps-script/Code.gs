@@ -378,6 +378,27 @@ function saveAdminMatch(payload) {
   }
 }
 
+function scheduleInterclubRecoveryDate2026() {
+  adminAssertAuthorized_();
+  var recovery = ADMIN_CONFIG.INTERCLUB_RECOVERY;
+  var results = recovery.MATCH_IDS.map(function(matchId) {
+    return adminSaveMatch_({
+      matchId: matchId,
+      status: ADMIN_STATUSES.PROGRAMADO,
+      date: recovery.DATE,
+      scheduleType: ADMIN_CONFIG.SCHEDULE_TYPES.RECUPERACION,
+      notes: recovery.NOTES
+    });
+  });
+
+  return {
+    ok: true,
+    date: recovery.DATE,
+    updatedMatches: results.length,
+    matchIds: recovery.MATCH_IDS.slice()
+  };
+}
+
 function adminAssertAuthorized_() {
   var allowed = adminAllowedEmails_();
   if (!allowed.length) {

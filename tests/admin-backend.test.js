@@ -366,6 +366,37 @@ test("el administrador excluye los cinco partidos pendientes anulados por la ren
   }, "9/11/2026"), false);
 });
 
+test("programa la jornada extraordinaria del interclub sin cambiar cancha ni horario", () => {
+  const context = createContext();
+  const saved = [];
+  context.adminAssertAuthorized_ = () => "admin@example.com";
+  context.adminSaveMatch_ = payload => {
+    saved.push({ ...payload });
+    return { ok: true, matchId: payload.matchId };
+  };
+
+  const result = context.scheduleInterclubRecoveryDate2026();
+
+  assert.equal(result.ok, true);
+  assert.equal(result.date, "12/12/2026");
+  assert.equal(result.updatedMatches, 6);
+  assert.deepEqual(saved.map(item => item.matchId), [
+    "2026-s14-a-angelo-basualto-tomas-gomez",
+    "2026-s14-a-jose-astete-nicolas-collao",
+    "2026-s14-b-diego-cervantes-matias-arellano",
+    "2026-s14-b-gonzalo-barros-javier-gonzalez",
+    "2026-s14-c-cesar-maturana-constanza-nunez",
+    "2026-s14-b-daniel-vega-genaro-espinoza"
+  ]);
+  saved.forEach(item => {
+    assert.equal(item.status, "programado");
+    assert.equal(item.date, "12/12/2026");
+    assert.equal(item.scheduleType, "recuperacion");
+    assert.equal(Object.prototype.hasOwnProperty.call(item, "court"), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(item, "turn"), false);
+  });
+});
+
 test("resume la próxima jornada y separa lo pendiente, registrado y por jugar", () => {
   const context = createContext();
   const matches = [
