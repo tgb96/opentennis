@@ -59,7 +59,8 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.match(view.featuredHtml, /club-event-final-score/);
   assert.match(view.featuredHtml, />7–7</);
   assert.match(view.featuredHtml, /club-event-player-result is-loss">Derrota/);
-  assert.match(view.dialogHtml, /Orden de los resultados/);
+  assert.doesNotMatch(view.dialogHtml, /Orden de los resultados/);
+  assert.match(view.dialogHtml, /club-event-results-order/);
   assert.match(view.dialogHtml, /club-event-match-result is-win">Victoria/);
   assert.match(view.dialogHtml, /club-event-match-result is-loss">Derrota/);
   assert.doesNotMatch(view.dialogHtml, /<b>Tu partido<\/b>/);

@@ -151,8 +151,7 @@
           <h4>${escapeHtml(group.time)}</h4>
           <ul>${group.matches.map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
         </section>`).join("")
-      : `<section class="club-event-block club-event-results-order">
-          <h4>Orden de los resultados</h4>
+      : `<section class="club-event-results-order">
           <ul>${(event.matches || []).map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
         </section>`;
     const dialogId = `clubEventDialog-${event.id}`;

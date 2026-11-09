@@ -2688,6 +2688,8 @@ body:not(.index-page) .app {
 .club-event-block { display:grid; grid-template-columns:58px minmax(0,1fr); gap:9px; margin-top:8px; }
 .club-event-block h4 { align-self:start; margin:0; padding:8px 5px; border-radius:9px; color:#fff; background:#b84b27; text-align:center; font-size:11px; }
 .club-event-block ul { display:grid; gap:5px; margin:0; padding:0; list-style:none; }
+.club-event-results-order { margin-top:8px; }
+.club-event-results-order ul { display:grid; gap:5px; margin:0; padding:0; list-style:none; }
 .club-event-match { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:7px; min-height:36px; padding:8px 10px; border:1px solid #e4d9c8; border-radius:10px; background:#fff; font-size:11px; }
 .club-event-match > span:first-child { min-width:0; font-weight:800; }
 .club-event-match i { color:#a74b27; font-style:normal; }
