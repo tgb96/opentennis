@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v52-interclub-result-cards';
+const CACHE_NAME = 'open-tennis-v53-interclub-single-line-results';
 
 const CORE_ASSETS = [
   './',

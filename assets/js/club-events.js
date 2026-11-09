@@ -140,7 +140,6 @@
       : (eventPhase === "followup" ? '<span class="club-event-match-result is-pending">Resultado por registrar</span>' : "");
     return `<li class="club-event-match${selected ? " is-player" : ""}">
       <span>${escapeHtml(match.externalPlayer)} <i>vs</i> ${escapeHtml(match.clubPlayer)}</span>
-      ${selected ? '<b>Tu partido</b>' : ""}
       ${result}
     </li>`;
   }

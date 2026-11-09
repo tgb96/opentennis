@@ -62,6 +62,8 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.match(view.dialogHtml, /Orden de los resultados/);
   assert.match(view.dialogHtml, /club-event-match-result is-win">Victoria/);
   assert.match(view.dialogHtml, /club-event-match-result is-loss">Derrota/);
+  assert.doesNotMatch(view.dialogHtml, /<b>Tu partido<\/b>/);
+  assert.match(view.dialogHtml, /Omar Álvarez[\s\S]*Cristhian Linares<\/span>\s*<strong class="club-event-match-result is-loss">Derrota/);
   assert.ok(view.dialogHtml.indexOf("Cristhian Linares") < view.dialogHtml.indexOf("Aníbal Valenzuela"));
   assert.ok(view.dialogHtml.indexOf("Nicolás Collao") < view.dialogHtml.indexOf("Matías Arellano"));
 });

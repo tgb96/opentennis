@@ -2691,7 +2691,6 @@ body:not(.index-page) .app {
 .club-event-match { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:7px; min-height:36px; padding:8px 10px; border:1px solid #e4d9c8; border-radius:10px; background:#fff; font-size:11px; }
 .club-event-match > span:first-child { min-width:0; font-weight:800; }
 .club-event-match i { color:#a74b27; font-style:normal; }
-.club-event-match b { padding:3px 6px; border-radius:999px; color:#fff; background:#174d3a; font-size:8px; text-transform:uppercase; }
 .club-event-match.is-player { border-color:#cf552b; box-shadow:inset 4px 0 #cf552b; background:#fff6ee; }
 .club-event-poster { align-self:start; overflow:hidden; margin:0; border:1px solid #d9c39e; border-radius:16px; background:#063c27; box-shadow:0 12px 28px rgba(11,47,37,.18); }
 .club-event-poster img { display:block; width:100%; height:auto; }
