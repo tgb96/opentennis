@@ -428,6 +428,18 @@ function adminToday_() {
   return Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "d/M/yyyy");
 }
 
+function adminIsInactiveFixtureMatch_(match, todayValue) {
+  var inactive = ADMIN_CONFIG.INACTIVE_FIXTURE;
+  if (!inactive || !match) return false;
+
+  var today = adminComparableDate_(todayValue || adminToday_());
+  var effectiveFrom = adminComparableDate_(inactive.EFFECTIVE_FROM);
+  if (!today || !effectiveFrom || today < effectiveFrom) return false;
+
+  var matchId = String(match.matchId || "").trim().toLowerCase();
+  return inactive.MATCH_IDS.indexOf(matchId) >= 0;
+}
+
 function adminGetFixtureMatches_(fixtureSheet) {
   var rows = fixtureSheet.getDataRange().getDisplayValues();
   var columns = ADMIN_CONFIG.COLUMNS.FIXTURE;
@@ -682,7 +694,10 @@ function adminGetDashboard_() {
   var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
   var registroSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.REGISTRO_GID);
   var rankingsSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.RANKINGS_GID);
-  var matches = adminGetFixtureMatches_(fixtureSheet);
+  var today = adminToday_();
+  var matches = adminGetFixtureMatches_(fixtureSheet).filter(function(match) {
+    return !adminIsInactiveFixtureMatch_(match, today);
+  });
   var records = adminGetRegistroRecords_(registroSheet);
   var pairCounts = {};
   var pairDateCounts = {};
@@ -779,7 +794,6 @@ function adminGetDashboard_() {
   });
 
   var integrity = adminGetIntegrityReport_(fixtureSheet, registroSheet, rankingsSheet);
-  var today = adminToday_();
   return {
     season: ADMIN_CONFIG.SEASON,
     spreadsheetName: spreadsheet.getName(),

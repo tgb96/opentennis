@@ -9,6 +9,17 @@ var ADMIN_CONFIG = Object.freeze({
   ADMIN_EMAILS_PROPERTY: "ADMIN_EMAILS",
   UNDO_WINDOW_MINUTES: 10,
   REGISTRO_COLUMN_COUNT: 23,
+  INACTIVE_FIXTURE: Object.freeze({
+    EFFECTIVE_FROM: "29/10/2026",
+    REASON: "Renuncia de Felipe Reyes al club",
+    MATCH_IDS: Object.freeze([
+      "2026-s1-a-felipe-reyes-jose-astete",
+      "2026-s2-a-claudio-aedo-felipe-reyes",
+      "2026-s5-a-angelo-basualto-felipe-reyes",
+      "2026-s12-a-diego-fossa-felipe-reyes",
+      "2026-s15-a-felipe-reyes-nicolas-collao"
+    ])
+  }),
   PUBLIC_DATA_URLS: Object.freeze({
     FIXTURE: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=0&single=true&output=csv",
     REGISTRO: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Uc2YiXkim8OTwSbwK4AYfC1oWWNTX1TCE4RXFyzaK5azjuaHx4nWT1v6Ubiq2Lm9kpYFTJmY6C1d/pub?gid=1046180821&single=true&output=csv",

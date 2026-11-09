@@ -9,6 +9,7 @@ El panel incluye «← Volver al club», disponible también mientras carga los 
 ## Qué resuelve
 
 - Lista partidos por coordinar, programados y jugados.
+- Excluye del panel operativo los cinco partidos pendientes que quedaron sin efecto por la renuncia de Felipe Reyes; no aparecen en los listados, alertas ni totales de pendientes.
 - Busca por jugador y filtra por categoría.
 - Registra resultados normales, super tie-breaks y retiros.
 - Calcula ganador, sets, texto público y puntos `3–0` o `2–1`. El super tie-break decide el partido, pero no se suma como set ni como game.

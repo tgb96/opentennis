@@ -342,6 +342,30 @@ test("el administrador muestra la nueva fecha programada sobre el pendiente ante
   assert.equal(context.adminEffectiveMatchStatus_(match, oldPendingRecord), "programado");
 });
 
+test("el administrador excluye los cinco partidos pendientes anulados por la renuncia de Felipe", () => {
+  const context = createContext();
+  const pendingMatchIds = [
+    "2026-s1-a-felipe-reyes-jose-astete",
+    "2026-s2-a-claudio-aedo-felipe-reyes",
+    "2026-s5-a-angelo-basualto-felipe-reyes",
+    "2026-s12-a-diego-fossa-felipe-reyes",
+    "2026-s15-a-felipe-reyes-nicolas-collao"
+  ];
+
+  pendingMatchIds.forEach(matchId => {
+    assert.equal(context.adminIsInactiveFixtureMatch_({ matchId }, "29/10/2026"), true);
+    assert.equal(context.adminIsInactiveFixtureMatch_({ matchId }, "9/11/2026"), true);
+    assert.equal(context.adminIsInactiveFixtureMatch_({ matchId }, "28/10/2026"), false);
+  });
+
+  assert.equal(context.adminIsInactiveFixtureMatch_({
+    matchId: "2026-s9-a-felipe-reyes-tomas-gomez"
+  }, "9/11/2026"), false);
+  assert.equal(context.adminIsInactiveFixtureMatch_({
+    matchId: "2026-s14-a-tomas-gomez-angelo-basualto"
+  }, "9/11/2026"), false);
+});
+
 test("resume la próxima jornada y separa lo pendiente, registrado y por jugar", () => {
   const context = createContext();
   const matches = [
