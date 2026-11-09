@@ -9,7 +9,7 @@
       "editionLabel": "Nuestro primer interclub",
       "publishedFrom": "2026-11-05",
       "eventDate": "2026-11-07",
-      "featuredUntil": "2026-11-11",
+      "featuredUntil": "2026-11-15",
       "dateLabel": "Sábado 7 de noviembre de 2026",
       "timeLabel": "Desde las 13:00",
       "startDateTime": "2026-11-07T13:00:00-03:00",
@@ -29,6 +29,7 @@
       "finalResult": "Empate 7–7",
       "finalScore": "7–7",
       "finalLabel": "Empate",
+      "comebackText": "Del 5–7 al 7–7 con victorias de Nicolás y Matías.",
       "matches": [
         { "id": "ic03", "time": "13:00", "externalPlayer": "Omar Álvarez", "clubPlayer": "Cristhian Linares", "result": "Perdió", "winner": "Omar Álvarez" },
         { "id": "ic14", "time": "14:45", "externalPlayer": "Wenche Sánchez", "clubPlayer": "Aníbal Valenzuela", "result": "Ganó", "winner": "Aníbal Valenzuela" },
@@ -42,8 +43,8 @@
         { "id": "ic09", "time": "14:15", "externalPlayer": "Jorge Ríos", "clubPlayer": "Claudio Aedo", "result": "Ganó", "winner": "Claudio Aedo" },
         { "id": "ic10", "time": "14:15", "externalPlayer": "Fernando Inostroza", "clubPlayer": "Daniel Vega", "result": "Ganó", "winner": "Daniel Vega" },
         { "id": "ic12", "time": "14:45", "externalPlayer": "César Ramos", "clubPlayer": "Hernán Bravo", "result": "Ganó", "winner": "Hernán Bravo" },
-        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": "Ganó", "winner": "Nicolás Collao" },
-        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": "Ganó", "winner": "Matías Arellano" }
+        { "id": "ic11", "time": "14:45", "externalPlayer": "Fabián Díaz", "clubPlayer": "Nicolás Collao", "result": "Ganó", "winner": "Nicolás Collao", "decisive": true },
+        { "id": "ic13", "time": "14:45", "externalPlayer": "Bruno Valenzuela", "clubPlayer": "Matías Arellano", "result": "Ganó", "winner": "Matías Arellano", "decisive": true }
       ]
     }
   ]

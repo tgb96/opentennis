@@ -7,13 +7,13 @@ const clubEvents = require("../assets/js/club-events.js");
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "actividades-2026.json"), "utf8"));
 const interclub = data.events[0];
 
-test("el interclub se destaca del 5 al 11 y luego se archiva", () => {
+test("el interclub se destaca del 5 al 15 y luego queda en el archivo", () => {
   assert.equal(clubEvents.phase(interclub, "2026-11-04"), "hidden");
   assert.equal(clubEvents.phase(interclub, "2026-11-05"), "upcoming");
   assert.equal(clubEvents.phase(interclub, "2026-11-07"), "upcoming");
   assert.equal(clubEvents.phase(interclub, "2026-11-08"), "followup");
-  assert.equal(clubEvents.phase(interclub, "2026-11-11"), "followup");
-  assert.equal(clubEvents.phase(interclub, "2026-11-12"), "archived");
+  assert.equal(clubEvents.phase(interclub, "2026-11-15"), "followup");
+  assert.equal(clubEvents.phase(interclub, "2026-11-16"), "archived");
 });
 
 test("la programación tiene catorce partidos en cuatro bloques", () => {
@@ -52,6 +52,7 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
     "Nicolás Collao", "Matías Arellano"
   ]);
   assert.deepEqual(interclub.matches.slice(-2).map(match => match.result), ["Ganó", "Ganó"]);
+  assert.equal(interclub.matches.filter(match => match.decisive).length, 2);
 
   const view = clubEvents.renderHome(data, "Tomás Gómez", "2026-11-08");
   assert.match(view.featuredHtml, /Finalizado/);
@@ -59,6 +60,8 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.match(view.featuredHtml, /club-event-final-score/);
   assert.match(view.featuredHtml, />7–7</);
   assert.match(view.featuredHtml, /club-event-player-result is-loss">Derrota/);
+  assert.match(view.featuredHtml, /Remontada final/);
+  assert.match(view.featuredHtml, /Del 5–7 al 7–7/);
   assert.doesNotMatch(view.dialogHtml, /Orden de los resultados/);
   assert.match(view.dialogHtml, /club-event-results-order/);
   assert.match(view.dialogHtml, /club-event-match-result is-win">Victoria/);
@@ -67,6 +70,9 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.match(view.dialogHtml, /Omar Álvarez[\s\S]*Cristhian Linares<\/span>\s*<strong class="club-event-match-result is-loss">Derrota/);
   assert.ok(view.dialogHtml.indexOf("Cristhian Linares") < view.dialogHtml.indexOf("Aníbal Valenzuela"));
   assert.ok(view.dialogHtml.indexOf("Nicolás Collao") < view.dialogHtml.indexOf("Matías Arellano"));
+  assert.equal((view.dialogHtml.match(/is-decisive/g) || []).length, 2);
+  assert.match(view.archiveHtml, /Interclubes del club/);
+  assert.match(view.archiveHtml, /Empate 7–7/);
 });
 
 test("genera un calendario con fecha, lugar y nombre correctos", () => {
@@ -77,10 +83,11 @@ test("genera un calendario con fecha, lugar y nombre correctos", () => {
   assert.match(calendar, /Caletera Ote\. Gral\. San Martín 8521/);
 });
 
-test("desde el 12 queda visible dentro del archivo de actividades", () => {
-  const view = clubEvents.renderHome(data, "Tomás Gómez", "2026-11-12");
+test("desde el 16 permanece solamente en el archivo de interclubes", () => {
+  const view = clubEvents.renderHome(data, "Tomás Gómez", "2026-11-16");
   assert.equal(view.featuredHtml, "");
-  assert.match(view.archiveHtml, /Actividades del club/);
-  assert.match(view.archiveHtml, /Nuestro primer interclub/);
+  assert.match(view.archiveHtml, /Interclubes del club/);
+  assert.match(view.archiveHtml, /FacuTenis vs Open Tennis Huechuraba/);
+  assert.match(view.archiveHtml, /Empate 7–7/);
   assert.match(view.dialogHtml, /Resultados de los partidos/);
 });

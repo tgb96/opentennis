@@ -94,7 +94,7 @@
     const result = match.result
       ? `<span class="club-event-player-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</span>`
       : (eventPhase === "followup" ? '<span class="club-event-player-result is-pending">Resultado por registrar</span>' : "");
-    return `<div class="club-event-player-match">
+    return `<div class="club-event-player-match${match.decisive ? " is-decisive" : ""}">
       <span>Tu partido interclub</span>
       <div class="club-event-player-match-row">
         <strong><time>${escapeHtml(match.time)}</time> · ${escapeHtml(match.externalPlayer)} vs ${escapeHtml(match.clubPlayer)}</strong>
@@ -127,6 +127,7 @@
         <strong>${escapeHtml(event.finalScore || event.finalResult)}</strong>
         <small>${escapeHtml(event.finalLabel || "")}</small>
       </div>` : ""}
+      ${eventPhase === "followup" && event.comebackText ? `<p class="club-event-comeback"><strong>Remontada final</strong><span>${escapeHtml(event.comebackText)}</span></p>` : ""}
       ${match ? playerMatchHtml(match, eventPhase) : (eventPhase === "followup" && event.finalResult ? "" : `<p class="club-event-status">${escapeHtml(status)}</p>`)}
       <button class="club-event-open" type="button" data-club-event-open="${escapeHtml(event.id)}">${eventPhase === "followup" ? "Ver resultados y programación" : "Ver información y programación"}</button>
     </article>`;
@@ -138,7 +139,7 @@
     const result = match.result
       ? `<strong class="club-event-match-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</strong>`
       : (eventPhase === "followup" ? '<span class="club-event-match-result is-pending">Resultado por registrar</span>' : "");
-    return `<li class="club-event-match${selected ? " is-player" : ""}">
+    return `<li class="club-event-match${selected ? " is-player" : ""}${match.decisive ? " is-decisive" : ""}">
       <span>${escapeHtml(match.externalPlayer)} <i>vs</i> ${escapeHtml(match.clubPlayer)}</span>
       ${result}
     </li>`;
@@ -165,6 +166,7 @@
         <div class="club-event-dialog-grid">
           <div class="club-event-detail-main">
             ${match ? playerMatchHtml(match, eventPhase) : ""}
+            ${event.comebackText && eventPhase !== "upcoming" ? `<p class="club-event-dialog-story"><strong>Remontada final</strong><span>${escapeHtml(event.comebackText)}</span></p>` : ""}
             <div class="club-event-facts">
               <p><strong>📅 Fecha</strong><span>${escapeHtml(event.dateLabel)} · ${escapeHtml(event.timeLabel)}</span></p>
               <p><strong>📍 Lugar</strong><span>${escapeHtml(event.address)}</span></p>
@@ -184,11 +186,13 @@
   }
 
   function archiveHtml(events) {
-    if (!events.length) return "";
-    return `<details class="club-events-archive">
-      <summary><span><small>Historia del club</small>Actividades del club</span><b>${events.length}</b></summary>
-      <div class="club-events-archive-list">${events.map(event => `<button type="button" data-club-event-open="${escapeHtml(event.id)}">
-        <img src="${escapeHtml(event.clubLogo)}" alt=""><span><strong>${escapeHtml(event.editionLabel)}</strong><small>${escapeHtml(event.dateLabel)} · ${escapeHtml(event.title)}</small></span>
+    const interclubs = (events || []).filter(event => event.type === "interclub");
+    if (!interclubs.length) return "";
+    return `<details class="club-events-archive club-interclubs-archive">
+      <summary><span><small>Historia del club</small>Interclubes del club</span><b>${interclubs.length}</b></summary>
+      <p class="club-events-archive-intro">Resultados y planteles de los encuentros que representan al club.</p>
+      <div class="club-events-archive-list">${interclubs.map(event => `<button type="button" data-club-event-open="${escapeHtml(event.id)}">
+        <img src="${escapeHtml(event.externalLogo || event.clubLogo)}" alt=""><span><strong>${escapeHtml(event.title)}</strong><small>${escapeHtml(event.dateLabel)}${event.finalResult ? " · " + escapeHtml(event.finalResult) : ""}</small></span>
       </button>`).join("")}</div>
     </details>`;
   }
@@ -198,9 +202,10 @@
     const featured = data.events.find(event => ["upcoming", "followup"].includes(phase(event, now)));
     const archived = data.events.filter(event => phase(event, now) === "archived");
     const visibleEvents = data.events.filter(event => phase(event, now) !== "hidden");
+    const visibleInterclubs = visibleEvents.filter(event => event.type === "interclub");
     return {
       featuredHtml: featured ? cardHtml(featured, player, phase(featured, now)) : "",
-      archiveHtml: archiveHtml(archived),
+      archiveHtml: archiveHtml(visibleInterclubs),
       dialogHtml: visibleEvents.map(event => dialogHtml(event, player, phase(event, now))).join(""),
       selectedEvent: featured || archived[0] || null
     };
