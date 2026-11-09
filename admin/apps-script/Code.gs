@@ -435,7 +435,7 @@ function adminRestoreErroneousInterclubRecovery_() {
     var before = fixtureRange.getDisplayValues()[0];
     var after = before.slice();
     after[fixtureColumns.DATE] = spec.DATE;
-    after[fixtureColumns.STATUS] = "";
+    after[fixtureColumns.STATUS] = String(spec.STATUS || "");
     after[fixtureColumns.NOTES] = "";
     after[fixtureColumns.SCHEDULE_TYPE] = ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL;
     fixtureRange.setValues([after]);

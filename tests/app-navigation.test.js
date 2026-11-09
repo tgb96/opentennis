@@ -33,3 +33,11 @@ test("la próxima fecha se recalcula al retomar la aplicación o cambiar el día
   assert.match(matchesSource, /window\.addEventListener\("focus"/);
   assert.match(matchesSource, /obtenerSemanaProxima\(publicRows\)/);
 });
+
+test("la programación completa separa y ordena una fecha extraordinaria", () => {
+  assert.match(matchesSource, /function agruparProgramacionPorJornada/);
+  assert.match(matchesSource, /Fecha extra · \$\{fecha\}/);
+  assert.match(matchesSource, /agruparProgramacionPorJornada\(filas, mapaSemanas\)/);
+  assert.match(matchesSource, /fila\._semanaLabel = etiquetaJornadaProgramacion\(\[fila\], mapaSemanas\)/);
+  assert.match(matchesSource, /tieneProgramacionExplicita/);
+});

@@ -29,7 +29,6 @@ var ADMIN_CONFIG = Object.freeze({
       "2026-s13-b-matias-arellano-oscar-morales",
       "2026-s13-a-claudio-aedo-luis-flores",
       "2026-s13-b-cristhian-linares-jaime-valdebenito",
-      "2026-s13-c-anibal-valenzuela-hernan-medel",
       "2026-s13-b-daniel-vega-javier-gonzalez"
     ]),
     ROLLBACK_MATCHES: Object.freeze([
@@ -38,7 +37,8 @@ var ADMIN_CONFIG = Object.freeze({
       Object.freeze({ MATCH_ID: "2026-s14-b-diego-cervantes-matias-arellano", DATE: "14/11/2026" }),
       Object.freeze({ MATCH_ID: "2026-s14-b-gonzalo-barros-javier-gonzalez", DATE: "14/11/2026" }),
       Object.freeze({ MATCH_ID: "2026-s14-c-cesar-maturana-constanza-nunez", DATE: "14/11/2026" }),
-      Object.freeze({ MATCH_ID: "2026-s14-b-daniel-vega-genaro-espinoza", DATE: "14/11/2026" })
+      Object.freeze({ MATCH_ID: "2026-s14-b-daniel-vega-genaro-espinoza", DATE: "14/11/2026" }),
+      Object.freeze({ MATCH_ID: "2026-s13-c-anibal-valenzuela-hernan-medel", DATE: "07/11/2026", STATUS: "Jugado" })
     ])
   }),
   PUBLIC_DATA_URLS: Object.freeze({

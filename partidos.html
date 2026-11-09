@@ -930,48 +930,81 @@ function inicioDiaActualSantiago() {
 
 function obtenerSemanaProxima(filas) {
   const hoySantiago = inicioDiaActualSantiago();
-  const fechasPorSemana = new Map();
+  let fechaMasCercana = Infinity;
 
   for (let i = 0; i < filas.length; i++) {
     const fila = filas[i];
     const fechaProgramada = parseFechaProgramacionSantiago(fila.fechaSemana);
 
     if (fechaProgramada === null || fechaProgramada < hoySantiago) continue;
-
-    const semana = String(fila.semana || "").trim();
-
-    if (!semana) continue;
-
-    if (!fechasPorSemana.has(semana) || fechaProgramada < fechasPorSemana.get(semana)) {
-      fechasPorSemana.set(semana, fechaProgramada);
-    }
+    if (fechaProgramada < fechaMasCercana) fechaMasCercana = fechaProgramada;
   }
 
-  let semanaProxima = "";
-  let fechaMasCercana = Infinity;
-
-  fechasPorSemana.forEach((fecha, semana) => {
-    if (fecha < fechaMasCercana) {
-      fechaMasCercana = fecha;
-      semanaProxima = semana;
-    }
-  });
-
-  return semanaProxima;
+  return Number.isFinite(fechaMasCercana) ? fechaMasCercana : null;
 }
 
-function marcarSemanaProxima(filas, semanaProxima) {
+function marcarSemanaProxima(filas, fechaProxima) {
   const hoySantiago = inicioDiaActualSantiago();
   const diaSemana = new Date(hoySantiago).getUTCDay();
   const proximoSabado = hoySantiago + ((6 - diaSemana + 7) % 7) * 86400000;
 
   for (let i = 0; i < filas.length; i++) {
-    filas[i]._esSemanaProxima = Boolean(semanaProxima && filas[i].semana === semanaProxima);
+    const fechaFila = parseFechaProgramacionSantiago(filas[i].fechaSemana);
+    filas[i]._esSemanaProxima = Boolean(fechaProxima !== null && fechaFila === fechaProxima);
     filas[i]._esEsteSabado = Boolean(
       filas[i]._esSemanaProxima &&
-      parseFechaProgramacionSantiago(filas[i].fechaSemana) === proximoSabado
+      fechaFila === proximoSabado
     );
   }
+}
+
+function etiquetaJornadaProgramacion(filas, mapaSemanas) {
+  const primera = filas[0] || {};
+  const fecha = formatearFechaSemana(primera.fechaSemana);
+  const esRecuperacion = filas.some(fila =>
+    String(fila.tipoProgramacion || "").trim().toLowerCase() === "recuperacion"
+  );
+
+  if (esRecuperacion && fecha) return `Fecha extra · ${fecha}`;
+  return construirEtiquetaSemana(primera.semana, primera.fechaSemana, mapaSemanas);
+}
+
+function agruparProgramacionPorJornada(filas, mapaSemanas) {
+  const grupos = new Map();
+
+  filas.forEach((fila, indice) => {
+    const fecha = parseFechaProgramacionSantiago(fila.fechaSemana);
+    const clave = fecha === null
+      ? `semana:${String(fila.semana || "").trim()}`
+      : `fecha:${fecha}`;
+
+    if (!grupos.has(clave)) {
+      grupos.set(clave, { fecha, indice, filas: [] });
+    }
+    grupos.get(clave).filas.push(fila);
+  });
+
+  return Array.from(grupos.values())
+    .sort((a, b) => {
+      if (a.fecha === null && b.fecha !== null) return 1;
+      if (a.fecha !== null && b.fecha === null) return -1;
+      if (a.fecha !== b.fecha) return a.fecha - b.fecha;
+      return a.indice - b.indice;
+    })
+    .map(grupo => {
+      const canchas = new Map();
+      grupo.filas.forEach(fila => {
+        if (!canchas.has(fila.cancha)) canchas.set(fila.cancha, []);
+        canchas.get(fila.cancha).push(fila);
+      });
+      return {
+        ...grupo,
+        canchas,
+        etiqueta: etiquetaJornadaProgramacion(grupo.filas, mapaSemanas),
+        esSemanaProxima: grupo.filas.some(fila => fila._esSemanaProxima),
+        esEsteSabado: grupo.filas.some(fila => fila._esEsteSabado)
+      };
+    });
 }
 
 function actualizarProgramacionSiCambioElDia(forzar = false) {
@@ -1202,9 +1235,16 @@ function fechaFinal(fila) {
 function observacionFinal(fila) {
   if (fila._observacion !== undefined) return fila._observacion;
 
-  const obsOriginal = fila.registro && fila.registro.observaciones
-    ? fila.registro.observaciones
-    : fila.observaciones || "";
+  const estadoNormalizado = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
+  const tipoProgramacion = String(fila.tipoProgramacion || "oficial").trim().toLowerCase();
+  const tieneProgramacionExplicita =
+    estadoNormalizado === "programado" &&
+    tipoProgramacion !== "oficial";
+  const obsOriginal = tieneProgramacionExplicita
+    ? fila.observaciones || ""
+    : fila.registro && fila.registro.observaciones
+      ? fila.registro.observaciones
+      : fila.observaciones || "";
   const obs = OPEN_TENNIS_DATA.visibleMatchNote(obsOriginal, estadoFinal(fila));
 
   const fecha = fechaFinal(fila);
@@ -1214,7 +1254,7 @@ function observacionFinal(fila) {
   }
 
   if (
-    OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)) === "por_coordinar" &&
+    estadoNormalizado === "por_coordinar" &&
     ["pendiente", "postergado", "reprogramado"].includes(normalizar(obs))
   ) {
     return "Nueva fecha por coordinar";
@@ -1251,7 +1291,7 @@ function prepararFila(fila, mapaSemanas) {
   fila._observacion = observacion;
   fila._resultado = resultado;
   fila._estadoClase = claseEstado(estado);
-  fila._semanaLabel = etiquetaSemana(fila.semana, mapaSemanas);
+  fila._semanaLabel = etiquetaJornadaProgramacion([fila], mapaSemanas);
   fila._busqueda = normalizar(fila.jugador1 + " " + fila.jugador2);
   fila._resultadoTablaHTML = resultado
     ? `<span class="resultado-tabla">${escapeHTML(resultado)}</span>`
@@ -1326,14 +1366,15 @@ function crearFilaTabla(fila, mapaSemanas) {
   return tr;
 }
 
-function crearSeparadorHTML(textoSemana, tipo, mapaSemanas, esSemanaProxima = false, esEsteSabado = false) {
+function crearSeparadorHTML(textoSemana, tipo, mapaSemanas, esSemanaProxima = false, esEsteSabado = false, etiquetaPersonalizada = "") {
   const claseBase = tipo === "verde" ? "separador-verde" : "separador-naranja";
   const clase = `${claseBase}${esSemanaProxima ? " separador-semana-proxima" : ""}`;
   const badge = esSemanaProxima
     ? `<span class="semana-label-destacada">${esEsteSabado ? "Este sábado" : "Próxima fecha"}</span>`
     : "";
 
-  return `<tr class="${clase}"><td colspan="8">${escapeHTML(etiquetaSemana(textoSemana, mapaSemanas))}${badge}</td></tr>`;
+  const etiqueta = etiquetaPersonalizada || etiquetaSemana(textoSemana, mapaSemanas);
+  return `<tr class="${clase}"><td colspan="8">${escapeHTML(etiqueta)}${badge}</td></tr>`;
 }
 
 function crearSeparador(textoSemana, tipo, mapaSemanas, esSemanaProxima = false, esEsteSabado = false) {
@@ -1543,26 +1584,23 @@ function renderPendientesDesktop(filas, mapaSemanas) {
 
 function renderCompletaDesktop(filas, mapaSemanas) {
   let html = "";
-  let semanaAnterior = "";
   let contadorSeparador = 0;
+  const jornadas = agruparProgramacionPorJornada(filas, mapaSemanas);
 
-  for (let i = 0; i < filas.length; i++) {
-    const fila = filas[i];
-
-    if (fila.semana !== semanaAnterior) {
-      contadorSeparador++;
-      html += crearSeparadorHTML(
-        fila.semana,
-        contadorSeparador % 2 === 0 ? "verde" : "naranja",
-        mapaSemanas,
-        fila._esSemanaProxima,
-        fila._esEsteSabado
-      );
-    }
-
-    html += crearFilaTablaHTML(filaParaProgramacion(fila), mapaSemanas);
-    semanaAnterior = fila.semana;
-  }
+  jornadas.forEach(jornada => {
+    contadorSeparador++;
+    html += crearSeparadorHTML(
+      jornada.filas[0] && jornada.filas[0].semana,
+      contadorSeparador % 2 === 0 ? "verde" : "naranja",
+      mapaSemanas,
+      jornada.esSemanaProxima,
+      jornada.esEsteSabado,
+      jornada.etiqueta
+    );
+    jornada.filas.forEach(fila => {
+      html += crearFilaTablaHTML(filaParaProgramacion(fila), mapaSemanas);
+    });
+  });
 
   tablaCompletaBody.innerHTML = html || `
     <tr>
@@ -1595,34 +1633,18 @@ function renderPendientesMobile(filas, mapaSemanas) {
 }
 
 function renderCompletaMobile(filas, mapaSemanas) {
-  const semanas = new Map();
-
-  for (let i = 0; i < filas.length; i++) {
-    const fila = filas[i];
-
-    if (!semanas.has(fila.semana)) {
-      semanas.set(fila.semana, new Map());
-    }
-
-    const canchas = semanas.get(fila.semana);
-
-    if (!canchas.has(fila.cancha)) {
-      canchas.set(fila.cancha, []);
-    }
-
-    canchas.get(fila.cancha).push(fila);
-  }
+  const jornadas = agruparProgramacionPorJornada(filas, mapaSemanas);
 
   let html = "";
 
-  semanas.forEach((canchas, semana) => {
-    const esSemanaProxima = semanaProximaEnCanchas(canchas);
-    const etiquetaProxima = etiquetaSemanaProximaEnCanchas(canchas);
+  jornadas.forEach(jornada => {
+    const esSemanaProxima = jornada.esSemanaProxima;
+    const etiquetaProxima = jornada.esEsteSabado ? "Este sábado" : "Próxima fecha";
 
     html += `
       <div class="semana-box${esSemanaProxima ? " semana-proxima-box activa" : ""}">
         <button class="semana-btn" type="button">
-          <span class="semana-btn-text">${escapeHTML(etiquetaSemana(semana, mapaSemanas))}</span>
+          <span class="semana-btn-text">${escapeHTML(jornada.etiqueta)}</span>
           ${esSemanaProxima ? `<span class="semana-pill">${etiquetaProxima}</span>` : ""}
           <span class="semana-toggle">${esSemanaProxima ? "–" : "+"}</span>
         </button>
@@ -1630,7 +1652,7 @@ function renderCompletaMobile(filas, mapaSemanas) {
         <div class="semana-contenido">
     `;
 
-    canchas.forEach((filasCancha, cancha) => {
+    jornada.canchas.forEach((filasCancha, cancha) => {
       html += `
         <div class="cancha-card">
           <div class="cancha-titulo">▦ Cancha ${escapeHTML(cancha)}</div>
