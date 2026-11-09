@@ -193,7 +193,10 @@
       setText(elements.dialogMeta, [match.category ? "Categoría " + match.category : "", match.week ? "Semana " + match.week : "", match.court ? "Cancha " + match.court : ""].filter(Boolean).join(" · "));
       setText(elements.dialogTitle, match.player1 + " vs " + match.player2); elements.matchId.value = match.matchId;
       elements.status.value = presetStatus || (match.status === "programado" ? "jugado" : match.status);
-      elements.date.value = dateForInput((match.record && match.record.date) || match.date || state.dashboard.today);
+      var isNewFinalResult = !match.record && elements.status.value !== "programado";
+      var scheduledDateIsFuture = comparableDate(match.date) > comparableDate(state.dashboard.today);
+      var suggestedDate = isNewFinalResult && scheduledDateIsFuture ? state.dashboard.today : match.date;
+      elements.date.value = dateForInput((match.record && match.record.date) || suggestedDate || state.dashboard.today);
       elements.scheduleType.value = match.scheduleType || "oficial"; elements.court.value = match.court || ""; elements.turn.value = match.turn || ""; elements.notes.value = visibleNotes(match);
       setText(elements.originalSchedule, ["Programación oficial", match.originalDate || match.date, match.originalCourt ? "Cancha " + match.originalCourt : "", match.originalTurn || "", match.round || ""].filter(Boolean).join(" · "));
       updatePlayerLabels(match); var record = match.record || {};

@@ -38,7 +38,13 @@ var ADMIN_CONFIG = Object.freeze({
       Object.freeze({ MATCH_ID: "2026-s14-b-gonzalo-barros-javier-gonzalez", DATE: "14/11/2026" }),
       Object.freeze({ MATCH_ID: "2026-s14-c-cesar-maturana-constanza-nunez", DATE: "14/11/2026" }),
       Object.freeze({ MATCH_ID: "2026-s14-b-daniel-vega-genaro-espinoza", DATE: "14/11/2026" }),
-      Object.freeze({ MATCH_ID: "2026-s13-c-anibal-valenzuela-hernan-medel", DATE: "07/11/2026", STATUS: "Jugado" })
+      Object.freeze({
+        MATCH_ID: "2026-s13-c-anibal-valenzuela-hernan-medel",
+        DATE: "02/11/2026",
+        STATUS: "Jugado",
+        NOTES: "Partido adelantado",
+        SCHEDULE_TYPE: "adelantado"
+      })
     ])
   }),
   PUBLIC_DATA_URLS: Object.freeze({

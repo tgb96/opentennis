@@ -342,6 +342,22 @@ test("el administrador muestra la nueva fecha programada sobre el pendiente ante
   assert.equal(context.adminEffectiveMatchStatus_(match, oldPendingRecord), "programado");
 });
 
+test("un resultado adelantado actualiza el tipo de programación", () => {
+  const context = createContext();
+  assert.equal(
+    context.adminScheduleTypeForPlayedDate_("2/11/2026", "7/11/2026", "oficial"),
+    "adelantado"
+  );
+  assert.equal(
+    context.adminScheduleTypeForPlayedDate_("9/11/2026", "7/11/2026", "oficial"),
+    "reprogramado"
+  );
+  assert.equal(
+    context.adminScheduleTypeForPlayedDate_("7/11/2026", "7/11/2026", "recuperacion"),
+    "recuperacion"
+  );
+});
+
 test("el administrador excluye los cinco partidos pendientes anulados por la renuncia de Felipe", () => {
   const context = createContext();
   const pendingMatchIds = [

@@ -436,8 +436,10 @@ function adminRestoreErroneousInterclubRecovery_() {
     var after = before.slice();
     after[fixtureColumns.DATE] = spec.DATE;
     after[fixtureColumns.STATUS] = String(spec.STATUS || "");
-    after[fixtureColumns.NOTES] = "";
-    after[fixtureColumns.SCHEDULE_TYPE] = ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL;
+    after[fixtureColumns.NOTES] = String(spec.NOTES || "");
+    after[fixtureColumns.SCHEDULE_TYPE] = String(
+      spec.SCHEDULE_TYPE || ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL
+    );
     fixtureRange.setValues([after]);
     adminWriteAudit_(spreadsheet, {
       action: "CORREGIR_RECUPERACION_INTERCLUB",
@@ -633,6 +635,17 @@ function adminDateObject_(value) {
   var comparable = adminComparableDate_(value);
   var match = comparable.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12) : null;
+}
+
+function adminScheduleTypeForPlayedDate_(playedDate, scheduledDate, currentType) {
+  var played = adminComparableDate_(playedDate);
+  var scheduled = adminComparableDate_(scheduledDate);
+  if (!played || !scheduled || played === scheduled) {
+    return currentType || ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL;
+  }
+  return played < scheduled
+    ? ADMIN_CONFIG.SCHEDULE_TYPES.ADELANTADO
+    : ADMIN_CONFIG.SCHEDULE_TYPES.REPROGRAMADO;
 }
 
 function adminReadRankings_(rankingsSheet) {
@@ -1102,6 +1115,13 @@ function adminSaveMatch_(payload) {
   var input = Object.assign({}, payload, {
     date: adminNormalizeDate_(payload.date || match.date || adminToday_())
   });
+  var isFinalResult = adminIsFinalStatus_(payload.status);
+  if (isFinalResult && adminComparableDate_(input.date) > adminComparableDate_(adminToday_())) {
+    throw new Error("La fecha del partido jugado no puede estar en el futuro.");
+  }
+  if (isFinalResult) {
+    scheduleType = adminScheduleTypeForPlayedDate_(input.date, match.date, scheduleType);
+  }
   var newRow = payload.status === ADMIN_STATUSES.PROGRAMADO ? null : adminBuildRegistroRow_(match, input);
   var target = newRow
     ? adminFindRegistroTarget_(registroSheet, match, fixtureMatches)
@@ -1116,8 +1136,10 @@ function adminSaveMatch_(payload) {
   fixtureAfter[fixtureColumns.NOTES] = adminSanitizeNotesForStatus_(payload.notes, payload.status);
   fixtureAfter[fixtureColumns.SCHEDULE_TYPE] = scheduleType;
 
-  if (payload.status === ADMIN_STATUSES.PROGRAMADO) {
+  if (payload.status === ADMIN_STATUSES.PROGRAMADO || isFinalResult) {
     fixtureAfter[fixtureColumns.DATE] = input.date;
+  }
+  if (payload.status === ADMIN_STATUSES.PROGRAMADO) {
     fixtureAfter[fixtureColumns.COURT] = String(payload.court || match.court || "").trim();
     fixtureAfter[fixtureColumns.TURN] = String(payload.turn || match.turn || "").trim();
   }
