@@ -399,6 +399,57 @@ function scheduleInterclubRecoveryDate2026() {
   };
 }
 
+function repairInterclubRecoveryDate2026() {
+  adminAssertAuthorized_();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    var restored = adminRestoreErroneousInterclubRecovery_();
+    var scheduled = scheduleInterclubRecoveryDate2026();
+    return {
+      ok: true,
+      date: scheduled.date,
+      restoredMatches: restored.length,
+      updatedMatches: scheduled.updatedMatches,
+      matchIds: scheduled.matchIds
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function adminRestoreErroneousInterclubRecovery_() {
+  var spreadsheet = adminGetSpreadsheet_();
+  var fixtureSheet = adminGetSheetByGid_(spreadsheet, ADMIN_CONFIG.FIXTURE_GID);
+  var fixtureMatches = adminGetFixtureMatches_(fixtureSheet);
+  var fixtureColumns = ADMIN_CONFIG.COLUMNS.FIXTURE;
+
+  return ADMIN_CONFIG.INTERCLUB_RECOVERY.ROLLBACK_MATCHES.map(function(spec) {
+    var match = fixtureMatches.find(function(candidate) {
+      return candidate.matchId === spec.MATCH_ID;
+    });
+    if (!match) throw new Error("No se encontró el partido a restaurar: " + spec.MATCH_ID);
+
+    var fixtureRange = fixtureSheet.getRange(match.sourceRow, 1, 1, fixtureColumns.ROUND + 1);
+    var before = fixtureRange.getDisplayValues()[0];
+    var after = before.slice();
+    after[fixtureColumns.DATE] = spec.DATE;
+    after[fixtureColumns.STATUS] = "";
+    after[fixtureColumns.NOTES] = "";
+    after[fixtureColumns.SCHEDULE_TYPE] = ADMIN_CONFIG.SCHEDULE_TYPES.OFICIAL;
+    fixtureRange.setValues([after]);
+    adminWriteAudit_(spreadsheet, {
+      action: "CORREGIR_RECUPERACION_INTERCLUB",
+      matchId: spec.MATCH_ID,
+      targetRow: match.sourceRow,
+      before: { fixture: before, registro: [] },
+      after: { fixture: after, registro: [] }
+    });
+    return spec.MATCH_ID;
+  });
+}
+
 function adminAssertAuthorized_() {
   var allowed = adminAllowedEmails_();
   if (!allowed.length) {

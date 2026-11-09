@@ -24,12 +24,21 @@ var ADMIN_CONFIG = Object.freeze({
     DATE: "12/12/2026",
     NOTES: "Jornada extraordinaria · recuperación por interclub del 07/11/2026",
     MATCH_IDS: Object.freeze([
-      "2026-s14-a-angelo-basualto-tomas-gomez",
-      "2026-s14-a-jose-astete-nicolas-collao",
-      "2026-s14-b-diego-cervantes-matias-arellano",
-      "2026-s14-b-gonzalo-barros-javier-gonzalez",
-      "2026-s14-c-cesar-maturana-constanza-nunez",
-      "2026-s14-b-daniel-vega-genaro-espinoza"
+      "2026-s13-a-diego-fossa-marcelo-lopez",
+      "2026-s13-b-genaro-espinoza-hernan-bravo",
+      "2026-s13-b-matias-arellano-oscar-morales",
+      "2026-s13-a-claudio-aedo-luis-flores",
+      "2026-s13-b-cristhian-linares-jaime-valdebenito",
+      "2026-s13-c-anibal-valenzuela-hernan-medel",
+      "2026-s13-b-daniel-vega-javier-gonzalez"
+    ]),
+    ROLLBACK_MATCHES: Object.freeze([
+      Object.freeze({ MATCH_ID: "2026-s14-a-angelo-basualto-tomas-gomez", DATE: "14/11/2026" }),
+      Object.freeze({ MATCH_ID: "2026-s14-a-jose-astete-nicolas-collao", DATE: "14/11/2026" }),
+      Object.freeze({ MATCH_ID: "2026-s14-b-diego-cervantes-matias-arellano", DATE: "14/11/2026" }),
+      Object.freeze({ MATCH_ID: "2026-s14-b-gonzalo-barros-javier-gonzalez", DATE: "14/11/2026" }),
+      Object.freeze({ MATCH_ID: "2026-s14-c-cesar-maturana-constanza-nunez", DATE: "14/11/2026" }),
+      Object.freeze({ MATCH_ID: "2026-s14-b-daniel-vega-genaro-espinoza", DATE: "14/11/2026" })
     ])
   }),
   PUBLIC_DATA_URLS: Object.freeze({
