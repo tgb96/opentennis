@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v61-season-2027';
+const CACHE_NAME = 'open-tennis-v62-scoreboard-info';
 
 const CORE_ASSETS = [
   './',

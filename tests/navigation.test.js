@@ -64,3 +64,10 @@ test("el marcador permite escribir nombres que no estén en el listado oficial",
   assert.match(html, /const CUSTOM_PLAYER_VALUE = "__custom_player__"/);
   assert.match(html, /function validateSetupPlayers/);
 });
+
+test("el marcador explica que es una guía y no registra resultados oficiales", () => {
+  const html = fs.readFileSync(path.join(root, "marcador.html"), "utf8");
+  assert.match(html, /Guía para arbitrar partidos/);
+  assert.match(html, /no está conectado con los resultados oficiales del club/);
+  assert.match(html, /class="scoreboard-info" role="note"/);
+});

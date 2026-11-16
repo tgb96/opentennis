@@ -1962,3 +1962,59 @@ body:not(.index-page) .app {
   .marcador-page .setup-grid > div:last-child button { width: auto !important; min-width: 180px !important; }
   .marcador-page .score-layout { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .55fr) !important; gap: 24px !important; }
 }
+
+/* Aviso funcional del marcador: visible tanto antes como durante el partido. */
+.scoreboard-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(30, 91, 69, .22);
+  border-radius: 16px;
+  color: #173f31;
+  background: #eef5ef;
+  box-shadow: 0 8px 24px rgba(11, 47, 37, .08);
+}
+
+.scoreboard-info-icon {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  color: #fff;
+  background: #174d3a;
+  font-size: 20px;
+}
+
+.scoreboard-info strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.scoreboard-info p {
+  margin: 0;
+  color: #52665d;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 640px) {
+  .scoreboard-info {
+    align-items: flex-start;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+
+  .scoreboard-info-icon {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+  }
+}
