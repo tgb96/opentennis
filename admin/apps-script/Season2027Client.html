@@ -2,12 +2,13 @@
 (function () {
   "use strict";
 
-  var state = { dashboard: null, selectedCompetitionId: "", initialized: false, pendingResultPayload: null };
+  var state = { dashboard: null, selectedCompetitionId: "", initialized: false, pendingResultPayload: null, workspaceMode: "daily" };
   var byId = function (id) { return document.getElementById(id); };
   var elements = {
     modeButtons: Array.prototype.slice.call(document.querySelectorAll("[data-admin-mode]")),
     startup: byId("startupStatus"), legacy: byId("dashboardContent"), panel: byId("season2027Panel"), initialize: byId("initialize2027Button"),
     playerCount: byId("players2027Count"), competitionCount: byId("competitions2027Count"), matchCount: byId("matches2027Count"),
+    workModeButtons: Array.prototype.slice.call(document.querySelectorAll("[data-2027-work-mode]")), databaseStatus: byId("database2027Status"), databaseAudit: byId("database2027Audit"),
     competitions: byId("competitions2027List"), players: byId("players2027List"), workspace: byId("competition2027Workspace"),
     selectedTitle: byId("selectedCompetition2027Title"), selectedMeta: byId("selectedCompetition2027Meta"), categories: byId("categories2027List"), entries: byId("entries2027Editor"), tournamentEntries: byId("tournamentEntries2027Editor"), matches: byId("matches2027List"), matchCountSelected: byId("selectedMatches2027Count"),
     ladderTools: byId("ladder2027Tools"), tournamentTools: byId("tournament2027Tools"), publish: byId("publish2027Button"), unpublish: byId("unpublish2027Button"),
@@ -64,10 +65,18 @@
 
   function render() {
     var dashboard = state.dashboard || { players: [], competitions: [], matches: [] };
+    elements.panel.classList.toggle("is-advanced", state.workspaceMode === "advanced");
+    elements.workModeButtons.forEach(function (button) {
+      if (button.getAttribute("data-2027-work-mode") === state.workspaceMode) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    });
     elements.playerCount.textContent = dashboard.players.length;
     elements.competitionCount.textContent = dashboard.competitions.length;
     elements.matchCount.textContent = dashboard.matches.length;
     elements.initialize.textContent = dashboard.players.length ? "Actualizar estructura" : "Inicializar sistema";
+    var storage = dashboard.storage || {};
+    elements.databaseStatus.textContent = (storage.model || "Base normalizada 2027") + " · v" + (dashboard.version || "2027");
+    elements.databaseAudit.textContent = (storage.tables || 7) + " tablas relacionadas · " + (storage.auditCount || 0) + " movimientos auditados · respaldos en cambios masivos";
     renderCompetitions(); renderPlayers(); renderWorkspace();
   }
 
@@ -178,6 +187,13 @@
       elements.legacy.hidden = is2027;
       elements.startup.hidden = is2027 || elements.startup.hidden;
       if (is2027 && !state.initialized) loadDashboard();
+    });
+  });
+
+  elements.workModeButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      state.workspaceMode = button.getAttribute("data-2027-work-mode") === "advanced" ? "advanced" : "daily";
+      render();
     });
   });
 

@@ -18,3 +18,14 @@ test("un resultado nuevo propone hoy aunque el partido estuviera atrasado", () =
   assert.match(client, /var suggestedDate = isNewFinalResult \? state\.dashboard\.today : match\.date;/);
   assert.doesNotMatch(client, /scheduledDateIsFuture/);
 });
+
+test("el administrador 2027 separa el uso semanal de la estructura avanzada", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "admin/apps-script/Index.html"), "utf8");
+  const client = fs.readFileSync(path.join(__dirname, "..", "admin/apps-script/Season2027Client.html"), "utf8");
+  const styles = fs.readFileSync(path.join(__dirname, "..", "admin/apps-script/Styles.html"), "utf8");
+  assert.match(html, /data-2027-work-mode="daily" aria-current="page"/);
+  assert.match(html, /data-2027-work-mode="advanced"/);
+  assert.match(html, /Base protegida/);
+  assert.match(client, /workspaceMode: "daily"/);
+  assert.match(styles, /season-2027-panel:not\(\.is-advanced\) \.admin-advanced-only/);
+});

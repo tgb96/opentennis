@@ -27,6 +27,12 @@ El panel incluye «← Volver al club», disponible también mientras carga los 
 - Reúne alertas de fechas vencidas, resultados incompletos, duplicados y rankings desactualizados.
 - Confirma por separado el guardado en Sheets, la verificación del ranking y la aparición en la fuente pública.
 
+## Operación 2027
+
+El módulo `Sistema 2027` abre en **Uso semanal** para registrar resultados, reprogramar partidos y aplazar fechas por lluvia sin mostrar herramientas que no se necesitan cada semana. **Estructura avanzada** reúne la creación de jugadores, alias, competiciones, categorías, inscripciones, sorteos, cuadros, publicación y abandonos definitivos.
+
+La temporada 2027 usa siete tablas relacionadas en Google Sheets, con identificadores permanentes en lugar de depender de nombres o posiciones de filas. Cada escritura queda registrada en `OT Auditoría 2027`; antes de inscripciones masivas, sorteos, aplazamientos o abandonos se guarda una instantánea fragmentada en `OT Respaldos 2027`. Los guardados simultáneos están bloqueados para impedir que una operación pise a otra. La descripción completa está en `docs/arquitectura-2027.md`.
+
 ## Instalación en Google Sheets
 
 1. Haz una copia del archivo de Google Sheets en Drive.

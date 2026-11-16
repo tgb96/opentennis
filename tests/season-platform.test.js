@@ -30,3 +30,18 @@ test("los alias administrados mantienen la identidad histórica 2025–2027", ()
   assert.equal(identities.samePlayer("M.José Valladares", "María José Valladares"), true);
 });
 
+test("los torneos futuros conservan fecha de cada cruce, campeón y finalista", () => {
+  const tournamentData = {
+    players: [
+      { id: "a", name: "Ana" },
+      { id: "b", name: "Berta" }
+    ],
+    competitions: [{ id: "t1", type: "tournament", name: "Copa 2027", edition: "2027", status: "completed", startDate: "2027-04-10", entries: [{ playerId: "a" }, { playerId: "b" }] }],
+    matches: [{ id: "f", competitionId: "t1", round: 1, player1Id: "a", player2Id: "b", winnerId: "a", score: "6-4 6-3", date: "2027-04-24" }]
+  };
+  const event = platform.tournamentEvent(tournamentData.competitions[0], tournamentData);
+  assert.equal(event.champion, "Ana");
+  assert.equal(event.runnerUp, "Berta");
+  assert.equal(event.rounds[0].matches[0].date, "2027-04-24");
+});
+

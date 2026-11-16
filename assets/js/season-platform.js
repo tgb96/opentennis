@@ -16,7 +16,7 @@
   }
 
   function parsePayload(value) {
-    if (!value) return { version: "2027.1", players: [], competitions: [], matches: [] };
+    if (!value) return { version: "2027.2", players: [], competitions: [], matches: [] };
     const parsed = typeof value === "string" ? JSON.parse(value) : value;
     return parsed && parsed.data ? parsed.data : parsed;
   }
@@ -25,7 +25,7 @@
     return fetch(`${API_URL}&v=${Date.now()}`, { cache: "no-store" })
       .then(response => { if (!response.ok) throw new Error("No se pudo cargar la temporada 2027"); return response.json(); })
       .then(parsePayload)
-      .catch(() => ({ version: "2027.1", players: [], competitions: [], matches: [] }));
+      .catch(() => ({ version: "2027.2", players: [], competitions: [], matches: [] }));
   }
 
   function playerMap(data) {
@@ -139,13 +139,16 @@
         player1: players[match.player1Id] ? players[match.player1Id].name : (match.player1Id ? match.player1Id : "BYE"),
         player2: players[match.player2Id] ? players[match.player2Id].name : (match.player2Id ? match.player2Id : "BYE"),
         winner: players[match.winnerId] ? players[match.winnerId].name : "",
-        score: match.score
+        score: match.score,
+        date: match.date || match.officialDate || ""
       }))
     }));
     const finalMatch = matches.find(match => Number(match.round) === maxRound);
+    const finalistIds = finalMatch ? [finalMatch.player1Id, finalMatch.player2Id] : [];
+    const runnerUpId = finalistIds.find(playerId => playerId && playerId !== finalMatch.winnerId);
     return {
       id: competition.id,
-      type: "tournament",
+      type: competition.type === "interclub" ? "interclub" : "tournament",
       title: competition.name,
       shortTitle: competition.name,
       editionLabel: competition.edition || "Torneo Open Tennis",
@@ -157,13 +160,14 @@
       participantCount: competition.entries.length,
       participants: competition.entries.map(entry => players[entry.playerId]).filter(Boolean),
       champion: finalMatch && players[finalMatch.winnerId] ? players[finalMatch.winnerId].name : "",
+      runnerUp: runnerUpId && players[runnerUpId] ? players[runnerUpId].name : "",
       rounds
     };
   }
 
   function mergeActivities(localValue, publicData) {
     const local = typeof localValue === "string" ? JSON.parse(localValue) : (localValue || { events: [] });
-    const dynamic = (publicData.competitions || []).filter(competition => competition.type === "tournament").map(competition => tournamentEvent(competition, publicData));
+    const dynamic = (publicData.competitions || []).filter(competition => competition.type === "tournament" || competition.type === "interclub").map(competition => tournamentEvent(competition, publicData));
     return { season: "2026–2027", events: (local.events || []).concat(dynamic) };
   }
 

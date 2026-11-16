@@ -22,7 +22,7 @@ Este antecedente es una solución excepcional de 2026 y no debe convertirse auto
 - El administrador debe ofrecer `Retiro` como resultado propio y aplicar automáticamente esta regla.
 - La regla debe incorporarse a las bases públicas antes de comenzar el torneo.
 
-Estado: criterio deportivo definido; falta implementarlo en el administrador y publicarlo en las bases.
+Estado: implementado en el motor de resultados 2027 y publicado en las bases 2027.
 
 ## Abandono definitivo antes de completar la competencia
 
@@ -44,7 +44,7 @@ Esta resolución es excepcional para 2026 y no debe confundirse con la regla gen
 
 Esta regla debe regir desde el inicio de la temporada 2027 y no aplicarse retroactivamente a temporadas anteriores.
 
-Estado: regla solicitada para 2027; falta incorporarla a las bases públicas y adaptar el administrador para anular en conjunto los resultados y partidos pendientes del participante.
+Estado: implementado en las bases y en la operación 2027. El administrador anula en conjunto los resultados y cancela los partidos pendientes, sin efecto en tabla ni Cara a Cara.
 
 ## Identidad histórica y Cara a Cara
 
@@ -55,6 +55,8 @@ Estado: regla solicitada para 2027; falta incorporarla a las bases públicas y a
 - Los partidos de torneos pueden contar para el Cara a Cara sin afectar la tabla de una escalerilla.
 - Los byes no cuentan como partidos, triunfos, sets, games ni antecedentes del Cara a Cara.
 
+Estado: identidades permanentes y alias implementados; la plataforma pública 2027 entrega los partidos válidos para unirlos al historial 2025–2026.
+
 ## Torneos de eliminación directa
 
 - El administrador debe aceptar cualquier cantidad de participantes, no solamente 8, 16 o 32.
@@ -64,3 +66,5 @@ Estado: regla solicitada para 2027; falta incorporarla a las bases públicas y a
 - Corregir un resultado con rondas posteriores disputadas debe advertir todas las consecuencias antes de aplicarse.
 - La aplicación pública tendrá un apartado `Torneos e interclubes`, dividido en `Próximos eventos` y `Torneos e interclubes pasados`.
 - Los torneos históricos deben conservar cuadro, participantes, rondas, resultados y campeón.
+
+Estado: cuadro de cualquier tamaño, byes, avance de ganadores, correcciones protegidas y archivo público implementados.

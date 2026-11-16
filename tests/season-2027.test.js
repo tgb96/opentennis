@@ -76,3 +76,13 @@ test("el motor 2027 convierte W/O en 6-0 6-0 y retiro en el puntaje definido", (
   assert.match(context.admin2027ScoreText_(retirement), /^Retiro /);
 });
 
+test("la base 2027 declara auditoría, respaldos y escrituras protegidas", () => {
+  const source = fs.readFileSync(path.join(appsScriptDirectory, "Season2027.gs"), "utf8");
+  assert.match(source, /VERSION: "2027\.2"/);
+  assert.match(source, /AUDIT: "OT Auditoría 2027"/);
+  assert.match(source, /BACKUPS: "OT Respaldos 2027"/);
+  assert.match(source, /LockService\.getScriptLock\(\)/);
+  assert.match(source, /function admin2027RecordResult\(payload\)[\s\S]*admin2027WithWrite_/);
+  assert.match(source, /function admin2027GenerateLadder\(payload\)[\s\S]*"Generar programación"[\s\S]*true/);
+});
+

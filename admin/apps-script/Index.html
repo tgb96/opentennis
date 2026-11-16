@@ -129,7 +129,7 @@
           <h2>Temporada 2027</h2>
           <p>Dos escalerillas, categorías editables, sorteo equilibrado, aplazamientos y torneos con cuadro.</p>
         </div>
-        <button id="initialize2027Button" class="primary-button" type="button">Inicializar sistema</button>
+        <button id="initialize2027Button" class="primary-button admin-advanced-only" type="button">Inicializar sistema</button>
       </header>
 
       <section class="season-2027-summary" aria-label="Resumen 2027">
@@ -138,10 +138,21 @@
         <article><span>Partidos generados</span><strong id="matches2027Count">0</strong></article>
       </section>
 
+      <nav class="season-2027-work-modes" aria-label="Tipo de trabajo 2027">
+        <button type="button" data-2027-work-mode="daily" aria-current="page"><strong>Uso semanal</strong><small>Resultados y programación</small></button>
+        <button type="button" data-2027-work-mode="advanced"><strong>Estructura avanzada</strong><small>Jugadores, categorías y sorteos</small></button>
+      </nav>
+
+      <aside class="season-2027-storage" aria-live="polite">
+        <span>Base protegida</span>
+        <strong id="database2027Status">Cargando estructura…</strong>
+        <small id="database2027Audit">Identidades permanentes · auditoría · respaldos</small>
+      </aside>
+
       <details class="admin-2027-card" open>
-        <summary><span><small>Paso 1</small>Competiciones</span><b>＋</b></summary>
+        <summary><span><small>Selecciona dónde trabajar</small>Competiciones</span><b>＋</b></summary>
         <div class="admin-2027-card-body">
-          <form id="competition2027Form" class="admin-2027-form">
+          <form id="competition2027Form" class="admin-2027-form admin-advanced-only">
             <input id="competition2027Id" type="hidden">
             <label><span>Tipo</span><select id="competition2027Type"><option value="ladder">Escalerilla</option><option value="tournament">Eliminación directa</option></select></label>
             <label><span>Nombre</span><input id="competition2027Name" required placeholder="Ej.: Escalerilla Apertura 2027"></label>
@@ -153,7 +164,7 @@
         </div>
       </details>
 
-      <details class="admin-2027-card">
+      <details class="admin-2027-card admin-advanced-only">
         <summary><span><small>Identidad histórica</small>Jugadores y alias</span><b>＋</b></summary>
         <div class="admin-2027-card-body">
           <form id="player2027Form" class="admin-2027-form">
@@ -170,11 +181,11 @@
       <section id="competition2027Workspace" class="competition-2027-workspace" hidden>
         <header>
           <div><p class="eyebrow">Competición seleccionada</p><h2 id="selectedCompetition2027Title"></h2><p id="selectedCompetition2027Meta" class="muted"></p></div>
-          <div class="workspace-actions"><button id="publish2027Button" class="primary-button" type="button">Publicar en la app</button><button id="unpublish2027Button" class="secondary-button" type="button">Volver a borrador</button></div>
+          <div class="workspace-actions admin-advanced-only"><button id="publish2027Button" class="primary-button" type="button">Publicar en la app</button><button id="unpublish2027Button" class="secondary-button" type="button">Volver a borrador</button></div>
         </header>
 
         <div id="ladder2027Tools">
-          <details class="admin-2027-card" open>
+          <details class="admin-2027-card admin-advanced-only" open>
             <summary><span><small>Paso 2</small>Categorías e inscritos</span><b>＋</b></summary>
             <div class="admin-2027-card-body">
               <form id="category2027Form" class="admin-2027-form compact">
@@ -190,7 +201,7 @@
             </div>
           </details>
 
-          <details class="admin-2027-card" open>
+          <details class="admin-2027-card admin-advanced-only" open>
             <summary><span><small>Paso 3</small>Sorteo y programación</span><b>＋</b></summary>
             <div class="admin-2027-card-body">
               <form id="schedule2027Form" class="admin-2027-form">
@@ -213,7 +224,7 @@
             </div>
           </details>
 
-          <details class="admin-2027-card">
+          <details class="admin-2027-card admin-advanced-only">
             <summary><span><small>Regla 2027</small>Abandono definitivo</span><b>＋</b></summary>
             <div class="admin-2027-card-body abandon-2027">
               <label><span>Jugador que abandona</span><select id="abandon2027Player"></select></label>
@@ -225,7 +236,7 @@
           </details>
         </div>
 
-        <div id="tournament2027Tools" hidden>
+        <div id="tournament2027Tools" class="admin-advanced-only" hidden>
           <details class="admin-2027-card" open>
             <summary><span><small>Cuadro automático</small>Participantes y sorteo</span><b>＋</b></summary>
             <div class="admin-2027-card-body">

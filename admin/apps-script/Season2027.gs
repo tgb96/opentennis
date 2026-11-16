@@ -1,11 +1,13 @@
 var ADMIN_2027 = Object.freeze({
-  VERSION: "2027.1",
+  VERSION: "2027.2",
   SHEETS: Object.freeze({
     PLAYERS: "OT Jugadores",
     COMPETITIONS: "OT Competiciones",
     CATEGORIES: "OT Categorías",
     ENTRIES: "OT Inscripciones",
-    MATCHES: "OT Partidos"
+    MATCHES: "OT Partidos",
+    AUDIT: "OT Auditoría 2027",
+    BACKUPS: "OT Respaldos 2027"
   }),
   HEADERS: Object.freeze({
     PLAYERS: Object.freeze(["ID jugador", "Nombre", "Alias", "Sexo", "Activo", "Creado"]),
@@ -16,9 +18,61 @@ var ADMIN_2027 = Object.freeze({
       "ID partido", "ID competición", "ID categoría", "Ronda", "Semana", "Fecha oficial", "Fecha actual", "Cancha", "Turno",
       "Jugador 1", "Jugador 2", "Estado", "Tipo programación", "Ganador", "Marcador", "Siguiente partido", "Posición siguiente",
       "Cuenta tabla", "Cuenta H2H", "Puntos J1", "Puntos J2", "Sets J1", "Sets J2", "Games J1", "Games J2", "Actualizado"
-    ])
+    ]),
+    AUDIT: Object.freeze(["Fecha", "Acción", "Administrador", "Competición", "Entidad", "Resumen", "Estado", "Respaldo"]),
+    BACKUPS: Object.freeze(["ID respaldo", "Fecha", "Acción", "Tabla", "Parte", "Contenido JSON"])
   })
 });
+
+function admin2027SafeJson_(value) {
+  try { return JSON.stringify(value == null ? {} : value).slice(0, 4000); }
+  catch (error) { return "{\"detalle\":\"no serializable\"}"; }
+}
+
+function admin2027CreateBackup_(spreadsheet, action) {
+  var stamp = Utilities.formatDate(new Date(), ADMIN_CONFIG.TIME_ZONE, "yyyyMMdd-HHmmss");
+  var backupId = "respaldo-" + stamp + "-" + Utilities.getUuid().slice(0, 6);
+  var backupSheet = admin2027EnsureSheet_(spreadsheet, ADMIN_2027.SHEETS.BACKUPS, ADMIN_2027.HEADERS.BACKUPS);
+  Object.keys(ADMIN_2027.SHEETS).filter(function(key) { return ["AUDIT", "BACKUPS"].indexOf(key) < 0; }).forEach(function(key) {
+    var source = spreadsheet.getSheetByName(ADMIN_2027.SHEETS[key]);
+    if (!source || !source.getLastRow()) return;
+    var json = JSON.stringify(source.getDataRange().getDisplayValues());
+    var chunks = json.match(/[\s\S]{1,40000}/g) || ["[]"];
+    chunks.forEach(function(chunk, index) { backupSheet.appendRow([backupId, new Date(), action, key, (index + 1) + "/" + chunks.length, chunk]); });
+  });
+  return backupId;
+}
+
+function admin2027WriteAudit_(spreadsheet, action, payload, status, backupId, error) {
+  var sheet = admin2027EnsureSheet_(spreadsheet, ADMIN_2027.SHEETS.AUDIT, ADMIN_2027.HEADERS.AUDIT);
+  var data = payload || {};
+  var administrator = "";
+  try { administrator = Session.getActiveUser().getEmail() || Session.getEffectiveUser().getEmail() || "administrador"; }
+  catch (ignored) { administrator = "administrador"; }
+  var entity = data.matchId || data.playerId || data.id || data.categoryId || "";
+  var summary = error ? String(error.message || error) : admin2027SafeJson_(data);
+  sheet.appendRow([new Date(), action, administrator, data.competitionId || "", entity, summary, status, backupId || ""]);
+}
+
+function admin2027WithWrite_(action, payload, requiresBackup, callback) {
+  adminAssertAuthorized_();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  var spreadsheet = adminGetSpreadsheet_();
+  var backupId = "";
+  try {
+    if (requiresBackup) backupId = admin2027CreateBackup_(spreadsheet, action);
+    var result = callback();
+    admin2027WriteAudit_(spreadsheet, action, payload, "OK", backupId, null);
+    SpreadsheetApp.flush();
+    return result;
+  } catch (error) {
+    try { admin2027WriteAudit_(spreadsheet, action, payload, "ERROR", backupId, error); } catch (ignored) {}
+    throw error;
+  } finally {
+    lock.releaseLock();
+  }
+}
 
 function admin2027Normalize_(value) {
   return String(value == null ? "" : value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -281,7 +335,7 @@ function admin2027Rows_(sheet) {
   return sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getDisplayValues();
 }
 
-function admin2027Setup() {
+function admin2027SetupUnlocked_() {
   adminAssertAuthorized_();
   var spreadsheet = adminGetSpreadsheet_();
   var sheets = admin2027Sheets_(spreadsheet);
@@ -320,20 +374,34 @@ function admin2027DashboardFromSheets_(sheets) {
     competition.entries = entries.filter(function(entry) { return entry.competitionId === competition.id; });
     competition.matchCount = matches.filter(function(match) { return match.competitionId === competition.id; }).length;
   });
-  return { version: ADMIN_2027.VERSION, players: players, competitions: competitions, matches: matches };
+  var auditRows = admin2027Rows_(sheets.AUDIT);
+  var lastAudit = auditRows.length ? auditRows[auditRows.length - 1] : [];
+  return {
+    version: ADMIN_2027.VERSION,
+    players: players,
+    competitions: competitions,
+    matches: matches,
+    storage: {
+      model: "Base normalizada 2027",
+      tables: Object.keys(ADMIN_2027.SHEETS).length,
+      auditCount: auditRows.length,
+      lastAction: lastAudit[1] || "",
+      lastUpdate: lastAudit[0] || ""
+    }
+  };
 }
 
 function admin2027PublicMatch_(row) {
   return { id: row["ID partido"], competitionId: row["ID competición"], categoryId: row["ID categoría"], round: row.Ronda, week: Number(row.Semana || 0), officialDate: admin2027IsoDate_(row["Fecha oficial"]), date: admin2027IsoDate_(row["Fecha actual"]), court: row.Cancha, turn: row.Turno, player1Id: row["Jugador 1"], player2Id: row["Jugador 2"], status: row.Estado, scheduleType: row["Tipo programación"], winnerId: row.Ganador, score: row.Marcador, nextMatchId: row["Siguiente partido"], nextPosition: Number(row["Posición siguiente"] || 0), countsForTable: admin2027Normalize_(row["Cuenta tabla"]) !== "no", countsForH2h: admin2027Normalize_(row["Cuenta H2H"]) !== "no", points1: Number(row["Puntos J1"] || 0), points2: Number(row["Puntos J2"] || 0), sets1: Number(row["Sets J1"] || 0), sets2: Number(row["Sets J2"] || 0), games1: Number(row["Games J1"] || 0), games2: Number(row["Games J2"] || 0) };
 }
 
-function admin2027SavePlayer(payload) {
+function admin2027SavePlayerUnlocked_(payload) {
   adminAssertAuthorized_();
   var data = payload || {};
   if (!String(data.name || "").trim()) throw new Error("Escribe el nombre del jugador.");
   var sheet = admin2027Sheets_(adminGetSpreadsheet_()).PLAYERS;
   var rows = admin2027Rows_(sheet);
-  var id = String(data.id || admin2027Id_("jugador", data.name));
+  var id = String(data.id || admin2027Id_("jugador", data.name + "-" + Utilities.getUuid().slice(0, 8)));
   var index = rows.findIndex(function(row) { return row[0] === id; });
   var values = [id, String(data.name).trim(), String(data.aliases || "").trim(), String(data.gender || "").trim(), data.active === false ? "No" : "Sí", index >= 0 ? rows[index][5] : new Date()];
   if (index >= 0) sheet.getRange(index + 2, 1, 1, values.length).setValues([values]); else sheet.appendRow(values);
@@ -341,12 +409,12 @@ function admin2027SavePlayer(payload) {
   return admin2027GetDashboard();
 }
 
-function admin2027SaveCompetition(payload) {
+function admin2027SaveCompetitionUnlocked_(payload) {
   adminAssertAuthorized_();
   var data = payload || {};
   if (!String(data.name || "").trim()) throw new Error("Escribe el nombre de la competición.");
   var type = ["ladder", "tournament", "interclub"].indexOf(data.type) >= 0 ? data.type : "ladder";
-  var id = String(data.id || admin2027Id_(type, data.name + "-" + (data.edition || "")));
+  var id = String(data.id || admin2027Id_(type, data.name + "-" + (data.edition || "") + "-" + Utilities.getUuid().slice(0, 8)));
   var sheet = admin2027Sheets_(adminGetSpreadsheet_()).COMPETITIONS;
   var rows = admin2027Rows_(sheet);
   var index = rows.findIndex(function(row) { return row[0] === id; });
@@ -356,7 +424,7 @@ function admin2027SaveCompetition(payload) {
   return admin2027GetDashboard();
 }
 
-function admin2027SaveCategory(payload) {
+function admin2027SaveCategoryUnlocked_(payload) {
   adminAssertAuthorized_();
   var data = payload || {};
   if (!data.competitionId || !String(data.name || "").trim()) throw new Error("Selecciona una competición y escribe la categoría.");
@@ -370,7 +438,7 @@ function admin2027SaveCategory(payload) {
   return admin2027GetDashboard();
 }
 
-function admin2027SetEntries(payload) {
+function admin2027SetEntriesUnlocked_(payload) {
   adminAssertAuthorized_();
   var data = payload || {};
   if (!data.competitionId) throw new Error("Selecciona una competición.");
@@ -398,7 +466,7 @@ function admin2027MatchRow_(match, competitionId) {
   return [match.id, competitionId, match.categoryId || "", match.round || "", match.week || "", match.officialDate || "", match.currentDate || match.date || "", match.court || "", match.turn || "", match.player1Id || "", match.player2Id || "", match.status || "programado", match.scheduleType || "oficial", match.winnerId || "", match.score || "", match.nextMatchId || "", match.nextPosition || "", match.countsForTable === false ? "No" : "Sí", match.countsForH2h === false ? "No" : "Sí", match.points1 || 0, match.points2 || 0, match.sets1 || 0, match.sets2 || 0, match.games1 || 0, match.games2 || 0, new Date()];
 }
 
-function admin2027GenerateLadder(payload) {
+function admin2027GenerateLadderUnlocked_(payload) {
   adminAssertAuthorized_();
   var dashboard = admin2027GetDashboard();
   var competition = dashboard.competitions.find(function(item) { return item.id === payload.competitionId && item.type === "ladder"; });
@@ -416,7 +484,7 @@ function admin2027GenerateLadder(payload) {
   return { ok: true, weeks: schedule.weeks, matches: schedule.matches.length, dashboard: admin2027GetDashboard() };
 }
 
-function admin2027Postpone(payload) {
+function admin2027PostponeUnlocked_(payload) {
   adminAssertAuthorized_();
   var sheet = admin2027Sheets_(adminGetSpreadsheet_()).MATCHES;
   var rows = admin2027Rows_(sheet);
@@ -435,7 +503,7 @@ function admin2027Postpone(payload) {
   return { ok: true, shiftedMatches: changed, dashboard: admin2027GetDashboard() };
 }
 
-function admin2027CreateTournament(payload) {
+function admin2027CreateTournamentUnlocked_(payload) {
   adminAssertAuthorized_();
   var dashboard = admin2027GetDashboard();
   var competition = dashboard.competitions.find(function(item) { return item.id === payload.competitionId && item.type === "tournament"; });
@@ -452,7 +520,7 @@ function admin2027CreateTournament(payload) {
   return { ok: true, capacity: bracket.capacity, byes: bracket.byes, dashboard: admin2027GetDashboard() };
 }
 
-function admin2027SetPublished(payload) {
+function admin2027SetPublishedUnlocked_(payload) {
   adminAssertAuthorized_();
   var sheets = admin2027Sheets_(adminGetSpreadsheet_());
   var rows = admin2027Rows_(sheets.COMPETITIONS);
@@ -509,7 +577,7 @@ function admin2027ResetDownstream_(rows, startIndex, sheet) {
   }
 }
 
-function admin2027RecordResult(payload) {
+function admin2027RecordResultUnlocked_(payload) {
   adminAssertAuthorized_();
   var sheets = admin2027Sheets_(adminGetSpreadsheet_());
   var sheet = sheets.MATCHES;
@@ -557,7 +625,7 @@ function admin2027RecordResult(payload) {
   return admin2027GetDashboard();
 }
 
-function admin2027UpdateMatchSchedule(payload) {
+function admin2027UpdateMatchScheduleUnlocked_(payload) {
   adminAssertAuthorized_();
   var sheet = admin2027Sheets_(adminGetSpreadsheet_()).MATCHES;
   var rows = admin2027Rows_(sheet);
@@ -576,7 +644,7 @@ function admin2027UpdateMatchSchedule(payload) {
   return admin2027GetDashboard();
 }
 
-function admin2027AbandonPlayer(payload) {
+function admin2027AbandonPlayerUnlocked_(payload) {
   adminAssertAuthorized_();
   var sheets = admin2027Sheets_(adminGetSpreadsheet_());
   var entryRows = admin2027Rows_(sheets.ENTRIES);
@@ -596,6 +664,54 @@ function admin2027AbandonPlayer(payload) {
   });
   SpreadsheetApp.flush();
   return { ok: true, affectedMatches: affected, dashboard: admin2027GetDashboard() };
+}
+
+function admin2027Setup() {
+  return admin2027WithWrite_("Inicializar estructura", {}, true, admin2027SetupUnlocked_);
+}
+
+function admin2027SavePlayer(payload) {
+  return admin2027WithWrite_("Guardar jugador", payload, false, function() { return admin2027SavePlayerUnlocked_(payload); });
+}
+
+function admin2027SaveCompetition(payload) {
+  return admin2027WithWrite_("Guardar competición", payload, false, function() { return admin2027SaveCompetitionUnlocked_(payload); });
+}
+
+function admin2027SaveCategory(payload) {
+  return admin2027WithWrite_("Guardar categoría", payload, false, function() { return admin2027SaveCategoryUnlocked_(payload); });
+}
+
+function admin2027SetEntries(payload) {
+  return admin2027WithWrite_("Actualizar inscripciones", payload, true, function() { return admin2027SetEntriesUnlocked_(payload); });
+}
+
+function admin2027GenerateLadder(payload) {
+  return admin2027WithWrite_("Generar programación", payload, true, function() { return admin2027GenerateLadderUnlocked_(payload); });
+}
+
+function admin2027Postpone(payload) {
+  return admin2027WithWrite_("Aplazar por lluvia", payload, true, function() { return admin2027PostponeUnlocked_(payload); });
+}
+
+function admin2027CreateTournament(payload) {
+  return admin2027WithWrite_("Generar cuadro", payload, true, function() { return admin2027CreateTournamentUnlocked_(payload); });
+}
+
+function admin2027SetPublished(payload) {
+  return admin2027WithWrite_("Cambiar publicación", payload, false, function() { return admin2027SetPublishedUnlocked_(payload); });
+}
+
+function admin2027RecordResult(payload) {
+  return admin2027WithWrite_("Registrar resultado", payload, false, function() { return admin2027RecordResultUnlocked_(payload); });
+}
+
+function admin2027UpdateMatchSchedule(payload) {
+  return admin2027WithWrite_("Actualizar partido", payload, false, function() { return admin2027UpdateMatchScheduleUnlocked_(payload); });
+}
+
+function admin2027AbandonPlayer(payload) {
+  return admin2027WithWrite_("Aplicar abandono", payload, true, function() { return admin2027AbandonPlayerUnlocked_(payload); });
 }
 
 function admin2027Rankings_(competition, players, matches) {

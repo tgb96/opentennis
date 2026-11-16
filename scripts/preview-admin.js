@@ -54,7 +54,8 @@ const dashboard = {
 };
 
 const season2027 = {
-  version: "2027.1",
+  version: "2027.2",
+  storage: { model: "Base normalizada 2027", tables: 7, auditCount: 12, lastAction: "Registrar resultado", lastUpdate: "2027-03-13" },
   players: [
     { id: "jugador-tomas-gomez", name: "Tomás Gómez", aliases: "", gender: "M", active: true },
     { id: "jugador-angelo-basualto", name: "Ángelo Basualto", aliases: "Angelo Basualto", gender: "M", active: true },
