@@ -300,4 +300,85 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
   }
+
+  .admin-mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:0 0 14px; padding:5px; border:1px solid #e4d2b7; border-radius:16px; background:#fffaf1; }
+  .admin-mode-tabs button { min-height:44px; border:0; border-radius:12px; color:#476057; background:transparent; font:850 12px Inter,sans-serif; cursor:pointer; }
+  .admin-mode-tabs button[aria-current="page"] { color:#fff; background:linear-gradient(135deg,var(--green-800),var(--green-950)); box-shadow:0 6px 14px rgba(7,53,40,.2); }
+  .season-2027-panel { display:grid; gap:14px; }
+  .season-2027-hero { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px; border-radius:22px; color:#fff; background:radial-gradient(circle at 95% 10%,rgba(216,104,53,.48),transparent 35%),linear-gradient(135deg,#073528,#0d5a42); }
+  .season-2027-hero h2 { margin:3px 0 6px; font:700 30px/1 Oswald,sans-serif; text-transform:uppercase; }
+  .season-2027-hero p { margin:0; color:rgba(255,255,255,.8); font-size:11px; line-height:1.45; }
+  .season-2027-hero .eyebrow { color:#f3b68e; }
+  .season-2027-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+  .season-2027-summary article { display:grid; gap:4px; padding:13px; border:1px solid #e5d6bf; border-radius:16px; background:#fffaf1; }
+  .season-2027-summary span { color:#69766f; font-size:9px; font-weight:800; text-transform:uppercase; }
+  .season-2027-summary strong { color:var(--green-950); font-size:24px; }
+  .admin-2027-card { overflow:hidden; border:1px solid #e3d3bb; border-radius:18px; background:#fffaf1; box-shadow:0 8px 22px rgba(42,27,15,.06); }
+  .admin-2027-card > summary { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:58px; padding:12px 15px; color:var(--green-950); cursor:pointer; list-style:none; }
+  .admin-2027-card > summary::-webkit-details-marker { display:none; }
+  .admin-2027-card > summary span { display:grid; gap:2px; font:700 18px/1.1 Oswald,sans-serif; }
+  .admin-2027-card > summary small,.matches-2027-card header small { color:#ae4a28; font:900 8px/1 Inter,sans-serif; letter-spacing:.08em; text-transform:uppercase; }
+  .admin-2027-card > summary b { display:grid; width:30px; height:30px; place-items:center; border-radius:50%; color:#fff; background:var(--green-800); }
+  .admin-2027-card[open] > summary b { transform:rotate(45deg); }
+  .admin-2027-card-body { display:grid; gap:13px; padding:14px; border-top:1px solid #eadcc7; }
+  .admin-2027-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .admin-2027-form label,.inline-field,.rain-delay-2027 label,.abandon-2027 label { display:grid; gap:5px; color:#53645c; font-size:10px; font-weight:800; }
+  .admin-2027-form label.wide { grid-column:1/-1; }
+  .admin-2027-form input,.admin-2027-form select,.inline-field input,.rain-delay-2027 input,.abandon-2027 input,.abandon-2027 select { width:100%; min-height:42px; padding:9px 10px; border:1px solid #d5c6b2; border-radius:11px; color:#20372e; background:#fff; font:600 12px Inter,sans-serif; }
+  .admin-2027-form button { align-self:end; }
+  .admin-2027-list,.admin-2027-player-list,.admin-2027-categories,.matches-2027-list { display:grid; gap:7px; }
+  .admin-2027-list button,.admin-2027-player-list button,.admin-2027-categories button { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; width:100%; padding:10px 11px; border:1px solid #e2d6c4; border-radius:12px; color:#20372e; background:#fffdf8; text-align:left; cursor:pointer; }
+  .admin-2027-list button.is-selected { border-color:#d86835; box-shadow:inset 4px 0 #d86835; }
+  .admin-2027-list span,.admin-2027-player-list span,.admin-2027-categories span { display:grid; gap:2px; min-width:0; }
+  .admin-2027-list strong,.admin-2027-player-list strong,.admin-2027-categories strong { font-size:12px; }
+  .admin-2027-list small,.admin-2027-player-list small,.admin-2027-categories small { overflow:hidden; color:#738078; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+  .admin-2027-list b { padding:5px 7px; border-radius:999px; color:#fff; background:#0d5a42; font-size:8px; text-transform:uppercase; }
+  .competition-2027-workspace { display:grid; gap:14px; }
+  .competition-2027-workspace > header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:15px; border:1px solid #d8c5a9; border-radius:18px; background:#fff8ed; }
+  .competition-2027-workspace > header h2 { margin:3px 0 4px; color:var(--green-950); font:700 25px/1 Oswald,sans-serif; }
+  .workspace-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+  .entries-2027-editor { display:grid; gap:10px; }
+  .entries-category { padding:11px; border:1px solid #e3d5c1; border-radius:13px; background:#fff; }
+  .entries-category h4 { margin:0 0 8px; color:var(--green-950); font-size:12px; }
+  .entries-player-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+  .entries-player-grid label { display:flex; align-items:center; gap:7px; min-width:0; padding:7px 8px; border-radius:9px; background:#f7f2e9; font-size:10px; }
+  .entries-player-grid input { flex:0 0 auto; }
+  .entries-player-grid span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .entry-seed { width:50px; min-height:28px; margin-left:auto; padding:3px 5px; border:1px solid #d7c8b4; border-radius:7px; font-size:10px; }
+  .admin-2027-help,.rain-delay-2027 p { margin:0; color:#6c7771; font-size:10px; line-height:1.45; }
+  .rain-delay-2027 { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:10px; }
+  .rain-delay-2027 p { grid-column:1/-1; }
+  .abandon-2027 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end; gap:10px; }
+  .abandon-2027 .wide { grid-column:1/-1; }
+  .abandon-2027 p { margin:0; color:#6c7771; font-size:10px; line-height:1.45; }
+  .danger-button { min-height:42px; padding:9px 12px; border:1px solid #b73b31; border-radius:11px; color:#fff; background:#b73b31; font:850 11px Inter,sans-serif; cursor:pointer; }
+  .matches-2027-card { padding:14px; }
+  .matches-2027-card > header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .matches-2027-card h3 { margin:2px 0 0; color:var(--green-950); font:700 21px/1 Oswald,sans-serif; }
+  .matches-2027-card header > span { display:grid; min-width:34px; height:34px; place-items:center; border-radius:50%; color:#fff; background:#b74722; font-weight:900; }
+  .match-2027-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:9px; padding:9px 10px; border:1px solid #e4d8c7; border-radius:11px; background:#fff; }
+  .match-2027-row time { color:#a64928; font-size:9px; font-weight:900; }
+  .match-2027-row span { display:grid; gap:2px; min-width:0; }
+  .match-2027-row strong { overflow:hidden; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+  .match-2027-row small { color:#758078; font-size:8px; }
+  .match-2027-row button { min-height:32px; padding:6px 8px; border:1px solid #b8c9c0; border-radius:9px; color:#174d3a; background:#fff; font-size:9px; font-weight:850; cursor:pointer; }
+  .match-2027-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; }
+  .match-2027-row.is-played { background:#f0f7f2; }
+
+  @media (max-width:560px) {
+    .season-2027-hero { align-items:flex-start; flex-direction:column; }
+    .season-2027-summary { grid-template-columns:1fr; }
+    .admin-2027-form { grid-template-columns:1fr; }
+    .admin-2027-form label.wide { grid-column:auto; }
+    .competition-2027-workspace > header { flex-direction:column; }
+    .workspace-actions { width:100%; justify-content:stretch; }
+    .workspace-actions button { flex:1; }
+    .entries-player-grid { grid-template-columns:1fr; }
+    .rain-delay-2027 { grid-template-columns:1fr; }
+    .rain-delay-2027 p { grid-column:auto; }
+    .abandon-2027 { grid-template-columns:1fr; }
+    .abandon-2027 .wide { grid-column:auto; }
+    .match-2027-row { grid-template-columns:minmax(0,1fr) auto; }
+    .match-2027-row time { grid-column:1/-1; }
+  }
 </style>

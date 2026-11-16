@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v59-home-links';
+const CACHE_NAME = 'open-tennis-v61-season-2027';
 
 const CORE_ASSETS = [
   './',
@@ -7,8 +7,10 @@ const CORE_ASSETS = [
   './tablas.html',
   './eventos.html',
   './torneo.html',
+  './competencia.html',
   './resultados-2025.html',
   './reglas.html',
+  './reglas-2027.html',
   './marcador.html',
   './assets/css/app.css',
   './assets/css/scoreboard.css',
@@ -21,6 +23,8 @@ const CORE_ASSETS = [
   './assets/js/season-events.js',
   './assets/js/club-events.js',
   './assets/js/events-page.js',
+  './assets/js/season-platform.js',
+  './assets/js/player-identities.js',
   './data/resultados-2025.json',
   './data/incidencias-2026.json',
   './data/actividades-2026.json',

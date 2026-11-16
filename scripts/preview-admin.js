@@ -53,6 +53,28 @@ const dashboard = {
   ]
 };
 
+const season2027 = {
+  version: "2027.1",
+  players: [
+    { id: "jugador-tomas-gomez", name: "Tomás Gómez", aliases: "", gender: "M", active: true },
+    { id: "jugador-angelo-basualto", name: "Ángelo Basualto", aliases: "Angelo Basualto", gender: "M", active: true },
+    { id: "jugador-maria-jose-valladares", name: "María José Valladares", aliases: "M.José Valladares", gender: "F", active: true },
+    { id: "jugador-catalina-valladares", name: "Catalina Valladares", aliases: "", gender: "F", active: true }
+  ],
+  competitions: [{
+    id: "ladder-apertura-2027", type: "ladder", name: "Escalerilla Apertura 2027", season: "2027", edition: "2027-1", status: "draft", startDate: "2027-03-06", published: false, matchCount: 2,
+    categories: [{ competitionId: "ladder-apertura-2027", id: "categoria-a", name: "Categoría A", format: "unica", order: 1, active: true }],
+    entries: [
+      { competitionId: "ladder-apertura-2027", categoryId: "categoria-a", playerId: "jugador-tomas-gomez", seed: 0, status: "activo" },
+      { competitionId: "ladder-apertura-2027", categoryId: "categoria-a", playerId: "jugador-angelo-basualto", seed: 0, status: "activo" }
+    ]
+  }],
+  matches: [
+    { id: "ladder-apertura-2027-m001", competitionId: "ladder-apertura-2027", categoryId: "categoria-a", week: 1, officialDate: "2027-03-06", date: "2027-03-06", court: "1", turn: "12:00-13:30", player1Id: "jugador-tomas-gomez", player2Id: "jugador-angelo-basualto", status: "programado", scheduleType: "oficial", winnerId: "", score: "" },
+    { id: "ladder-apertura-2027-m002", competitionId: "ladder-apertura-2027", categoryId: "categoria-a", week: 2, officialDate: "2027-03-13", date: "2027-03-13", court: "2", turn: "13:45-15:15", player1Id: "jugador-maria-jose-valladares", player2Id: "jugador-catalina-valladares", status: "programado", scheduleType: "oficial", winnerId: "", score: "" }
+  ]
+};
+
 const googleMock = `<script>
 window.google = { script: { run: {
   withSuccessHandler: function (handler) { this.success = handler; return this; },
@@ -60,13 +82,27 @@ window.google = { script: { run: {
   getAdminDashboard: function () { this.success(${JSON.stringify(dashboard)}); },
   saveAdminMatch: function () { this.success({ ok: true, matchId: "preview", status: "jugado", savedAt: "1/9/2026 10:01", undo: { available: true, matchId: "preview", expiresInMinutes: 10 } }); },
   undoAdminLastAction: function () { this.success({ ok: true, matchId: "preview", dashboard: ${JSON.stringify(dashboard)} }); }
+  ,admin2027GetDashboard: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027Setup: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027SavePlayer: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027SaveCompetition: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027SaveCategory: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027SetEntries: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027SetPublished: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027UpdateMatchSchedule: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027GenerateLadder: function () { this.success({ ok: true, weeks: 2, matches: 2, dashboard: ${JSON.stringify(season2027)} }); }
+  ,admin2027Postpone: function () { this.success({ ok: true, shiftedMatches: 2, dashboard: ${JSON.stringify(season2027)} }); }
+  ,admin2027CreateTournament: function () { this.success({ ok: true, capacity: 4, byes: 0, dashboard: ${JSON.stringify(season2027)} }); }
+  ,admin2027RecordResult: function () { this.success(${JSON.stringify(season2027)}); }
+  ,admin2027AbandonPlayer: function () { this.success({ ok: true, affectedMatches: 1, dashboard: ${JSON.stringify(season2027)} }); }
 } } };
 </script>`;
 
 const html = read("Index.html")
   .replace('<?!= include("Styles"); ?>', read("Styles.html"))
   .replace(/window\.__INITIAL_DATA__\s*=\s*<\?!=[\s\S]*?\?>;/, `window.__INITIAL_DATA__ = ${JSON.stringify(dashboard)};`)
-  .replace('<?!= include("Client"); ?>', googleMock + read("Client.html"));
+  .replace('<?!= include("Client"); ?>', googleMock + read("Client.html"))
+  .replace('<?!= include("Season2027Client"); ?>', read("Season2027Client.html"));
 
 const port = Number(process.env.ADMIN_PREVIEW_PORT || 4173);
 http.createServer((request, response) => {

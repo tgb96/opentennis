@@ -10,7 +10,7 @@ test("el interclub finalizado aparece en Torneos e interclubes pasados", () => {
   const view = eventsPage.render(data, "2026-11-16");
   assert.equal(view.upcomingCount, 0);
   assert.equal(view.pastCount, 1);
-  assert.match(view.upcomingHtml, /No hay próximos eventos publicados/);
+  assert.match(view.upcomingHtml, /No hay próximos torneos o interclubes publicados/);
   assert.match(view.pastHtml, /Interclub vs FacuTenis/);
   assert.match(view.pastHtml, /7–7/);
   assert.match(view.pastHtml, /torneo\.html\?id=interclub-facutenis-2026-11-07/);

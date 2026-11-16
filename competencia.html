@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Escalerilla 2027 | Open Tennis Huechuraba</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css?v=30">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#0b2f25">
+  <script src="assets/js/config.js?v=7"></script>
+  <script src="assets/js/data-cache.js?v=2"></script>
+  <script src="assets/js/data-model.js?v=1"></script>
+  <script src="assets/js/season-events.js?v=4"></script>
+  <script src="assets/js/club-events.js?v=11"></script>
+  <script src="assets/js/player-identities.js?v=1"></script>
+  <script src="assets/js/personalization.js?v=21"></script>
+  <script src="assets/js/season-platform.js?v=1"></script>
+  <script defer src="assets/js/app.js?v=32"></script>
+</head>
+<body class="competition-page v5-page">
+  <div class="layout app-shell">
+    <aside class="sidebar app-topbar"><a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/icons/icon-512.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2027</span></span></a></aside>
+    <main class="main app-main event-detail-main">
+      <a class="event-detail-back" href="partidos.html">← Volver a Partidos</a>
+      <div id="competitionDetail" aria-live="polite"><p class="event-detail-loading">Cargando competición…</p></div>
+    </main>
+  </div>
+  <nav id="appBottomNav" class="app-bottom-nav" aria-label="Navegación principal">
+    <a href="index.html" data-page="index.html"><span class="nav-icon" aria-hidden="true">🏠</span><span class="nav-label">Inicio</span></a>
+    <a href="partidos.html" data-page="partidos.html"><span class="nav-icon" aria-hidden="true">🎾</span><span class="nav-label">Partidos</span></a>
+    <a href="tablas.html" data-page="tablas.html"><span class="nav-icon" aria-hidden="true">📊</span><span class="nav-label">Tablas</span></a>
+    <a href="eventos.html" data-page="eventos.html" aria-label="Torneos e interclubes"><span class="nav-icon" aria-hidden="true">🏆</span><span class="nav-label">Torneos</span></a>
+    <a href="marcador.html" data-page="marcador.html"><span class="nav-icon" aria-hidden="true">🔢</span><span class="nav-label">Marcador</span></a>
+  </nav>
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const escapeHtml = value => String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      function isoToLocal(value) {
+        const parts = String(value || "").split("-");
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+      }
+      async function mountHeadToHead(data) {
+        const target = document.getElementById("modernH2h");
+        if (!target) return;
+        const personal = window.OPEN_TENNIS_PERSONAL;
+        const config = window.OPEN_TENNIS_CONFIG;
+        try {
+          const urls = [config.FIXTURE_URL, config.REGISTRO_URL, "data/resultados-2025.json?v=6"];
+          const texts = window.OPEN_TENNIS_CACHE
+            ? (await window.OPEN_TENNIS_CACHE.loadMany(urls)).texts
+            : await Promise.all(urls.map(url => fetch(url).then(response => response.text())));
+          let currentMatches = personal.joinMatches(personal.parseFixture(texts[0]), personal.parseRecords(texts[1]));
+          if (window.OPEN_TENNIS_EVENTS) currentMatches = window.OPEN_TENNIS_EVENTS.applyToPersonalMatches(currentMatches);
+          const playersById = Object.fromEntries((data.players || []).map(player => [player.id, player]));
+          const modernMatches = (data.matches || []).filter(match => match.status === "jugado" && match.countsForH2h).map(match => {
+            const first = playersById[match.player1Id] && playersById[match.player1Id].name;
+            const second = playersById[match.player2Id] && playersById[match.player2Id].name;
+            const winner = playersById[match.winnerId] && playersById[match.winnerId].name;
+            return { season: "2027", player1: first, player2: second, status: "jugado", record: { date: isoToLocal(match.date), winner: winner, resultWeb: `Ganador ${winner} ${String(match.score || "").replace(/,/g, " ")}` } };
+          });
+          const players = (data.players || []).filter(player => player.active !== false);
+          const savedName = localStorage.getItem("openTennisPlayerV1") || "";
+          let selected = players.find(player => window.OPEN_TENNIS_IDENTITIES.samePlayer(player.name, savedName)) || players[0];
+          let rival = players.find(player => player.id !== (selected && selected.id));
+          target.innerHTML = `<div class="modern-h2h-controls"><label>Mi jugador<select id="modernH2hPlayer">${players.map(player => `<option value="${escapeHtml(player.id)}"${selected && player.id === selected.id ? " selected" : ""}>${escapeHtml(player.name)}</option>`).join("")}</select></label><label>Comparar con<select id="modernH2hRival"></select></label></div><div id="modernH2hResult"></div>`;
+          const playerSelect = document.getElementById("modernH2hPlayer");
+          const rivalSelect = document.getElementById("modernH2hRival");
+          const result = document.getElementById("modernH2hResult");
+          function updateRivals() {
+            selected = players.find(player => player.id === playerSelect.value);
+            const rivals = players.filter(player => player.id !== selected.id);
+            if (!rivals.some(player => rival && player.id === rival.id)) rival = rivals[0];
+            rivalSelect.innerHTML = rivals.map(player => `<option value="${escapeHtml(player.id)}"${rival && player.id === rival.id ? " selected" : ""}>${escapeHtml(player.name)}</option>`).join("");
+          }
+          function updateResult() {
+            selected = players.find(player => player.id === playerSelect.value);
+            rival = players.find(player => player.id === rivalSelect.value);
+            if (!selected || !rival) { result.innerHTML = '<p class="h2h-explorer-empty">Selecciona dos jugadores.</p>'; return; }
+            const summary = personal.headToHeadSummary(selected.name, rival.name, currentMatches.concat(modernMatches), texts[2], window.OPEN_TENNIS_EVENTS);
+            result.innerHTML = personal.headToHeadExplorerHtml(selected.name, rival.name, summary);
+          }
+          playerSelect.addEventListener("change", () => { rival = null; updateRivals(); updateResult(); });
+          rivalSelect.addEventListener("change", updateResult);
+          updateRivals(); updateResult();
+        } catch (error) {
+          target.innerHTML = '<div class="events-empty"><strong>No se pudo cargar el historial.</strong></div>';
+        }
+      }
+      OPEN_TENNIS_SEASON_PLATFORM.fetchPublic().then(data => {
+        if (window.OPEN_TENNIS_IDENTITIES && window.OPEN_TENNIS_IDENTITIES.registerPlayers) window.OPEN_TENNIS_IDENTITIES.registerPlayers(data.players || []);
+        const view = OPEN_TENNIS_SEASON_PLATFORM.renderLadderPage(data, params.get("id") || "", params.get("vista") || "programacion");
+        document.title = view.title + " | Open Tennis Huechuraba";
+        document.getElementById("competitionDetail").innerHTML = view.html;
+        mountHeadToHead(data);
+      });
+    })();
+  </script>
+</body>
+</html>

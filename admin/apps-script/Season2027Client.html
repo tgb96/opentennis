@@ -1,0 +1,338 @@
+<script>
+(function () {
+  "use strict";
+
+  var state = { dashboard: null, selectedCompetitionId: "", initialized: false, pendingResultPayload: null };
+  var byId = function (id) { return document.getElementById(id); };
+  var elements = {
+    modeButtons: Array.prototype.slice.call(document.querySelectorAll("[data-admin-mode]")),
+    startup: byId("startupStatus"), legacy: byId("dashboardContent"), panel: byId("season2027Panel"), initialize: byId("initialize2027Button"),
+    playerCount: byId("players2027Count"), competitionCount: byId("competitions2027Count"), matchCount: byId("matches2027Count"),
+    competitions: byId("competitions2027List"), players: byId("players2027List"), workspace: byId("competition2027Workspace"),
+    selectedTitle: byId("selectedCompetition2027Title"), selectedMeta: byId("selectedCompetition2027Meta"), categories: byId("categories2027List"), entries: byId("entries2027Editor"), tournamentEntries: byId("tournamentEntries2027Editor"), matches: byId("matches2027List"), matchCountSelected: byId("selectedMatches2027Count"),
+    ladderTools: byId("ladder2027Tools"), tournamentTools: byId("tournament2027Tools"), publish: byId("publish2027Button"), unpublish: byId("unpublish2027Button"),
+    abandonPlayer: byId("abandon2027Player"), abandonDate: byId("abandon2027Date"), abandonReason: byId("abandon2027Reason"),
+    resultDialog: byId("result2027Dialog"), resultForm: byId("result2027Form"), resultTitle: byId("result2027Title"), resultMatchId: byId("result2027MatchId"), resultPlayedDate: byId("result2027PlayedDate"), resultType: byId("result2027Type"), resultPlayer1: byId("result2027Player1"), resultPlayer2: byId("result2027Player2"), resultScoreGrid: byId("result2027ScoreGrid"), resultWarning: byId("result2027Warning"),
+    scheduleDialog: byId("schedule2027Dialog"), scheduleForm: byId("schedule2027EditForm"), scheduleTitle: byId("schedule2027EditTitle"), scheduleMatchId: byId("schedule2027MatchId"), scheduleOfficial: byId("schedule2027Official"), scheduleStatus: byId("schedule2027Status"), scheduleType: byId("schedule2027ScheduleType"), scheduleDate: byId("schedule2027EditDate"), scheduleCourt: byId("schedule2027EditCourt"), scheduleTurn: byId("schedule2027EditTurn"),
+    resultFields: ["Set1P1", "Set1P2", "Set2P1", "Set2P2", "StbP1", "StbP2"].map(function (suffix) { return byId("result2027" + suffix); })
+  };
+
+  function callServer(name, payload) {
+    return new Promise(function (resolve, reject) {
+      var runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (error) { reject(new Error(error && error.message || String(error))); });
+      if (payload === undefined) runner[name](); else runner[name](payload);
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function setBusy(active, text) {
+    var overlay = byId("loadingOverlay");
+    if (!overlay) return;
+    overlay.hidden = !active;
+    var label = overlay.querySelector("strong");
+    if (label && text) label.textContent = text;
+  }
+
+  function notify(message, isError) {
+    var toast = byId("toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.toggle("error", Boolean(isError));
+    toast.classList.add("show");
+    window.setTimeout(function () { toast.classList.remove("show"); }, 3200);
+  }
+
+  function selectedCompetition() {
+    return state.dashboard && state.dashboard.competitions.find(function (item) { return item.id === state.selectedCompetitionId; });
+  }
+
+  function playerMap() {
+    var map = {};
+    (state.dashboard && state.dashboard.players || []).forEach(function (player) { map[player.id] = player; });
+    return map;
+  }
+
+  function setDashboard(dashboard) {
+    state.dashboard = dashboard;
+    state.initialized = true;
+    if (state.selectedCompetitionId && !dashboard.competitions.some(function (item) { return item.id === state.selectedCompetitionId; })) state.selectedCompetitionId = "";
+    render();
+  }
+
+  function render() {
+    var dashboard = state.dashboard || { players: [], competitions: [], matches: [] };
+    elements.playerCount.textContent = dashboard.players.length;
+    elements.competitionCount.textContent = dashboard.competitions.length;
+    elements.matchCount.textContent = dashboard.matches.length;
+    elements.initialize.textContent = dashboard.players.length ? "Actualizar estructura" : "Inicializar sistema";
+    renderCompetitions(); renderPlayers(); renderWorkspace();
+  }
+
+  function renderCompetitions() {
+    var competitions = state.dashboard.competitions || [];
+    elements.competitions.innerHTML = competitions.length ? competitions.map(function (competition) {
+      var label = competition.type === "ladder" ? "Escalerilla" : competition.type === "tournament" ? "Torneo" : "Interclub";
+      return '<button type="button" data-competition-id="' + escapeHtml(competition.id) + '" class="' + (competition.id === state.selectedCompetitionId ? "is-selected" : "") + '"><span><strong>' + escapeHtml(competition.name) + '</strong><small>' + escapeHtml(label + " · " + (competition.edition || competition.season) + " · " + competition.matchCount + " partidos") + '</small></span><b>' + (competition.published ? "Publicado" : "Borrador") + '</b></button>';
+    }).join("") : '<p class="muted">Crea la primera escalerilla 2027 o un torneo.</p>';
+  }
+
+  function renderPlayers() {
+    var players = state.dashboard.players || [];
+    elements.players.innerHTML = players.length ? players.map(function (player) {
+      return '<button type="button" data-player-edit="' + escapeHtml(player.id) + '"><span><strong>' + escapeHtml(player.name) + '</strong><small>' + escapeHtml(player.id + (player.aliases ? " · " + player.aliases : "")) + '</small></span><b>Editar</b></button>';
+    }).join("") : '<p class="muted">Inicializa el sistema para importar los socios de 2026.</p>';
+  }
+
+  function renderWorkspace() {
+    var competition = selectedCompetition();
+    elements.workspace.hidden = !competition;
+    if (!competition) return;
+    elements.selectedTitle.textContent = competition.name;
+    elements.selectedMeta.textContent = [competition.edition || competition.season, competition.startDate || "Sin fecha inicial", competition.published ? "Publicado" : "Borrador"].join(" · ");
+    elements.publish.hidden = competition.published;
+    elements.unpublish.hidden = !competition.published;
+    elements.ladderTools.hidden = competition.type !== "ladder";
+    elements.tournamentTools.hidden = competition.type !== "tournament";
+    byId("schedule2027Start").value = competition.startDate || "";
+    renderCategories(competition);
+    renderEntries(competition);
+    renderAbandonment(competition);
+    renderMatches(competition);
+  }
+
+  function renderAbandonment(competition) {
+    if (!elements.abandonPlayer || competition.type !== "ladder") return;
+    var players = playerMap();
+    elements.abandonPlayer.innerHTML = competition.entries.filter(function (entry) { return entry.status !== "retirado"; }).map(function (entry) {
+      return '<option value="' + escapeHtml(entry.playerId) + '">' + escapeHtml(players[entry.playerId] ? players[entry.playerId].name : entry.playerId) + '</option>';
+    }).join("");
+    if (!elements.abandonDate.value) elements.abandonDate.value = new Date().toISOString().slice(0, 10);
+  }
+
+  function renderCategories(competition) {
+    elements.categories.innerHTML = competition.categories.length ? competition.categories.map(function (category) {
+      var count = competition.entries.filter(function (entry) { return entry.categoryId === category.id; }).length;
+      return '<button type="button" data-category-edit="' + escapeHtml(category.id) + '"><span><strong>' + escapeHtml(category.name) + '</strong><small>' + escapeHtml((category.format === "ida_vuelta" ? "Ida y vuelta" : "Ronda única") + " · " + count + " jugadores") + '</small></span><b>Editar</b></button>';
+    }).join("") : '<p class="muted">Agrega las categorías de esta escalerilla.</p>';
+  }
+
+  function playerCheckbox(player, checked, seed) {
+    return '<label><input type="checkbox" value="' + escapeHtml(player.id) + '"' + (checked ? " checked" : "") + '><span>' + escapeHtml(player.name) + '</span><input class="entry-seed" type="number" min="0" value="' + (seed || "") + '" placeholder="N°" aria-label="Cabeza de serie"></label>';
+  }
+
+  function renderEntries(competition) {
+    var players = (state.dashboard.players || []).filter(function (player) { return player.active; });
+    if (competition.type === "ladder") {
+      elements.entries.innerHTML = competition.categories.map(function (category) {
+        var entries = competition.entries.filter(function (entry) { return entry.categoryId === category.id; });
+        var entryMap = {}; entries.forEach(function (entry) { entryMap[entry.playerId] = entry; });
+        return '<section class="entries-category" data-entry-category="' + escapeHtml(category.id) + '"><h4>' + escapeHtml(category.name) + '</h4><div class="entries-player-grid">' + players.map(function (player) { return playerCheckbox(player, Boolean(entryMap[player.id]), entryMap[player.id] && entryMap[player.id].seed); }).join("") + '</div></section>';
+      }).join("");
+    } else if (competition.type === "tournament") {
+      var entryMap = {}; competition.entries.forEach(function (entry) { entryMap[entry.playerId] = entry; });
+      elements.tournamentEntries.innerHTML = '<section class="entries-category" data-entry-category=""><h4>Participantes · número de cabeza de serie opcional</h4><div class="entries-player-grid">' + players.map(function (player) { return playerCheckbox(player, Boolean(entryMap[player.id]), entryMap[player.id] && entryMap[player.id].seed); }).join("") + '</div></section>';
+    }
+  }
+
+  function renderMatches(competition) {
+    var players = playerMap();
+    var matches = state.dashboard.matches.filter(function (match) { return match.competitionId === competition.id; });
+    elements.matchCountSelected.textContent = matches.length;
+    elements.matches.innerHTML = matches.length ? matches.map(function (match) {
+      var first = players[match.player1Id] ? players[match.player1Id].name : (match.player1Id || "Por definir");
+      var second = players[match.player2Id] ? players[match.player2Id].name : (match.player2Id || "Por definir");
+      var meta = competition.type === "ladder" ? [match.categoryId, match.court ? "Cancha " + match.court : "", match.turn].filter(Boolean).join(" · ") : "Ronda " + match.round;
+      var locked = /^(bye|anulado|cancelado)/.test(match.status || "");
+      var action = locked ? '<small>' + escapeHtml(match.status === "bye" ? "BYE" : "Sin efecto") + '</small>' : match.player1Id && match.player2Id
+        ? '<div class="match-2027-actions">' + (competition.type === "ladder" && match.status !== "jugado" ? '<button type="button" data-schedule-2027="' + escapeHtml(match.id) + '">Programar</button>' : '') + '<button type="button" data-result-2027="' + escapeHtml(match.id) + '">' + (match.status === "jugado" ? "Editar" : "Resultado") + '</button></div>'
+        : '<small>Esperando rival</small>';
+      return '<article class="match-2027-row ' + (match.status === "jugado" ? "is-played" : "") + '"><time>' + escapeHtml(match.date || ("R" + match.round)) + '</time><span><strong>' + escapeHtml(first + " vs " + second) + '</strong><small>' + escapeHtml(meta + (match.score ? " · " + match.score : "")) + '</small></span>' + action + '</article>';
+    }).join("") : '<p class="muted">Todavía no se ha generado la programación o el cuadro.</p>';
+  }
+
+  function collectEntries(container) {
+    var result = [];
+    Array.prototype.slice.call(container.querySelectorAll("[data-entry-category]")).forEach(function (section) {
+      var categoryId = section.getAttribute("data-entry-category") || "";
+      Array.prototype.slice.call(section.querySelectorAll('input[type="checkbox"]:checked')).forEach(function (checkbox) {
+        var seedInput = checkbox.parentElement.querySelector(".entry-seed");
+        result.push({ categoryId: categoryId, playerId: checkbox.value, seed: Number(seedInput && seedInput.value || 0) });
+      });
+    });
+    return result;
+  }
+
+  function loadDashboard() {
+    setBusy(true, "Cargando sistema 2027…");
+    return callServer("admin2027GetDashboard").then(setDashboard).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  }
+
+  elements.modeButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var is2027 = button.getAttribute("data-admin-mode") === "2027";
+      elements.modeButtons.forEach(function (item) { if (item === button) item.setAttribute("aria-current", "page"); else item.removeAttribute("aria-current"); });
+      elements.panel.hidden = !is2027;
+      elements.legacy.hidden = is2027;
+      elements.startup.hidden = is2027 || elements.startup.hidden;
+      if (is2027 && !state.initialized) loadDashboard();
+    });
+  });
+
+  elements.initialize.addEventListener("click", function () {
+    setBusy(true, "Preparando la temporada 2027…");
+    callServer("admin2027Setup").then(function (dashboard) { setDashboard(dashboard); notify("Sistema 2027 listo."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  byId("competition2027Form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var payload = { id: byId("competition2027Id").value, type: byId("competition2027Type").value, name: byId("competition2027Name").value, season: "2027", edition: byId("competition2027Edition").value, startDate: byId("competition2027Start").value, status: "draft", published: false };
+    setBusy(true, "Guardando competición…");
+    callServer("admin2027SaveCompetition", payload).then(function (dashboard) { setDashboard(dashboard); event.target.reset(); byId("competition2027Id").value = ""; notify("Competición guardada."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  byId("player2027Form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var payload = { id: byId("player2027Id").value, name: byId("player2027Name").value, aliases: byId("player2027Aliases").value, gender: byId("player2027Gender").value, active: true };
+    setBusy(true, "Guardando jugador…");
+    callServer("admin2027SavePlayer", payload).then(function (dashboard) { setDashboard(dashboard); event.target.reset(); byId("player2027Id").value = ""; notify("Jugador guardado con identidad permanente."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  elements.competitions.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-competition-id]"); if (!button) return;
+    state.selectedCompetitionId = button.getAttribute("data-competition-id"); render(); elements.workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  elements.players.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-player-edit]"); if (!button) return;
+    var player = state.dashboard.players.find(function (item) { return item.id === button.getAttribute("data-player-edit"); }); if (!player) return;
+    byId("player2027Id").value = player.id; byId("player2027Name").value = player.name; byId("player2027Aliases").value = player.aliases || ""; byId("player2027Gender").value = player.gender || ""; byId("player2027Name").focus();
+  });
+
+  byId("category2027Form").addEventListener("submit", function (event) {
+    event.preventDefault(); var competition = selectedCompetition(); if (!competition) return;
+    var payload = { competitionId: competition.id, id: byId("category2027Id").value, name: byId("category2027Name").value, format: byId("category2027Format").value, order: byId("category2027Order").value, active: true };
+    setBusy(true, "Guardando categoría…");
+    callServer("admin2027SaveCategory", payload).then(function (dashboard) { setDashboard(dashboard); event.target.reset(); byId("category2027Id").value = ""; byId("category2027Order").value = "1"; notify("Categoría guardada."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  elements.categories.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-category-edit]"); if (!button) return;
+    var competition = selectedCompetition(); var category = competition.categories.find(function (item) { return item.id === button.getAttribute("data-category-edit"); }); if (!category) return;
+    byId("category2027Id").value = category.id; byId("category2027Name").value = category.name; byId("category2027Format").value = category.format; byId("category2027Order").value = category.order; byId("category2027Name").focus();
+  });
+
+  function saveEntries(container) {
+    var competition = selectedCompetition(); if (!competition) return Promise.resolve();
+    setBusy(true, "Guardando inscritos…");
+    return callServer("admin2027SetEntries", { competitionId: competition.id, entries: collectEntries(container) }).then(function (dashboard) { setDashboard(dashboard); notify("Inscripciones guardadas."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  }
+  byId("saveEntries2027Button").addEventListener("click", function () { saveEntries(elements.entries); });
+  byId("saveTournamentEntries2027Button").addEventListener("click", function () { saveEntries(elements.tournamentEntries); });
+
+  byId("schedule2027Form").addEventListener("submit", function (event) {
+    event.preventDefault(); var competition = selectedCompetition(); if (!competition) return;
+    var payload = { competitionId: competition.id, startDate: byId("schedule2027Start").value, courts: byId("schedule2027Courts").value.split(","), turns: byId("schedule2027Turns").value.split(","), seed: byId("schedule2027Seed").value };
+    setBusy(true, "Distribuyendo partidos de todas las categorías…");
+    callServer("admin2027GenerateLadder", payload).then(function (result) { setDashboard(result.dashboard); notify("Programación creada: " + result.matches + " partidos en " + result.weeks + " semanas."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  byId("postpone2027Button").addEventListener("click", function () {
+    var competition = selectedCompetition(), date = byId("postpone2027Date").value; if (!competition || !date) return notify("Selecciona el sábado afectado.", true);
+    if (!window.confirm("Se moverán siete días todos los partidos no jugados desde " + date + ". ¿Continuar?")) return;
+    setBusy(true, "Aplazando la programación…");
+    callServer("admin2027Postpone", { competitionId: competition.id, fromDate: date }).then(function (result) { setDashboard(result.dashboard); notify(result.shiftedMatches + " partidos movidos una semana."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  byId("abandon2027Button").addEventListener("click", function () {
+    var competition = selectedCompetition(), playerId = elements.abandonPlayer.value;
+    if (!competition || !playerId) return notify("Selecciona al jugador que abandona.", true);
+    var player = playerMap()[playerId];
+    if (!window.confirm("Se anularán para la tabla todos los partidos de " + (player ? player.name : playerId) + " y saldrá de la clasificación. ¿Continuar?")) return;
+    setBusy(true, "Aplicando la regla de abandono 2027…");
+    callServer("admin2027AbandonPlayer", { competitionId: competition.id, playerId: playerId, date: elements.abandonDate.value, reason: elements.abandonReason.value }).then(function (result) {
+      setDashboard(result.dashboard); notify(result.affectedMatches + " partidos quedaron sin efecto en la clasificación.");
+    }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  byId("drawTournament2027Button").addEventListener("click", function () {
+    var competition = selectedCompetition(); if (!competition) return;
+    setBusy(true, "Sorteando el cuadro…");
+    callServer("admin2027CreateTournament", { competitionId: competition.id, seed: byId("tournament2027Seed").value }).then(function (result) { setDashboard(result.dashboard); notify("Cuadro de " + result.capacity + " posiciones creado con " + result.byes + " bye(s)."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+
+  function setPublished(published) {
+    var competition = selectedCompetition(); if (!competition) return;
+    setBusy(true, published ? "Publicando en la app…" : "Volviendo a borrador…");
+    callServer("admin2027SetPublished", { competitionId: competition.id, published: published }).then(function (dashboard) { setDashboard(dashboard); notify(published ? "Competición publicada." : "Competición ocultada de la app."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  }
+  elements.publish.addEventListener("click", function () { setPublished(true); });
+  elements.unpublish.addEventListener("click", function () { setPublished(false); });
+
+  elements.matches.addEventListener("click", function (event) {
+    var scheduleButton = event.target.closest("[data-schedule-2027]");
+    if (scheduleButton) {
+      var scheduledMatch = state.dashboard.matches.find(function (item) { return item.id === scheduleButton.getAttribute("data-schedule-2027"); });
+      if (!scheduledMatch) return;
+      var scheduledPlayers = playerMap();
+      elements.scheduleMatchId.value = scheduledMatch.id;
+      elements.scheduleTitle.textContent = (scheduledPlayers[scheduledMatch.player1Id] ? scheduledPlayers[scheduledMatch.player1Id].name : scheduledMatch.player1Id) + " vs " + (scheduledPlayers[scheduledMatch.player2Id] ? scheduledPlayers[scheduledMatch.player2Id].name : scheduledMatch.player2Id);
+      elements.scheduleOfficial.textContent = "Fecha oficial: " + (scheduledMatch.officialDate || "sin fecha") + ". Esta referencia no se modifica.";
+      elements.scheduleStatus.value = ["programado", "por_coordinar", "suspendido"].indexOf(scheduledMatch.status) >= 0 ? scheduledMatch.status : "programado";
+      elements.scheduleType.value = scheduledMatch.scheduleType || "oficial";
+      elements.scheduleDate.value = scheduledMatch.date || ""; elements.scheduleCourt.value = scheduledMatch.court || ""; elements.scheduleTurn.value = scheduledMatch.turn || "";
+      elements.scheduleDialog.showModal(); return;
+    }
+    var button = event.target.closest("[data-result-2027]"); if (!button) return;
+    var match = state.dashboard.matches.find(function (item) { return item.id === button.getAttribute("data-result-2027"); }); if (!match) return;
+    var players = playerMap();
+    elements.resultMatchId.value = match.id;
+    elements.resultPlayedDate.value = match.status === "jugado" && match.date ? match.date : new Date().toISOString().slice(0, 10);
+    elements.resultTitle.textContent = (players[match.player1Id] ? players[match.player1Id].name : match.player1Id) + " vs " + (players[match.player2Id] ? players[match.player2Id].name : match.player2Id);
+    elements.resultPlayer1.textContent = players[match.player1Id] ? players[match.player1Id].name : match.player1Id;
+    elements.resultPlayer2.textContent = players[match.player2Id] ? players[match.player2Id].name : match.player2Id;
+    var inferredType = /^W\/O ambos/i.test(match.score || "") ? "wo_ambos" : /^W\/O/i.test(match.score || "") ? (match.winnerId === match.player1Id ? "wo_j2" : "wo_j1") : /^Retiro/i.test(match.score || "") ? (match.winnerId === match.player1Id ? "retiro_j2" : "retiro_j1") : "jugado";
+    elements.resultType.value = inferredType;
+    var values = String(match.score || "").match(/\d+/g) || [];
+    elements.resultFields.forEach(function (field, index) { field.value = values[index] == null ? "" : values[index]; });
+    updateResult2027Fields();
+    elements.resultWarning.hidden = true; state.pendingResultPayload = null; elements.resultDialog.showModal();
+  });
+
+  function updateResult2027Fields() {
+    elements.resultScoreGrid.hidden = /^wo_/.test(elements.resultType.value);
+  }
+  elements.resultType.addEventListener("change", updateResult2027Fields);
+
+  elements.resultForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var payload = {
+      matchId: elements.resultMatchId.value,
+      playedDate: elements.resultPlayedDate.value,
+      resultType: elements.resultType.value,
+      set1Player1: elements.resultFields[0].value, set1Player2: elements.resultFields[1].value,
+      set2Player1: elements.resultFields[2].value, set2Player2: elements.resultFields[3].value,
+      stbPlayer1: elements.resultFields[4].value, stbPlayer2: elements.resultFields[5].value,
+      confirmConsequences: Boolean(state.pendingResultPayload)
+    };
+    setBusy(true, "Guardando resultado 2027…");
+    callServer("admin2027RecordResult", payload).then(function (dashboard) { setDashboard(dashboard); elements.resultDialog.close(); notify("Resultado guardado y cuadro actualizado."); }).catch(function (error) {
+      if (/rondas posteriores/i.test(error.message)) { state.pendingResultPayload = payload; elements.resultWarning.textContent = error.message + " Vuelve a guardar para confirmar."; elements.resultWarning.hidden = false; }
+      else notify(error.message, true);
+    }).finally(function () { setBusy(false); });
+  });
+  byId("result2027Close").addEventListener("click", function () { elements.resultDialog.close(); });
+  byId("result2027Cancel").addEventListener("click", function () { elements.resultDialog.close(); });
+
+  elements.scheduleForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var payload = { matchId: elements.scheduleMatchId.value, status: elements.scheduleStatus.value, scheduleType: elements.scheduleType.value, date: elements.scheduleDate.value, court: elements.scheduleCourt.value, turn: elements.scheduleTurn.value };
+    setBusy(true, "Actualizando programación 2027…");
+    callServer("admin2027UpdateMatchSchedule", payload).then(function (dashboard) { setDashboard(dashboard); elements.scheduleDialog.close(); notify("Programación actualizada en la app."); }).catch(function (error) { notify(error.message, true); }).finally(function () { setBusy(false); });
+  });
+  byId("schedule2027EditClose").addEventListener("click", function () { elements.scheduleDialog.close(); });
+  byId("schedule2027EditCancel").addEventListener("click", function () { elements.scheduleDialog.close(); });
+})();
+</script>

@@ -4,10 +4,11 @@ const path = require("node:path");
 
 const sourceDirectory = path.join(__dirname, "..", "admin", "apps-script");
 const bundles = {
-  "/Codigo.gs": ["Config.gs", "ResultEngine.gs", "Code.gs"],
+  "/Codigo.gs": ["Config.gs", "ResultEngine.gs", "Season2027.gs", "Code.gs"],
   "/Index.html": ["Index.html"],
   "/Styles.html": ["Styles.html"],
-  "/Client.html": ["Client.html"]
+  "/Client.html": ["Client.html"],
+  "/Season2027Client.html": ["Season2027Client.html"]
 };
 
 const port = Number(process.env.APPS_SCRIPT_SOURCE_PORT || 4175);

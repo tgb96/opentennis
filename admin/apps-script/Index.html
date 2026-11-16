@@ -25,6 +25,11 @@
       </div>
     </section>
 
+    <nav class="admin-mode-tabs" aria-label="Módulo del administrador">
+      <button type="button" data-admin-mode="2026" aria-current="page">Operación 2026</button>
+      <button type="button" data-admin-mode="2027">Sistema 2027</button>
+    </nav>
+
     <section id="startupStatus" class="startup-status" role="status" aria-live="polite" hidden>
       <strong id="startupMessage">Cargando partidos y verificando ranking…</strong>
       <p>Puedes volver al club mientras se completa la carga.</p>
@@ -116,6 +121,129 @@
 
     <section id="matchList" class="match-list" aria-live="polite"></section>
     </div>
+
+    <section id="season2027Panel" class="season-2027-panel" hidden>
+      <header class="season-2027-hero">
+        <div>
+          <p class="eyebrow">Nueva plataforma</p>
+          <h2>Temporada 2027</h2>
+          <p>Dos escalerillas, categorías editables, sorteo equilibrado, aplazamientos y torneos con cuadro.</p>
+        </div>
+        <button id="initialize2027Button" class="primary-button" type="button">Inicializar sistema</button>
+      </header>
+
+      <section class="season-2027-summary" aria-label="Resumen 2027">
+        <article><span>Jugadores permanentes</span><strong id="players2027Count">0</strong></article>
+        <article><span>Competiciones</span><strong id="competitions2027Count">0</strong></article>
+        <article><span>Partidos generados</span><strong id="matches2027Count">0</strong></article>
+      </section>
+
+      <details class="admin-2027-card" open>
+        <summary><span><small>Paso 1</small>Competiciones</span><b>＋</b></summary>
+        <div class="admin-2027-card-body">
+          <form id="competition2027Form" class="admin-2027-form">
+            <input id="competition2027Id" type="hidden">
+            <label><span>Tipo</span><select id="competition2027Type"><option value="ladder">Escalerilla</option><option value="tournament">Eliminación directa</option></select></label>
+            <label><span>Nombre</span><input id="competition2027Name" required placeholder="Ej.: Escalerilla Apertura 2027"></label>
+            <label><span>Edición</span><input id="competition2027Edition" placeholder="Ej.: 2027-1"></label>
+            <label><span>Fecha de inicio</span><input id="competition2027Start" type="date"></label>
+            <button class="primary-button" type="submit">Guardar competición</button>
+          </form>
+          <div id="competitions2027List" class="admin-2027-list"></div>
+        </div>
+      </details>
+
+      <details class="admin-2027-card">
+        <summary><span><small>Identidad histórica</small>Jugadores y alias</span><b>＋</b></summary>
+        <div class="admin-2027-card-body">
+          <form id="player2027Form" class="admin-2027-form">
+            <input id="player2027Id" type="hidden">
+            <label><span>Nombre oficial</span><input id="player2027Name" required></label>
+            <label class="wide"><span>Alias históricos, separados por coma</span><input id="player2027Aliases" placeholder="Ej.: M.José Valladares"></label>
+            <label><span>Sexo</span><select id="player2027Gender"><option value="">Sin indicar</option><option value="F">Femenino</option><option value="M">Masculino</option></select></label>
+            <button class="primary-button" type="submit">Guardar jugador</button>
+          </form>
+          <div id="players2027List" class="admin-2027-player-list"></div>
+        </div>
+      </details>
+
+      <section id="competition2027Workspace" class="competition-2027-workspace" hidden>
+        <header>
+          <div><p class="eyebrow">Competición seleccionada</p><h2 id="selectedCompetition2027Title"></h2><p id="selectedCompetition2027Meta" class="muted"></p></div>
+          <div class="workspace-actions"><button id="publish2027Button" class="primary-button" type="button">Publicar en la app</button><button id="unpublish2027Button" class="secondary-button" type="button">Volver a borrador</button></div>
+        </header>
+
+        <div id="ladder2027Tools">
+          <details class="admin-2027-card" open>
+            <summary><span><small>Paso 2</small>Categorías e inscritos</span><b>＋</b></summary>
+            <div class="admin-2027-card-body">
+              <form id="category2027Form" class="admin-2027-form compact">
+                <input id="category2027Id" type="hidden">
+                <label><span>Nombre</span><input id="category2027Name" required placeholder="Categoría A"></label>
+                <label><span>Formato</span><select id="category2027Format"><option value="unica">Todos contra todos</option><option value="ida_vuelta">Ida y vuelta</option></select></label>
+                <label><span>Orden</span><input id="category2027Order" type="number" min="1" value="1"></label>
+                <button class="primary-button" type="submit">Agregar categoría</button>
+              </form>
+              <div id="categories2027List" class="admin-2027-categories"></div>
+              <div id="entries2027Editor" class="entries-2027-editor"></div>
+              <button id="saveEntries2027Button" class="secondary-button" type="button">Guardar inscritos</button>
+            </div>
+          </details>
+
+          <details class="admin-2027-card" open>
+            <summary><span><small>Paso 3</small>Sorteo y programación</span><b>＋</b></summary>
+            <div class="admin-2027-card-body">
+              <form id="schedule2027Form" class="admin-2027-form">
+                <label><span>Primer sábado</span><input id="schedule2027Start" type="date" required></label>
+                <label><span>Canchas</span><input id="schedule2027Courts" value="1, 2" required></label>
+                <label class="wide"><span>Turnos, separados por coma</span><input id="schedule2027Turns" value="12:00-13:30, 13:45-15:15, 15:30-17:00, 17:15-18:45, 19:00-20:30" required></label>
+                <label><span>Semilla del sorteo</span><input id="schedule2027Seed" value="Open Tennis 2027"></label>
+                <button class="primary-button" type="submit">Generar programación equilibrada</button>
+              </form>
+              <p class="admin-2027-help">El sistema distribuye todas las categorías durante el mismo periodo y evita que una persona juegue más de una vez por día.</p>
+            </div>
+          </details>
+
+          <details class="admin-2027-card">
+            <summary><span><small>Clima</small>Aplazar una semana</span><b>＋</b></summary>
+            <div class="admin-2027-card-body rain-delay-2027">
+              <label><span>Desde el sábado afectado</span><input id="postpone2027Date" type="date"></label>
+              <button id="postpone2027Button" class="danger-button" type="button">Mover todas las fechas siguientes 7 días</button>
+              <p>Los partidos ya jugados no cambian. La fecha oficial queda guardada y la app muestra la nueva programación.</p>
+            </div>
+          </details>
+
+          <details class="admin-2027-card">
+            <summary><span><small>Regla 2027</small>Abandono definitivo</span><b>＋</b></summary>
+            <div class="admin-2027-card-body abandon-2027">
+              <label><span>Jugador que abandona</span><select id="abandon2027Player"></select></label>
+              <label><span>Fecha</span><input id="abandon2027Date" type="date"></label>
+              <label class="wide"><span>Motivo o resolución</span><input id="abandon2027Reason" placeholder="Ej.: renunció al club"></label>
+              <button id="abandon2027Button" class="danger-button" type="button">Aplicar abandono a toda la escalerilla</button>
+              <p class="wide">El jugador sale de la tabla. Sus partidos jugados quedan visibles como anulados y los pendientes se cancelan, sin puntos ni efecto en H2H.</p>
+            </div>
+          </details>
+        </div>
+
+        <div id="tournament2027Tools" hidden>
+          <details class="admin-2027-card" open>
+            <summary><span><small>Cuadro automático</small>Participantes y sorteo</span><b>＋</b></summary>
+            <div class="admin-2027-card-body">
+              <div id="tournamentEntries2027Editor" class="entries-2027-editor"></div>
+              <button id="saveTournamentEntries2027Button" class="secondary-button" type="button">Guardar participantes</button>
+              <label class="inline-field"><span>Semilla del sorteo</span><input id="tournament2027Seed" value="Open Tennis 2027"></label>
+              <button id="drawTournament2027Button" class="primary-button" type="button">Sortear cuadro con byes automáticos</button>
+              <p class="admin-2027-help">Acepta cualquier cantidad de jugadores. Las cabezas de serie se separan y los byes no cuentan como partidos ni Cara a Cara.</p>
+            </div>
+          </details>
+        </div>
+
+        <section class="admin-2027-card matches-2027-card">
+          <header><div><small>Vista previa y operación</small><h3>Partidos</h3></div><span id="selectedMatches2027Count">0</span></header>
+          <div id="matches2027List" class="matches-2027-list"></div>
+        </section>
+      </section>
+    </section>
   </main>
 
   <dialog id="matchDialog" class="match-dialog">
@@ -234,9 +362,45 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <dialog id="result2027Dialog" class="match-dialog">
+    <form id="result2027Form" method="dialog">
+      <header class="dialog-header"><div><p class="eyebrow">Temporada 2027</p><h2 id="result2027Title">Registrar resultado</h2></div><button id="result2027Close" class="icon-button" type="button" aria-label="Cerrar">×</button></header>
+      <div class="dialog-body">
+        <input id="result2027MatchId" type="hidden">
+        <label class="field"><span>Fecha real jugada</span><input id="result2027PlayedDate" type="date" required></label>
+        <label class="field"><span>Tipo de resultado</span><select id="result2027Type"><option value="jugado">Partido completado</option><option value="retiro_j1">Retiro Jugador 1</option><option value="retiro_j2">Retiro Jugador 2</option><option value="wo_j1">W/O Jugador 1</option><option value="wo_j2">W/O Jugador 2</option><option value="wo_ambos">W/O ambos</option></select></label>
+        <div class="score-grid score-labels" aria-hidden="true"><span></span><span id="result2027Player1">Jugador 1</span><span id="result2027Player2">Jugador 2</span></div>
+        <div id="result2027ScoreGrid" class="score-grid">
+          <label for="result2027Set1P1">Set 1</label><input id="result2027Set1P1" type="number" min="0" max="7"><input id="result2027Set1P2" type="number" min="0" max="7">
+          <label for="result2027Set2P1">Set 2</label><input id="result2027Set2P1" type="number" min="0" max="7"><input id="result2027Set2P2" type="number" min="0" max="7">
+          <label for="result2027StbP1">Super TB</label><input id="result2027StbP1" type="number" min="0" max="99"><input id="result2027StbP2" type="number" min="0" max="99">
+        </div>
+        <p class="muted">En retiros ingresa solamente lo jugado. El sistema completa automáticamente los games restantes y aplica 3–0 o 2–1.</p>
+        <div id="result2027Warning" class="notice" hidden></div>
+      </div>
+      <footer class="dialog-actions"><button id="result2027Cancel" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Guardar resultado</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="schedule2027Dialog" class="match-dialog">
+    <form id="schedule2027EditForm" method="dialog">
+      <header class="dialog-header"><div><p class="eyebrow">Programación 2027</p><h2 id="schedule2027EditTitle">Editar partido</h2></div><button id="schedule2027EditClose" class="icon-button" type="button" aria-label="Cerrar">×</button></header>
+      <div class="dialog-body">
+        <input id="schedule2027MatchId" type="hidden">
+        <div id="schedule2027Official" class="notice"></div>
+        <label class="field"><span>Estado</span><select id="schedule2027Status"><option value="programado">Programado</option><option value="por_coordinar">Por coordinar</option><option value="suspendido">Suspendido</option></select></label>
+        <label class="field"><span>Tipo</span><select id="schedule2027ScheduleType"><option value="oficial">Oficial</option><option value="adelantado">Adelantado</option><option value="reprogramado">Reprogramado</option><option value="recuperacion">Recuperación</option></select></label>
+        <label class="field"><span>Nueva fecha</span><input id="schedule2027EditDate" type="date"></label>
+        <div class="schedule-grid"><label class="field"><span>Cancha</span><input id="schedule2027EditCourt"></label><label class="field"><span>Turno</span><input id="schedule2027EditTurn"></label></div>
+      </div>
+      <footer class="dialog-actions"><button id="schedule2027EditCancel" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Guardar programación</button></footer>
+    </form>
+  </dialog>
+
   <script>
     window.__INITIAL_DATA__ = <?!= JSON.stringify(initialData).replace(/</g, "\\u003c") ?>;
   </script>
   <?!= include("Client"); ?>
+  <?!= include("Season2027Client"); ?>
 </body>
 </html>

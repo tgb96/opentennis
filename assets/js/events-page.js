@@ -136,7 +136,7 @@
     return {
       upcomingHtml: grouped.upcoming.length
         ? grouped.upcoming.map(event => eventCard(event, true)).join("")
-        : `<div class="events-empty"><span>📅</span><strong>No hay próximos eventos publicados</strong><p>Los nuevos torneos e interclubes aparecerán aquí.</p></div>`,
+        : `<div class="events-empty"><span>📅</span><strong>No hay próximos torneos o interclubes publicados</strong><p>Las nuevas competencias aparecerán aquí.</p></div>`,
       pastHtml: grouped.past.length
         ? grouped.past.map(event => eventCard(event, false)).join("")
         : `<div class="events-empty"><span>🏆</span><strong>Aún no hay eventos archivados</strong></div>`,

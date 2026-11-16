@@ -1,4 +1,5 @@
-function doGet() {
+function doGet(request) {
+  if (request && request.parameter && request.parameter.api === "competitions") return admin2027ApiResponse_();
   adminAssertAuthorized_();
   var template = HtmlService.createTemplateFromFile("Index");
   // La autorización se comprueba antes de servir la pantalla; los datos se cargan después.

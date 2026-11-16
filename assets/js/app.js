@@ -60,7 +60,9 @@
   if (navigator.onLine === false) connectivityNotice(true);
 
   const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  const navigationCurrent = current === 'torneo.html' ? 'eventos.html' : current;
+  const navigationCurrent = current === 'torneo.html'
+    ? 'eventos.html'
+    : (current === 'competencia.html' ? 'partidos.html' : current);
 
   document.querySelectorAll('#appBottomNav a, .app-bottom-nav a, .app-nav a, .nav a').forEach(link => {
     const href = (link.getAttribute('href') || '').split('/').pop().toLowerCase() || 'index.html';

@@ -94,6 +94,56 @@
 .event-official-header h1 { margin:3px 0 0; color:#0b2f25; font:700 27px/1.06 Oswald,sans-serif; }
 .event-official-meta { margin:12px 0 0; color:#657168; font-size:12px; }
 
+.modern-season-links { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:12px; margin:0 0 16px; padding:12px 14px; border:1px solid #d8c6aa; border-radius:18px; background:#fff8ec; box-shadow:0 8px 20px rgba(11,47,37,.08); }
+.modern-season-links > span { color:#a74b27; font-size:9px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.modern-season-links > div { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+.modern-season-links a { display:grid; gap:2px; min-width:150px; padding:9px 11px; border-radius:11px; color:#fff; background:linear-gradient(135deg,#0d5a42,#073528); text-decoration:none; }
+.modern-season-links strong { font-size:11px; }
+.modern-season-links small { color:rgba(255,255,255,.72); font-size:8px; text-transform:uppercase; }
+.modern-competition-page { display:grid; gap:16px; }
+.modern-competition-page > header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:clamp(18px,3vw,28px); border-radius:24px; color:#fff; background:radial-gradient(circle at 90% 10%,rgba(216,104,53,.48),transparent 34%),linear-gradient(135deg,#073528,#0d5a42); box-shadow:0 16px 36px rgba(7,53,40,.2); }
+.modern-competition-page > header span { color:#f0ad82; font-size:9px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
+.modern-competition-page > header h1 { margin:4px 0 7px; color:#fff; font:700 clamp(27px,4vw,42px)/1 Oswald,sans-serif; text-transform:uppercase; }
+.modern-competition-page > header p { margin:0; color:rgba(255,255,255,.75); font-size:11px; }
+.modern-competition-page > header > b { padding:7px 10px; border-radius:999px; color:#073528; background:#f5d290; font-size:9px; text-transform:uppercase; white-space:nowrap; }
+.modern-competition-page > nav { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; padding:5px; border:1px solid #e2d4bf; border-radius:15px; background:#fffaf1; }
+.modern-competition-page > nav a { min-height:40px; padding:10px; border-radius:11px; color:#446157; font-size:11px; font-weight:900; text-align:center; }
+.modern-competition-page > nav a.is-active { color:#fff; background:#b84b27; }
+.modern-schedule,.modern-rankings { display:grid; gap:12px; }
+.modern-schedule > section,.modern-rankings > section { overflow:hidden; border:1px solid #e1d2bb; border-radius:18px; background:#fffaf1; box-shadow:0 8px 22px rgba(11,47,37,.07); }
+.modern-schedule > section > header,.modern-rankings > section > header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; color:#fff; background:linear-gradient(135deg,#0d5a42,#073528); }
+.modern-schedule header span { color:#efb080; font-size:8px; font-weight:900; text-transform:uppercase; }
+.modern-schedule header h3,.modern-rankings header h3 { margin:2px 0 0; font:700 20px/1 Oswald,sans-serif; }
+.modern-schedule header b { display:grid; width:30px; height:30px; place-items:center; border-radius:50%; color:#073528; background:#f5d290; font-size:11px; }
+.modern-schedule > section > div { display:grid; }
+.modern-match { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; padding:11px 13px; border-top:1px solid #eee2d2; }
+.modern-match span { display:grid; gap:4px; min-width:0; }
+.modern-match small { color:#7a817d; font-size:8px; text-transform:uppercase; }
+.modern-match strong { overflow:hidden; color:#20372e; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.modern-match em { color:#9a4a2d; font-size:9px; font-style:normal; font-weight:800; }
+.modern-match i { color:#a74b27; font-style:normal; }
+.modern-match > b { padding:6px 8px; border-radius:999px; color:#174d3a; background:#e8f1eb; font-size:9px; white-space:nowrap; }
+.modern-match.is-played { background:#f3f8f4; }
+.modern-ranking-head,.modern-rankings article { display:grid; grid-template-columns:38px minmax(0,1fr) 46px 42px; align-items:center; gap:7px; padding:9px 12px; }
+.modern-ranking-head { color:#758078; background:#f5eee4; font-size:8px; font-weight:900; text-transform:uppercase; }
+.modern-rankings article { border-top:1px solid #eee2d2; color:#20372e; font-size:11px; }
+.modern-rankings article > b { display:grid; width:28px; height:28px; place-items:center; border-radius:9px; background:#f0ece5; }
+.modern-rankings article > strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.modern-h2h { padding:16px; border:1px solid #e1d2bb; border-radius:18px; background:#fffaf1; }
+.modern-h2h-controls { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:13px; }
+.modern-h2h-controls label { display:grid; gap:5px; color:#6a756f; font-size:9px; font-weight:900; text-transform:uppercase; }
+.modern-h2h-controls select { min-height:42px; padding:8px 10px; border:1px solid #d6c6af; border-radius:11px; color:#20372e; background:#fff; font:700 11px Inter,sans-serif; }
+
+@media (max-width:640px) {
+  .modern-season-links { grid-template-columns:1fr; }
+  .modern-season-links > div { justify-content:stretch; }
+  .modern-season-links a { flex:1 1 100%; }
+  .modern-competition-page > header { flex-direction:column; }
+  .modern-match strong { white-space:normal; }
+  .modern-h2h-controls { grid-template-columns:1fr; }
+  .modern-competition-page > nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;

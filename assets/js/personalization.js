@@ -8,10 +8,13 @@
   const clubEvents = typeof module !== "undefined" && module.exports
     ? require("./club-events.js")
     : root && root.OPEN_TENNIS_CLUB_EVENTS;
-  const api = factory(model, events, clubEvents);
+  const identities = typeof module !== "undefined" && module.exports
+    ? require("./player-identities.js")
+    : root && root.OPEN_TENNIS_IDENTITIES;
+  const api = factory(model, events, clubEvents, identities);
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) root.OPEN_TENNIS_PERSONAL = api;
-})(typeof window !== "undefined" ? window : null, function createPersonalization(dataModel, seasonEvents, clubEvents) {
+})(typeof window !== "undefined" ? window : null, function createPersonalization(dataModel, seasonEvents, clubEvents, identities) {
   "use strict";
 
   const STORAGE_KEY = "openTennisPlayerV1";
@@ -62,6 +65,7 @@
   });
 
   function playerNameKey(value) {
+    if (identities && typeof identities.idForName === "function") return identities.idForName(value);
     const key = normalize(value);
     return PLAYER_NAME_ALIASES[key] || key;
   }
@@ -241,7 +245,7 @@
     (matches || []).forEach(match => {
       if (match.status !== "jugado" || !match.record || !samePlayers(match, player, rival)) return;
       encounters.push({
-        season: "2026",
+        season: String(match.season || "2026"),
         date: match.record.date || "",
         winner: match.record.winner,
         score: scoreFromWebResult(match.record.resultWeb)
