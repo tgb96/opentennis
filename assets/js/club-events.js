@@ -185,6 +185,41 @@
     </dialog>`;
   }
 
+  function detailPageHtml(event, player, eventPhase) {
+    const match = findPlayerMatch(event, player);
+    const schedule = eventPhase === "upcoming"
+      ? groupedMatches(event).map(group => `<section class="club-event-block">
+          <h4>${escapeHtml(group.time)}</h4>
+          <ul>${group.matches.map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
+        </section>`).join("")
+      : `<section class="club-event-results-order">
+          <ul>${(event.matches || []).map(item => matchHtml(item, player, eventPhase)).join("")}</ul>
+        </section>`;
+    return `<article class="club-event-dialog-shell club-event-page-shell">
+      <header class="club-event-dialog-header">
+        ${logoLockup(event)}
+        <div><span>${escapeHtml(event.editionLabel)}</span><h1>${escapeHtml(event.title)}</h1></div>
+      </header>
+      ${event.finalScore ? `<div class="club-event-page-final"><span>Resultado final</span><strong>${escapeHtml(event.finalScore)}</strong><small>${escapeHtml(event.finalLabel || "")}</small></div>` : ""}
+      <div class="club-event-dialog-grid">
+        <div class="club-event-detail-main">
+          ${match ? playerMatchHtml(match, eventPhase) : ""}
+          <div class="club-event-facts">
+            <p><strong>📅 Fecha</strong><span>${escapeHtml(event.dateLabel)} · ${escapeHtml(event.timeLabel)}</span></p>
+            <p><strong>📍 Lugar</strong><span>${escapeHtml(event.address)}</span></p>
+            <p><strong>👕 Vestimenta</strong><span>${escapeHtml(event.dressCode)}</span></p>
+            <p><strong>🎾 Formato</strong><span>${event.format.map(item => escapeHtml(item)).join(" ")}</span></p>
+          </div>
+          <div class="club-event-actions">
+            <a href="${escapeHtml(event.mapsUrl)}" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
+          </div>
+          <div class="club-event-schedule"><h2>${eventPhase === "upcoming" ? "Programación de partidos" : "Resultados de los partidos"}</h2>${eventPhase === "upcoming" ? "" : '<p class="club-event-score-legend">Marcador acumulado: FacuTenis–Open Tennis</p>'}${schedule}</div>
+        </div>
+        <figure class="club-event-poster"><img src="${escapeHtml(event.poster)}" alt="Afiche oficial del interclub FacuTenis versus Open Tennis Huechuraba"></figure>
+      </div>
+    </article>`;
+  }
+
   function archiveHtml(events) {
     const interclubs = (events || []).filter(event => event.type === "interclub");
     if (!interclubs.length) return "";
@@ -227,5 +262,5 @@
     ].join("\r\n");
   }
 
-  return { parse, dateKey, phase, playerKey, findPlayerMatch, groupedMatches, resultStats, renderHome, calendarText };
+  return { parse, dateKey, phase, playerKey, findPlayerMatch, groupedMatches, resultStats, renderHome, detailPageHtml, calendarText };
 });

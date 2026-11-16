@@ -9,6 +9,7 @@ const publicPages = [
   "partidos.html",
   "tablas.html",
   "eventos.html",
+  "torneo.html",
   "reglas.html",
   "resultados-2025.html",
   "marcador.html"

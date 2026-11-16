@@ -19,15 +19,6 @@
 /* ===== Torneos e interclubes ===== */
 .events-main { display:grid; gap:20px; }
 .events-main .page-title { margin-bottom:0 !important; }
-.events-hero {
-  display:flex; align-items:center; justify-content:space-between; gap:24px;
-  padding:clamp(22px,4vw,38px); border:1px solid rgba(255,255,255,.16); border-radius:28px;
-  color:#fff; background:radial-gradient(circle at 92% 20%,rgba(216,102,54,.5),transparent 32%),linear-gradient(135deg,#082f24,#11523c);
-  box-shadow:0 18px 40px rgba(8,47,36,.2);
-}
-.events-hero h2 { margin:4px 0 10px; color:#fff; font:700 clamp(28px,4vw,44px)/1 Oswald,sans-serif; text-transform:uppercase; }
-.events-hero p:last-child { max-width:760px; margin:0; color:rgba(255,255,255,.84); line-height:1.55; }
-.events-hero-mark { display:grid; flex:0 0 auto; width:92px; height:92px; place-items:center; border:1px solid rgba(255,255,255,.2); border-radius:28px; background:rgba(255,255,255,.1); font-size:46px; }
 .events-section { padding:clamp(18px,3vw,28px); border:1px solid rgba(11,47,37,.09); border-radius:26px; background:#fffaf0; box-shadow:0 12px 30px rgba(11,47,37,.1); }
 .events-section > header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
 .events-section > header h2 { margin:2px 0 0; color:#0b2f25; font:700 clamp(25px,3vw,34px)/1 Oswald,sans-serif; text-transform:uppercase; }
@@ -37,11 +28,9 @@
 .events-empty > span { font-size:30px; }
 .events-empty strong { color:#173f31; }
 .events-empty p { margin:0; font-size:13px; }
-.events-card { overflow:hidden; border:1px solid #d9c8ad; border-radius:20px; background:#fff; box-shadow:0 7px 20px rgba(11,47,37,.08); }
-.events-card[open] { border-color:#c37c51; }
-.events-card summary { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; min-height:96px; padding:14px 16px; cursor:pointer; list-style:none; }
-.events-card summary::-webkit-details-marker { display:none; }
-.events-card summary:hover { background:#fff8ee; }
+.events-card { display:block; overflow:hidden; border:1px solid #d9c8ad; border-radius:20px; background:#fff; box-shadow:0 7px 20px rgba(11,47,37,.08); text-decoration:none; transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease; }
+.events-card:hover,.events-card:focus-visible { border-color:#c37c51; box-shadow:0 12px 26px rgba(11,47,37,.13); transform:translateY(-1px); }
+.events-card-summary { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; min-height:96px; padding:14px 16px; }
 .events-logos { display:flex; align-items:center; gap:6px; }
 .events-logos img { width:46px !important; height:46px !important; object-fit:contain; border-radius:50%; }
 .events-logos b { color:#b84b27; font:900 12px Inter,sans-serif; }
@@ -51,9 +40,6 @@
 .events-card-copy strong { overflow:hidden; color:#102f25; font-size:16px; text-overflow:ellipsis; white-space:nowrap; }
 .events-card-copy > span { color:#6a746e; font-size:12px; }
 .events-card-action { padding:7px 11px; border-radius:999px; color:#fff; background:#0b2f25; font-size:11px; font-weight:900; }
-.events-card[open] .events-card-action { background:#b84b27; }
-.events-card-body { display:grid; gap:12px; padding:0 16px 18px; border-top:1px solid #eee2d2; }
-.events-card-body > p { margin:14px 0 0; color:#59665f; font-size:13px; }
 .events-final { display:flex; align-items:center; gap:12px; padding:14px; border-radius:16px; color:#fff; background:linear-gradient(135deg,#0d402f,#176047); }
 .events-final span { font-size:11px; font-weight:900; text-transform:uppercase; }
 .events-final strong { margin-left:auto; font-size:30px; }
@@ -83,17 +69,30 @@
 
 @media (max-width:640px) {
   .events-main { gap:14px; }
-  .events-hero { align-items:flex-start; padding:20px; border-radius:22px; }
-  .events-hero-mark { width:54px; height:54px; border-radius:17px; font-size:27px; }
-  .events-hero h2 { font-size:28px; }
   .events-section { padding:16px; border-radius:22px; }
-  .events-card summary { grid-template-columns:auto minmax(0,1fr); min-height:88px; padding:12px; }
+  .events-card-summary { grid-template-columns:auto minmax(0,1fr); min-height:88px; padding:12px; }
   .events-card-action { display:none; }
   .events-logos img { width:38px !important; height:38px !important; }
   .events-type-icon { width:48px; height:48px; }
   .events-results-list li { align-items:flex-start; flex-direction:column; }
   .events-match-status { width:100%; justify-content:flex-end; }
 }
+
+.event-detail-main { display:grid; gap:14px; }
+.event-detail-back { justify-self:start; display:inline-flex; align-items:center; min-height:42px; padding:9px 13px; border:1px solid #c8b99f; border-radius:12px; color:#174d3a; background:#fffaf1; font-size:12px; font-weight:900; }
+.event-detail-loading { padding:30px; border-radius:20px; color:#5d6c64; background:#fffaf1; text-align:center; }
+.club-event-page-shell,.event-official-card { overflow:hidden; padding:clamp(16px,3vw,24px); border:1px solid #ddcdb4; border-radius:26px; color:#20372e; background:#fff9ef; box-shadow:0 16px 38px rgba(11,47,37,.14); }
+.club-event-page-shell .club-event-dialog-header { padding-right:0; }
+.club-event-dialog-header h1 { margin:3px 0 0; color:#0b2f25; font:700 27px/1.06 Oswald,sans-serif; }
+.club-event-page-final { display:grid; grid-template-columns:1fr auto; align-items:end; gap:3px 12px; margin-top:16px; padding:14px 16px; border-radius:16px; color:#fff; background:linear-gradient(135deg,#0d402f,#176047); }
+.club-event-page-final span { grid-column:1/-1; color:#efb080; font-size:9px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
+.club-event-page-final strong { font:900 42px/.95 Oswald,sans-serif; }
+.club-event-page-final small { align-self:center; font-size:14px; font-weight:900; text-transform:uppercase; }
+.event-official-header { display:flex; align-items:center; gap:14px; padding-bottom:16px; border-bottom:1px solid #ead8bd; }
+.event-official-header > div { min-width:0; }
+.event-official-header span { color:#a74b27; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.event-official-header h1 { margin:3px 0 0; color:#0b2f25; font:700 27px/1.06 Oswald,sans-serif; }
+.event-official-meta { margin:12px 0 0; color:#657168; font-size:12px; }
 
 * { box-sizing: border-box; }
 body {
@@ -2796,9 +2795,9 @@ body:not(.index-page) .app {
 .club-event-dialog-header h2 { margin:3px 0 0; color:#0b2f25; font:700 27px/1.06 Oswald,sans-serif; }
 .club-event-dialog-grid { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:18px; margin-top:18px; }
 .club-event-detail-main { min-width:0; }
-.club-event-dialog .club-event-player-match { margin:0 0 14px; border-color:#df9f79; color:#0b2f25; background:#fff0e4; }
-.club-event-dialog .club-event-player-match strong { color:#0b2f25; }
-.club-event-dialog .club-event-player-match > span:first-child { color:#a74b27; }
+.club-event-dialog .club-event-player-match,.club-event-page-shell .club-event-player-match { margin:0 0 14px; border-color:#df9f79; color:#0b2f25; background:#fff0e4; }
+.club-event-dialog .club-event-player-match strong,.club-event-page-shell .club-event-player-match strong { color:#0b2f25; }
+.club-event-dialog .club-event-player-match > span:first-child,.club-event-page-shell .club-event-player-match > span:first-child { color:#a74b27; }
 .club-event-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
 .club-event-facts p { margin:0; padding:11px; border:1px solid #ead8bd; border-radius:13px; background:#fffdf8; }
 .club-event-facts strong,.club-event-facts span { display:block; }
@@ -2807,7 +2806,7 @@ body:not(.index-page) .app {
 .club-event-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 17px; }
 .club-event-actions a,.club-event-actions button { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:10px 13px; border:1px solid #b8c8be; border-radius:11px; color:#174d3a; background:#fff; font:850 12px/1.1 Inter,sans-serif; text-decoration:none; cursor:pointer; }
 .club-event-actions button { color:#fff; border-color:#cf552b; background:#cf552b; }
-.club-event-schedule h3 { margin:0 0 10px; color:#0b2f25; font:700 20px/1.1 Oswald,sans-serif; }
+.club-event-schedule h2,.club-event-schedule h3 { margin:0 0 10px; color:#0b2f25; font:700 20px/1.1 Oswald,sans-serif; }
 .club-event-score-legend { margin:-4px 0 10px; color:#6c746e; font-size:9px; font-weight:800; }
 .club-event-block { display:grid; grid-template-columns:58px minmax(0,1fr); gap:9px; margin-top:8px; }
 .club-event-block h4 { align-self:start; margin:0; padding:8px 5px; border-radius:9px; color:#fff; background:#b84b27; text-align:center; font-size:11px; }
@@ -2849,6 +2848,7 @@ body:not(.index-page) .app {
   .club-event-dialog-header .club-event-logos { gap:5px; }
   .club-event-dialog-header .club-event-logo { flex-basis:40px; width:40px !important; height:40px !important; }
   .club-event-dialog-header h2 { font-size:21px; }
+  .club-event-dialog-header h1 { font-size:21px; }
   .club-event-dialog-grid { grid-template-columns:1fr; gap:14px; }
   .club-event-facts { grid-template-columns:1fr; }
   .club-event-actions { display:grid; grid-template-columns:1fr 1fr; }

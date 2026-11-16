@@ -48,24 +48,6 @@
     return { upcoming, past };
   }
 
-  function resultBadge(match) {
-    if (!match.result) return "";
-    const won = match.result === "Ganó";
-    return `<span class="events-result ${won ? "is-win" : "is-loss"}">${won ? "Victoria" : "Derrota"}</span>`;
-  }
-
-  function interclubDetails(event) {
-    const matches = (event.matches || []).map(match => `<li>
-      <span>${escapeHtml(match.externalPlayer)} <i>vs</i> ${escapeHtml(match.clubPlayer)}</span>
-      <span class="events-match-status">${match.score ? `<b>${escapeHtml(match.score)}</b>` : ""}${resultBadge(match)}</span>
-    </li>`).join("");
-    return `<div class="events-detail-block">
-      <h4>Resultados de los partidos</h4>
-      <p class="events-detail-note">Marcador acumulado: rival–Open Tennis</p>
-      <ol class="events-results-list">${matches}</ol>
-    </div>`;
-  }
-
   function bracketHtml(event) {
     const rounds = Array.isArray(event.rounds) ? event.rounds : [];
     if (!rounds.length) return "";
@@ -104,23 +86,49 @@
   function eventCard(event, isUpcoming) {
     const isTournament = event.type === "tournament" || event.type === "knockout";
     const label = isTournament ? "Torneo" : "Interclub";
-    const detail = isTournament ? tournamentDetails(event) : interclubDetails(event);
-    return `<details class="events-card ${isTournament ? "is-tournament" : "is-interclub"}">
-      <summary>
+    const url = `torneo.html?id=${encodeURIComponent(event.id)}`;
+    return `<a class="events-card ${isTournament ? "is-tournament" : "is-interclub"}" href="${escapeHtml(url)}" aria-label="Abrir ${escapeHtml(event.shortTitle || event.title)}">
+      <span class="events-card-summary">
         ${logoHtml(event)}
         <span class="events-card-copy">
           <small>${escapeHtml(label)} · ${escapeHtml(isUpcoming ? "Próximo" : "Finalizado")}</small>
           <strong>${escapeHtml(event.shortTitle || event.title)}</strong>
           <span>${escapeHtml(event.dateLabel || event.eventDate || "")}${event.finalResult ? ` · ${escapeHtml(event.finalResult)}` : ""}</span>
         </span>
-        <span class="events-card-action">Ver</span>
-      </summary>
-      <div class="events-card-body">
-        ${event.venue ? `<p>📍 ${escapeHtml(event.venue)}</p>` : ""}
-        ${event.finalScore ? `<div class="events-final"><span>Resultado final</span><strong>${escapeHtml(event.finalScore)}</strong><small>${escapeHtml(event.finalLabel || "")}</small></div>` : ""}
-        ${detail}
-      </div>
-    </details>`;
+        <span class="events-card-action">Abrir</span>
+      </span>
+    </a>`;
+  }
+
+  function tournamentDetailPage(event) {
+    return `<article class="event-official-card">
+      <header class="event-official-header">
+        ${logoHtml(event)}
+        <div><span>${escapeHtml(event.editionLabel || "Torneo del club")}</span><h1>${escapeHtml(event.title)}</h1></div>
+      </header>
+      ${event.venue ? `<p class="event-official-meta">📍 ${escapeHtml(event.venue)}</p>` : ""}
+      ${event.dateLabel ? `<p class="event-official-meta">📅 ${escapeHtml(event.dateLabel)}</p>` : ""}
+      ${event.finalScore ? `<div class="events-final"><span>Resultado final</span><strong>${escapeHtml(event.finalScore)}</strong><small>${escapeHtml(event.finalLabel || "")}</small></div>` : ""}
+      ${tournamentDetails(event)}
+    </article>`;
+  }
+
+  function renderDetail(value, eventId, player, now) {
+    const data = clubEvents ? clubEvents.parse(value) : (value || { events: [] });
+    const event = (data.events || []).find(item => String(item.id) === String(eventId));
+    if (!event) {
+      return {
+        title: "Actividad no encontrada",
+        html: '<div class="events-empty"><strong>Esta actividad no está disponible.</strong><p>Vuelve a Torneos para revisar las actividades publicadas.</p></div>'
+      };
+    }
+    const eventPhase = clubEvents ? clubEvents.phase(event, now) : "archived";
+    return {
+      title: event.shortTitle || event.title,
+      html: event.type === "interclub" && clubEvents && clubEvents.detailPageHtml
+        ? clubEvents.detailPageHtml(event, player, eventPhase)
+        : tournamentDetailPage(event)
+    };
   }
 
   function render(value, now) {
@@ -137,5 +145,5 @@
     };
   }
 
-  return { bracketCapacity, tournamentSummary, splitEvents, render };
+  return { bracketCapacity, tournamentSummary, splitEvents, render, renderDetail };
 });

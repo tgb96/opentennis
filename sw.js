@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v57-events-hub';
+const CACHE_NAME = 'open-tennis-v58-tournament-pages';
 
 const CORE_ASSETS = [
   './',
@@ -6,6 +6,7 @@ const CORE_ASSETS = [
   './partidos.html',
   './tablas.html',
   './eventos.html',
+  './torneo.html',
   './resultados-2025.html',
   './reglas.html',
   './marcador.html',

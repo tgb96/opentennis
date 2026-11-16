@@ -13,7 +13,20 @@ test("el interclub finalizado aparece en Torneos e interclubes pasados", () => {
   assert.match(view.upcomingHtml, /No hay próximos eventos publicados/);
   assert.match(view.pastHtml, /Interclub vs FacuTenis/);
   assert.match(view.pastHtml, /7–7/);
-  assert.match(view.pastHtml, /Resultados de los partidos/);
+  assert.match(view.pastHtml, /torneo\.html\?id=interclub-facutenis-2026-11-07/);
+  assert.doesNotMatch(view.pastHtml, /<details/);
+  assert.doesNotMatch(view.pastHtml, /Resultados de los partidos/);
+});
+
+test("la tarjeta abre una página oficial con toda la información del interclub", () => {
+  const view = eventsPage.renderDetail(data, "interclub-facutenis-2026-11-07", "Tomás Gómez", "2026-11-16");
+  assert.equal(view.title, "Interclub vs FacuTenis");
+  assert.match(view.html, /Nuestro primer interclub/);
+  assert.match(view.html, /Resultado final/);
+  assert.match(view.html, /7–7/);
+  assert.match(view.html, /Resultados de los partidos/);
+  assert.match(view.html, /Rodrigo Vega <i>vs<\/i> Tomás Gómez/);
+  assert.match(view.html, /club-event-match-result is-loss">Derrota/);
 });
 
 test("los cuadros admiten cualquier cantidad de participantes con byes automáticos", () => {

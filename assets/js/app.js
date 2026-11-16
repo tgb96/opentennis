@@ -9,7 +9,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=28', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js?v=29', { updateViaCache: 'none' })
         .then(registration => registration.update())
         .catch(() => {});
     });
@@ -60,11 +60,12 @@
   if (navigator.onLine === false) connectivityNotice(true);
 
   const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  const navigationCurrent = current === 'torneo.html' ? 'eventos.html' : current;
 
   document.querySelectorAll('#appBottomNav a, .app-bottom-nav a, .app-nav a, .nav a').forEach(link => {
     const href = (link.getAttribute('href') || '').split('/').pop().toLowerCase() || 'index.html';
 
-    if (href === current) {
+    if (href === navigationCurrent) {
       link.classList.add('active');
       link.setAttribute('aria-current', 'page');
     } else {
