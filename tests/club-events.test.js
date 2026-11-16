@@ -5,7 +5,7 @@ const path = require("node:path");
 const clubEvents = require("../assets/js/club-events.js");
 
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "actividades-2026.json"), "utf8"));
-const interclub = data.events[0];
+const interclub = data.events.find(event => event.id === "interclub-facutenis-2026-11-07");
 
 test("el interclub se destaca del 5 al 15 y luego queda en el archivo", () => {
   assert.equal(clubEvents.phase(interclub, "2026-11-04"), "hidden");

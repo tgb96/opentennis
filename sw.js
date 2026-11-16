@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v62-scoreboard-info';
+const CACHE_NAME = 'open-tennis-v63-first-tournament';
 
 const CORE_ASSETS = [
   './',
@@ -96,7 +96,7 @@ self.addEventListener('fetch', event => {
 
   const isCriticalAppAsset =
     url.origin === self.location.origin &&
-    (request.mode === 'navigate' || /\.(?:html|js|css)$/.test(url.pathname));
+    (request.mode === 'navigate' || /\.(?:html|js|css|json)$/.test(url.pathname));
 
   // Las pantallas y la lógica crítica buscan primero la versión publicada.
   // Así una PWA instalada recibe correcciones reglamentarias sin desinstalarse.

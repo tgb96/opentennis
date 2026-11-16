@@ -51,12 +51,17 @@
   function bracketHtml(event) {
     const rounds = Array.isArray(event.rounds) ? event.rounds : [];
     if (!rounds.length) return "";
-    return `<div class="events-bracket" aria-label="Cuadro de eliminación directa">${rounds.map(round => `<section>
+    return `<div class="events-bracket-heading">
+      <span><b>Cuadro completo</b><small>${rounds.length} fases · desliza para avanzar</small></span>
+      <i aria-hidden="true">→</i>
+    </div>
+    <div class="events-bracket" aria-label="Cuadro de eliminación directa">${rounds.map(round => `<section>
       <h4>${escapeHtml(round.name || round.label || "Ronda")}</h4>
       <div>${(round.matches || []).map(match => `<article class="events-bracket-match">
-        <span class="${match.winner === match.player1 ? "is-winner" : ""}">${escapeHtml(match.player1 || "BYE")}</span>
-        <span class="${match.winner === match.player2 ? "is-winner" : ""}">${escapeHtml(match.player2 || "BYE")}</span>
-        ${match.score ? `<small>${escapeHtml(match.score)}</small>` : ""}
+        ${match.date ? `<time>${escapeHtml(match.date)}</time>` : ""}
+        <span class="${match.winner === match.player1 ? "is-winner" : ""}">${escapeHtml(match.player1 || "BYE")}${match.winner === match.player1 ? " <b>✓</b>" : ""}</span>
+        <span class="${match.winner === match.player2 ? "is-winner" : ""}">${escapeHtml(match.player2 || "BYE")}${match.winner === match.player2 ? " <b>✓</b>" : ""}</span>
+        ${match.score ? `<small>${escapeHtml(match.score)}</small>` : '<small class="is-missing">Marcador no disponible</small>'}
       </article>`).join("")}</div>
     </section>`).join("")}</div>`;
   }
@@ -66,10 +71,15 @@
     return `<div class="events-detail-block">
       <div class="events-tournament-stats">
         <span><b>${summary.participants}</b> participantes</span>
-        <span><b>${summary.capacity}</b> posiciones</span>
-        <span><b>${summary.byes}</b> byes</span>
+        <span><b>${summary.capacity}</b> cuadro final</span>
+        <span><b>${Number(event.preliminaryCount || summary.byes)}</b> ${event.preliminaryCount ? "partidos previos" : "byes"}</span>
       </div>
-      ${event.champion ? `<p class="events-champion">🏆 Campeón: <strong>${escapeHtml(event.champion)}</strong></p>` : ""}
+      ${event.champion ? `<div class="events-podium">
+        <span class="events-podium-trophy" aria-hidden="true">🏆</span>
+        <span><small>Campeón</small><strong>${escapeHtml(event.champion)}</strong></span>
+        ${event.runnerUp ? `<span><small>Finalista</small><strong>${escapeHtml(event.runnerUp)}</strong></span>` : ""}
+      </div>` : ""}
+      ${event.historicalNote ? `<p class="events-historical-note">ℹ️ ${escapeHtml(event.historicalNote)}</p>` : ""}
       ${bracketHtml(event)}
     </div>`;
   }

@@ -54,18 +54,32 @@
 .events-result { padding:5px 7px; border-radius:999px; color:#fff; font-size:9px; font-weight:900; text-transform:uppercase; }
 .events-result.is-win { background:#b88a2b; }
 .events-result.is-loss { background:#bd3f35; }
-.events-tournament-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.events-detail-block { min-width:0; }
+.events-tournament-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; min-width:0; gap:8px; }
 .events-tournament-stats span { display:grid; gap:2px; padding:11px; border-radius:12px; color:#667169; background:#f4eee5; font-size:10px; text-align:center; text-transform:uppercase; }
 .events-tournament-stats b { color:#123d2f; font-size:20px; }
-.events-champion { padding:12px; border-radius:12px; color:#704b00; background:#fff1bd; }
-.events-bracket { display:flex; gap:14px; overflow-x:auto; padding:8px 2px 12px; scroll-snap-type:x mandatory; }
-.events-bracket > section { flex:0 0 min(260px,78vw); scroll-snap-align:start; }
-.events-bracket > section > h4 { color:#9d4325; text-transform:uppercase; }
+.events-podium { display:grid; grid-template-columns:auto minmax(0,1fr) minmax(0,1fr); align-items:center; gap:12px; margin-top:12px; padding:15px; border:1px solid #e3bd5d; border-radius:16px; background:linear-gradient(135deg,#fff4ca,#f4d889); box-shadow:0 8px 18px rgba(141,94,0,.12); }
+.events-podium-trophy { display:grid; width:46px; height:46px; place-items:center; border-radius:14px; color:#694400; background:rgba(255,255,255,.56); font-size:25px; }
+.events-podium > span:not(.events-podium-trophy) { display:grid; gap:2px; min-width:0; }
+.events-podium small { color:#886218; font-size:9px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.events-podium strong { overflow:hidden; color:#473000; font-size:14px; text-overflow:ellipsis; white-space:nowrap; }
+.events-historical-note { margin:12px 0 0; padding:11px 12px; border:1px solid #cbded4; border-radius:12px; color:#385b4d; background:#eef7f2; font-size:11px; line-height:1.45; }
+.events-bracket-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:18px; }
+.events-bracket-heading > span { display:grid; gap:2px; }
+.events-bracket-heading b { color:#173f31; font-size:15px; }
+.events-bracket-heading small { color:#758079; font-size:10px; }
+.events-bracket-heading i { color:#b84b27; font-size:22px; font-style:normal; font-weight:900; }
+.events-bracket { display:flex; gap:14px; overflow-x:auto; width:100%; min-width:0; max-width:100%; margin:6px -4px 0; padding:5px 4px 14px; scroll-padding-inline:4px; scroll-snap-type:x mandatory; scrollbar-color:#b84b27 #f0e6d6; scrollbar-width:thin; }
+.events-bracket > section { flex:0 0 min(264px,78vw); scroll-snap-align:start; }
+.events-bracket > section > h4 { position:sticky; top:0; z-index:1; margin:0 0 8px; padding:9px 11px; border-radius:10px; color:#fff; background:linear-gradient(135deg,#0d5a42,#073528); font-size:11px; letter-spacing:.04em; text-transform:uppercase; box-shadow:0 5px 12px rgba(7,53,40,.14); }
 .events-bracket > section > div { display:grid; gap:10px; }
-.events-bracket-match { display:grid; gap:4px; padding:10px; border:1px solid #ddd1be; border-radius:12px; background:#fff; }
-.events-bracket-match span { padding:5px 7px; border-radius:7px; color:#56635c; background:#f6f1e8; font-size:12px; }
-.events-bracket-match span.is-winner { color:#fff; background:#176047; font-weight:900; }
-.events-bracket-match small { color:#9d4325; font-weight:900; text-align:right; }
+.events-bracket-match { display:grid; gap:5px; padding:10px; border:1px solid #ddd1be; border-radius:13px; background:#fff; box-shadow:0 5px 13px rgba(11,47,37,.06); }
+.events-bracket-match time { justify-self:start; color:#a55a37; font-size:9px; font-weight:900; letter-spacing:.04em; }
+.events-bracket-match span { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:31px; padding:6px 8px; border-radius:8px; color:#56635c; background:#f6f1e8; font-size:11px; }
+.events-bracket-match span.is-winner { color:#553800; background:linear-gradient(135deg,#ffe9a7,#f2cb63); font-weight:900; }
+.events-bracket-match span b { color:#0d5a42; }
+.events-bracket-match small { color:#9d4325; font-size:10px; font-weight:900; text-align:right; }
+.events-bracket-match small.is-missing { color:#8a918d; font-weight:700; }
 
 @media (max-width:640px) {
   .events-main { gap:14px; }
@@ -76,12 +90,14 @@
   .events-type-icon { width:48px; height:48px; }
   .events-results-list li { align-items:flex-start; flex-direction:column; }
   .events-match-status { width:100%; justify-content:flex-end; }
+  .events-podium { grid-template-columns:auto minmax(0,1fr); }
+  .events-podium > span:last-child { grid-column:2; }
 }
 
-.event-detail-main { display:grid; gap:14px; }
+.event-detail-main { display:grid; grid-template-columns:minmax(0,1fr); width:100%; min-width:0; gap:14px; }
 .event-detail-back { justify-self:start; display:inline-flex; align-items:center; min-height:42px; padding:9px 13px; border:1px solid #c8b99f; border-radius:12px; color:#174d3a; background:#fffaf1; font-size:12px; font-weight:900; }
 .event-detail-loading { padding:30px; border-radius:20px; color:#5d6c64; background:#fffaf1; text-align:center; }
-.club-event-page-shell,.event-official-card { overflow:hidden; padding:clamp(16px,3vw,24px); border:1px solid #ddcdb4; border-radius:26px; color:#20372e; background:#fff9ef; box-shadow:0 16px 38px rgba(11,47,37,.14); }
+.club-event-page-shell,.event-official-card { overflow:hidden; width:100%; min-width:0; max-width:100%; padding:clamp(16px,3vw,24px); border:1px solid #ddcdb4; border-radius:26px; color:#20372e; background:#fff9ef; box-shadow:0 16px 38px rgba(11,47,37,.14); }
 .club-event-page-shell .club-event-dialog-header { padding-right:0; }
 .club-event-dialog-header h1 { margin:3px 0 0; color:#0b2f25; font:700 27px/1.06 Oswald,sans-serif; }
 .club-event-page-final { display:grid; grid-template-columns:1fr auto; align-items:end; gap:3px 12px; margin-top:16px; padding:14px 16px; border-radius:16px; color:#fff; background:linear-gradient(135deg,#0d402f,#176047); }

@@ -7,14 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=30">
+  <link rel="stylesheet" href="assets/css/app.css?v=31">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#0b2f25">
   <script src="assets/js/data-cache.js?v=2"></script>
   <script src="assets/js/club-events.js?v=10"></script>
-  <script src="assets/js/events-page.js?v=2"></script>
+  <script src="assets/js/events-page.js?v=3"></script>
   <script src="assets/js/season-platform.js?v=1"></script>
   <script defer src="assets/js/app.js?v=32"></script>
 </head>
@@ -48,17 +48,23 @@
 
   <script>
     (function loadEventsPage() {
-      const source = window.OPEN_TENNIS_CACHE
-        ? window.OPEN_TENNIS_CACHE.getText("data/actividades-2026.json?v=8")
-        : fetch("data/actividades-2026.json?v=8").then(response => response.text());
+      const source = fetch("data/actividades-2026.json?v=9", { cache: "no-store" })
+        .then(response => { if (!response.ok) throw new Error("No se pudo cargar el archivo"); return response.text(); })
+        .catch(error => window.OPEN_TENNIS_CACHE
+          ? window.OPEN_TENNIS_CACHE.getText("data/actividades-2026.json?v=9")
+          : Promise.reject(error));
 
-      Promise.all([source, window.OPEN_TENNIS_SEASON_PLATFORM.fetchPublic()]).then(([value, publicData]) => {
-        const merged = window.OPEN_TENNIS_SEASON_PLATFORM.mergeActivities(value, publicData);
-        const view = window.OPEN_TENNIS_EVENTS_PAGE.render(merged, new Date());
-        document.getElementById("upcomingEvents").innerHTML = view.upcomingHtml;
-        document.getElementById("pastEvents").innerHTML = view.pastHtml;
-        document.getElementById("upcomingEventsCount").textContent = view.upcomingCount;
-        document.getElementById("pastEventsCount").textContent = view.pastCount;
+      Promise.resolve(source).then(value => {
+        const renderEvents = publicData => {
+          const merged = window.OPEN_TENNIS_SEASON_PLATFORM.mergeActivities(value, publicData || {});
+          const view = window.OPEN_TENNIS_EVENTS_PAGE.render(merged, new Date());
+          document.getElementById("upcomingEvents").innerHTML = view.upcomingHtml;
+          document.getElementById("pastEvents").innerHTML = view.pastHtml;
+          document.getElementById("upcomingEventsCount").textContent = view.upcomingCount;
+          document.getElementById("pastEventsCount").textContent = view.pastCount;
+        };
+        renderEvents({});
+        window.OPEN_TENNIS_SEASON_PLATFORM.fetchPublic().then(renderEvents);
       }).catch(() => {
         document.getElementById("upcomingEvents").innerHTML = '<div class="events-empty"><strong>No se pudieron cargar los eventos.</strong><p>Intenta nuevamente en unos minutos.</p></div>';
         document.getElementById("pastEvents").innerHTML = "";
