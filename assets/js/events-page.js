@@ -48,22 +48,70 @@
     return { upcoming, past };
   }
 
+  function bracketMatchHtml(match, options) {
+    const settings = options || {};
+    const championPath = Boolean(settings.champion && match.winner === settings.champion);
+    const classes = ["events-bracket-match"];
+    if (settings.preliminary) classes.push("is-preliminary");
+    if (settings.hasNext) classes.push("has-next");
+    if (settings.pairStart) classes.push("is-pair-start");
+    if (settings.pairEnd) classes.push("is-pair-end");
+    if (championPath) classes.push("is-champion-path");
+    if (championPath && settings.hasNext) classes.push("is-champion-branch");
+    const style = Number.isFinite(settings.top) && Number.isFinite(settings.branchHeight)
+      ? ` style="--match-top:${settings.top}px;--branch-half:${settings.branchHeight / 2}px"`
+      : "";
+    return `<article class="${classes.join(" ")}"${style}>
+      ${settings.hasIncoming ? '<i class="events-connector-in" aria-hidden="true"></i>' : ""}
+      ${match.date ? `<time>${escapeHtml(match.date)}</time>` : ""}
+      <span class="${match.winner === match.player1 ? "is-winner" : ""}">${escapeHtml(match.player1 || "BYE")}${match.winner === match.player1 ? " <b>✓</b>" : ""}</span>
+      <span class="${match.winner === match.player2 ? "is-winner" : ""}">${escapeHtml(match.player2 || "BYE")}${match.winner === match.player2 ? " <b>✓</b>" : ""}</span>
+      ${match.score ? `<small>${escapeHtml(match.score)}</small>` : '<small class="is-missing">Marcador no disponible</small>'}
+    </article>`;
+  }
+
   function bracketHtml(event) {
     const rounds = Array.isArray(event.rounds) ? event.rounds : [];
     if (!rounds.length) return "";
-    return `<div class="events-bracket-heading">
-      <span><b>Cuadro completo</b><small>${rounds.length} fases · desliza para avanzar</small></span>
+    const preliminaryIndex = rounds.findIndex(round => /previa/i.test(String(round.name || round.label || "")));
+    const preliminary = preliminaryIndex >= 0 ? rounds[preliminaryIndex] : null;
+    const mainRounds = rounds.filter((round, index) => index !== preliminaryIndex);
+    const maxMatches = Math.max(1, ...mainRounds.map(round => (round.matches || []).length));
+    const matchStep = 116;
+    const preliminaryHtml = preliminary ? `<section class="events-preliminary" aria-label="Fase previa">
+      <h4>${escapeHtml(preliminary.name || preliminary.label || "Fase previa")}</h4>
+      <p>Los ganadores completaron el cuadro principal de 16 jugadores.</p>
+      <div class="events-preliminary-grid">${(preliminary.matches || []).map(match => bracketMatchHtml(match, {
+        preliminary: true,
+        champion: event.champion
+      })).join("")}</div>
+    </section>` : "";
+    const mainHtml = mainRounds.length ? `<div class="events-bracket-heading">
+      <span><b>Llave principal</b><small>${mainRounds.length} rondas · sigue las líneas para ver quién avanzó</small></span>
       <i aria-hidden="true">→</i>
     </div>
-    <div class="events-bracket" aria-label="Cuadro de eliminación directa">${rounds.map(round => `<section>
-      <h4>${escapeHtml(round.name || round.label || "Ronda")}</h4>
-      <div>${(round.matches || []).map(match => `<article class="events-bracket-match">
-        ${match.date ? `<time>${escapeHtml(match.date)}</time>` : ""}
-        <span class="${match.winner === match.player1 ? "is-winner" : ""}">${escapeHtml(match.player1 || "BYE")}${match.winner === match.player1 ? " <b>✓</b>" : ""}</span>
-        <span class="${match.winner === match.player2 ? "is-winner" : ""}">${escapeHtml(match.player2 || "BYE")}${match.winner === match.player2 ? " <b>✓</b>" : ""}</span>
-        ${match.score ? `<small>${escapeHtml(match.score)}</small>` : '<small class="is-missing">Marcador no disponible</small>'}
-      </article>`).join("")}</div>
-    </section>`).join("")}</div>`;
+    <div class="events-bracket" style="--bracket-height:${maxMatches * matchStep}px" aria-label="Llave de eliminación directa">${mainRounds.map((round, roundIndex) => {
+      const matches = round.matches || [];
+      const span = maxMatches / Math.max(1, matches.length);
+      const hasNext = roundIndex < mainRounds.length - 1;
+      return `<section class="events-bracket-round${roundIndex === mainRounds.length - 1 ? " is-final" : ""}">
+        <h4>${escapeHtml(round.name || round.label || "Ronda")}</h4>
+        <div>${matches.map((match, matchIndex) => {
+          const pairStart = hasNext && matchIndex % 2 === 0;
+          const pairEnd = hasNext && matchIndex % 2 === 1;
+          return bracketMatchHtml(match, {
+            champion: event.champion,
+            hasNext,
+            hasIncoming: roundIndex > 0,
+            pairStart,
+            pairEnd,
+            top: (matchIndex + 0.5) * span * matchStep,
+            branchHeight: span * matchStep
+          });
+        }).join("")}</div>
+      </section>`;
+    }).join("")}</div>` : "";
+    return `${preliminaryHtml}${mainHtml}`;
   }
 
   function tournamentDetails(event) {

@@ -70,4 +70,11 @@ test("el primer torneo conserva cruces y campeón sin incorporarse al Cara a Car
   assert.match(view.html, /W\/O/);
   assert.match(view.html, /Marcador no disponible/);
   assert.match(view.html, /no se incorporan al Cara a Cara/);
+  assert.match(view.html, /events-preliminary-grid/);
+  assert.match(view.html, /events-bracket-round/);
+  assert.match(view.html, /events-connector-in/);
+  assert.match(view.html, /is-pair-start/);
+  assert.match(view.html, /is-pair-end/);
+  assert.match(view.html, /is-champion-path/);
+  assert.match(view.html, /is-champion-branch/);
 });

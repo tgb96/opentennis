@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v63-first-tournament';
+const CACHE_NAME = 'open-tennis-v64-tournament-bracket';
 
 const CORE_ASSETS = [
   './',
