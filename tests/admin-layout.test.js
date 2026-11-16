@@ -12,3 +12,9 @@ test("el regreso al club comparte encabezado sin una segunda barra", () => {
   assert.doesNotMatch(html, /class="club-return-nav"/);
   assert.equal((html.match(/class="club-return-link"/g) || []).length, 1);
 });
+
+test("un resultado nuevo propone hoy aunque el partido estuviera atrasado", () => {
+  const client = fs.readFileSync(path.join(__dirname, "..", "admin/apps-script/Client.html"), "utf8");
+  assert.match(client, /var suggestedDate = isNewFinalResult \? state\.dashboard\.today : match\.date;/);
+  assert.doesNotMatch(client, /scheduledDateIsFuture/);
+});
