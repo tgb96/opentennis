@@ -533,7 +533,7 @@ textarea {
 /* V8 · Jerarquía de Partidos y reglamento desplegable */
 .championship-divider {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
   margin: 8px 0 18px;
@@ -572,26 +572,6 @@ textarea {
   border-radius: 50%;
   background: rgba(255, 250, 241, .10);
   font-size: 30px;
-}
-
-.championship-rules-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 44px;
-  padding: 9px 13px;
-  border: 1px solid rgba(255, 250, 241, .3);
-  border-radius: 13px;
-  color: #fffaf1;
-  background: rgba(255, 250, 241, .1);
-  font: 900 12px/1 Inter, Arial, sans-serif;
-  text-decoration: none;
-}
-
-.championship-rules-link:hover {
-  color: #0b2f25;
-  background: #fffaf1;
 }
 
 .rules-return-link {
@@ -721,7 +701,6 @@ textarea {
   .championship-divider { grid-template-columns:minmax(0,1fr) auto; padding: 18px 16px; border-radius: 20px; }
   .championship-divider > span { width: 48px; height: 48px; font-size: 23px; }
   .championship-divider p:last-child { font-size: 12.5px; }
-  .championship-rules-link { grid-column:1 / -1; width:100%; }
   .rules-toolbar { align-items: flex-start; }
   .rules-toolbar span { max-width: 190px; }
   .rules-accordion-trigger { grid-template-columns: 42px minmax(0, 1fr) 32px; min-height: 68px; padding: 10px 12px; gap: 9px; }
@@ -2606,6 +2585,13 @@ body:not(.index-page) .app {
 .v6-home-main .v5-hero-text { text-align: left; }
 .my-open-tennis { margin-top: 14px; padding: 18px; border-radius: 24px; background: #fffaf0; box-shadow: 0 12px 34px rgba(11,47,37,.12); }
 .home-brand { display:none; }
+.home-rules-shortcut { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:11px; min-height:58px; margin-top:12px; padding:10px 13px; border:1px solid #d8d0bf; border-radius:16px; color:#174d3a; background:#f7f2e8; box-shadow:0 7px 18px rgba(11,47,37,.07); text-decoration:none; }
+.home-rules-shortcut:hover,.home-rules-shortcut:focus-visible { border-color:#c99772; background:#fff8ee; }
+.home-rules-icon { display:grid; width:36px; height:36px; place-items:center; border-radius:11px; color:#fff; background:#174d3a; font-size:18px; }
+.home-rules-shortcut > span:nth-child(2) { display:grid; gap:3px; min-width:0; }
+.home-rules-shortcut small { color:#a74b27; font-size:8px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.home-rules-shortcut strong { overflow:hidden; color:#174d3a; font:700 15px/1.15 Oswald,sans-serif; text-overflow:ellipsis; white-space:nowrap; }
+.home-rules-arrow { color:#a74b27; font-size:25px; line-height:1; }
 .personal-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:14px; }
 .personal-heading h2 { margin:0; color:#0b2f25; font:700 26px/1.1 Oswald, sans-serif; }
 .personal-heading label { display:grid; gap:5px; color:#536158; font-size:12px; font-weight:800; }
@@ -2821,22 +2807,6 @@ body:not(.index-page) .app {
 .club-event-player-match.is-win { border-color:#f0c85b; box-shadow:0 0 0 1px rgba(240,200,91,.22); background:rgba(249,217,151,.13); }
 .club-event-poster { align-self:start; overflow:hidden; margin:0; border:1px solid #d9c39e; border-radius:16px; background:#063c27; box-shadow:0 12px 28px rgba(11,47,37,.18); }
 .club-event-poster img { display:block; width:100%; height:auto; }
-
-.club-events-archive { margin-top:13px; border:1px solid #d8d0bf; border-radius:16px; background:#f7f2e8; }
-.club-events-archive summary { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:54px; padding:11px 13px; color:#174d3a; cursor:pointer; list-style:none; }
-.club-events-archive summary::-webkit-details-marker { display:none; }
-.club-events-archive summary span { display:grid; gap:2px; font:700 16px/1.1 Oswald,sans-serif; }
-.club-events-archive summary small { color:#a74b27; font:900 8px/1 Inter,sans-serif; letter-spacing:.08em; text-transform:uppercase; }
-.club-events-archive summary b { display:grid; place-items:center; min-width:30px; height:30px; border-radius:50%; color:#fff; background:#174d3a; font-size:12px; }
-.club-events-archive-list { padding:0 10px 10px; }
-.club-events-archive-intro { margin:0; padding:0 13px 10px; color:#66736b; font-size:10px; line-height:1.4; }
-.club-events-archive-list button { display:flex; align-items:center; gap:10px; width:100%; padding:10px; border:1px solid #e0d5c1; border-radius:12px; color:#20372e; background:#fffdf8; text-align:left; cursor:pointer; }
-.club-events-archive-list img { width:42px; height:42px; object-fit:contain; }
-.club-events-archive-list span { display:grid; gap:3px; min-width:0; }
-.club-events-archive-list strong { color:#0b2f25; font-size:12px; }
-.club-events-archive-list small { overflow:hidden; color:#707972; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
-.club-interclubs-archive { border-color:#cfb777; background:#fffaf0; }
-.club-interclubs-archive summary b { background:#b84b27; }
 
 @media (max-width:700px) {
   .club-event-card { padding:14px; border-radius:18px; }

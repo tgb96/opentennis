@@ -518,13 +518,13 @@
       function clubEventView(player) {
         return clubEvents && clubEventReady
           ? clubEvents.renderHome(clubEventData, player, new Date())
-          : { featuredHtml: "", archiveHtml: "", dialogHtml: "" };
+          : { featuredHtml: "", dialogHtml: "" };
       }
 
       function render(player) {
         const eventView = clubEventView(player);
         if (!player) {
-          content.innerHTML = `${eventView.featuredHtml}<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>${eventView.archiveHtml}${eventView.dialogHtml}`;
+          content.innerHTML = `${eventView.featuredHtml}<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>${eventView.dialogHtml}`;
           return;
         }
         localStorage.setItem(STORAGE_KEY, player);
@@ -657,7 +657,6 @@
             ${withdrawalHtml}
             ${adminAccessHtml(player)}
           </div>
-          ${eventView.archiveHtml}
           ${eventView.dialogHtml}`;
 
         const rivalSelect = document.getElementById("headToHeadRivalSelect");

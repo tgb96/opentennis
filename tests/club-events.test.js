@@ -74,8 +74,6 @@ test("registra el empate sin alterar la escalerilla ni inventar marcadores", () 
   assert.ok(view.dialogHtml.indexOf("Nicolás Collao") < view.dialogHtml.indexOf("Matías Arellano"));
   assert.equal((view.dialogHtml.match(/club-event-match is-win/g) || []).length, 7);
   assert.match(view.dialogHtml, /Marcador acumulado: FacuTenis–Open Tennis/);
-  assert.match(view.archiveHtml, /Interclubes del club/);
-  assert.match(view.archiveHtml, /Empate 7–7/);
 });
 
 test("genera un calendario con fecha, lugar y nombre correctos", () => {
@@ -86,11 +84,9 @@ test("genera un calendario con fecha, lugar y nombre correctos", () => {
   assert.match(calendar, /Caletera Ote\. Gral\. San Martín 8521/);
 });
 
-test("desde el 16 permanece solamente en el archivo de interclubes", () => {
+test("desde el 16 el interclub sale del Inicio y permanece solo en Torneos", () => {
   const view = clubEvents.renderHome(data, "Tomás Gómez", "2026-11-16");
   assert.equal(view.featuredHtml, "");
-  assert.match(view.archiveHtml, /Interclubes del club/);
-  assert.match(view.archiveHtml, /FacuTenis vs Open Tennis Huechuraba/);
-  assert.match(view.archiveHtml, /Empate 7–7/);
-  assert.match(view.dialogHtml, /Resultados de los partidos/);
+  assert.equal(view.dialogHtml, "");
+  assert.equal(view.selectedEvent, null);
 });

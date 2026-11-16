@@ -220,29 +220,13 @@
     </article>`;
   }
 
-  function archiveHtml(events) {
-    const interclubs = (events || []).filter(event => event.type === "interclub");
-    if (!interclubs.length) return "";
-    return `<details class="club-events-archive club-interclubs-archive">
-      <summary><span><small>Historia del club</small>Interclubes del club</span><b>${interclubs.length}</b></summary>
-      <p class="club-events-archive-intro">Resultados y planteles de los encuentros que representan al club.</p>
-      <div class="club-events-archive-list">${interclubs.map(event => `<button type="button" data-club-event-open="${escapeHtml(event.id)}">
-        <img src="${escapeHtml(event.externalLogo || event.clubLogo)}" alt=""><span><strong>${escapeHtml(event.title)}</strong><small>${escapeHtml(event.dateLabel)}${event.finalResult ? " · " + escapeHtml(event.finalResult) : ""}</small></span>
-      </button>`).join("")}</div>
-    </details>`;
-  }
-
   function renderHome(value, player, now) {
     const data = parse(value);
     const featured = data.events.find(event => ["upcoming", "followup"].includes(phase(event, now)));
-    const archived = data.events.filter(event => phase(event, now) === "archived");
-    const visibleEvents = data.events.filter(event => phase(event, now) !== "hidden");
-    const visibleInterclubs = visibleEvents.filter(event => event.type === "interclub");
     return {
       featuredHtml: featured ? cardHtml(featured, player, phase(featured, now)) : "",
-      archiveHtml: archiveHtml(visibleInterclubs),
-      dialogHtml: visibleEvents.map(event => dialogHtml(event, player, phase(event, now))).join(""),
-      selectedEvent: featured || archived[0] || null
+      dialogHtml: featured ? dialogHtml(featured, player, phase(featured, now)) : "",
+      selectedEvent: featured || null
     };
   }
 
