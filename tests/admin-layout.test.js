@@ -15,7 +15,8 @@ test("el regreso al club comparte encabezado sin una segunda barra", () => {
 
 test("un resultado nuevo propone hoy aunque el partido estuviera atrasado", () => {
   const client = fs.readFileSync(path.join(__dirname, "..", "admin/apps-script/Client.html"), "utf8");
-  assert.match(client, /var suggestedDate = isNewFinalResult \? state\.dashboard\.today : match\.date;/);
+  assert.match(client, /var suggestedDate = isNewFinalResult \? todayForInput\(\) : match\.date;/);
+  assert.match(client, /timeZone: "America\/Santiago"/);
   assert.doesNotMatch(client, /scheduledDateIsFuture/);
 });
 
