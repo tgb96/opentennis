@@ -25,6 +25,12 @@ test("las tarjetas de partidos no recuperan el botón Abrir marcador", () => {
   assert.doesNotMatch(html, />Abrir marcador</);
 });
 
+test("los resultados del calendario se presentan como Ganó y no como Ganador", () => {
+  const html = fs.readFileSync(path.join(root, "partidos.html"), "utf8");
+  assert.match(html, /`Ganó \$\{ganadorCorto\}\$\{detalle\} \$\{marcador\}`/);
+  assert.doesNotMatch(html, /`Ganador \$\{ganadorCorto\}/);
+});
+
 test("el marcador permite escribir nombres que no estén en el listado oficial", () => {
   const html = fs.readFileSync(path.join(root, "marcador.html"), "utf8");
   assert.match(html, /id="customPlayerAInput"/);
