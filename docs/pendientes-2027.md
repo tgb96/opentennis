@@ -45,3 +45,22 @@ Esta resolución es excepcional para 2026 y no debe confundirse con la regla gen
 Esta regla debe regir desde el inicio de la temporada 2027 y no aplicarse retroactivamente a temporadas anteriores.
 
 Estado: regla solicitada para 2027; falta incorporarla a las bases públicas y adaptar el administrador para anular en conjunto los resultados y partidos pendientes del participante.
+
+## Identidad histórica y Cara a Cara
+
+- Cada socio debe tener un identificador permanente que abarque como mínimo las temporadas 2025, 2026 y todas las competiciones futuras.
+- Los cambios de categoría, abreviaciones y correcciones de nombre no deben crear jugadores nuevos.
+- Los alias históricos deben apuntar al mismo identificador.
+- El Cara a Cara general debe reunir escalerillas y torneos oficiales, con filtros por año y competición.
+- Los partidos de torneos pueden contar para el Cara a Cara sin afectar la tabla de una escalerilla.
+- Los byes no cuentan como partidos, triunfos, sets, games ni antecedentes del Cara a Cara.
+
+## Torneos de eliminación directa
+
+- El administrador debe aceptar cualquier cantidad de participantes, no solamente 8, 16 o 32.
+- El sistema debe crear el siguiente tamaño de cuadro disponible y repartir automáticamente los byes necesarios.
+- Debe permitir cabezas de serie, sorteo del resto, revisión previa y bloqueo del cuadro al publicarlo.
+- Registrar un resultado debe hacer avanzar al ganador y validar las rondas posteriores.
+- Corregir un resultado con rondas posteriores disputadas debe advertir todas las consecuencias antes de aplicarse.
+- La aplicación pública tendrá un apartado `Torneos e interclubes`, dividido en `Próximos eventos` y `Torneos e interclubes pasados`.
+- Los torneos históricos deben conservar cuadro, participantes, rondas, resultados y campeón.

@@ -8,6 +8,7 @@ const publicPages = [
   "index.html",
   "partidos.html",
   "tablas.html",
+  "eventos.html",
   "reglas.html",
   "resultados-2025.html",
   "marcador.html"
@@ -17,6 +18,13 @@ test("el marcador permanece accesible desde toda la navegación pública", () =>
   for (const file of publicPages) {
     const html = fs.readFileSync(path.join(root, file), "utf8");
     assert.match(html, /<a href="marcador\.html" data-page="marcador\.html">[\s\S]*?<span class="nav-label">Marcador<\/span>[\s\S]*?<\/a>/, file);
+  }
+});
+
+test("Torneos e interclubes tiene una pestaña accesible desde toda la aplicación", () => {
+  for (const file of publicPages) {
+    const html = fs.readFileSync(path.join(root, file), "utf8");
+    assert.match(html, /<a href="eventos\.html" data-page="eventos\.html"[^>]*>[\s\S]*?<span class="nav-label">Eventos<\/span>[\s\S]*?<\/a>/, file);
   }
 });
 

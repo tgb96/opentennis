@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Torneos e interclubes | Open Tennis Huechuraba</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css?v=26">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#0b2f25">
+  <script src="assets/js/data-cache.js?v=2"></script>
+  <script src="assets/js/club-events.js?v=10"></script>
+  <script src="assets/js/events-page.js?v=1"></script>
+  <script defer src="assets/js/app.js?v=30"></script>
+</head>
+<body class="events-page v5-page">
+  <div class="layout app-shell">
+    <aside class="sidebar app-topbar">
+      <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/icons/icon-512.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span></a>
+    </aside>
+    <main class="main app-main events-main">
+      <h1 class="page-title">Torneos e interclubes</h1>
+
+      <section class="events-hero">
+        <div>
+          <p class="v5-eyebrow">Competiciones del club</p>
+          <h2>Todo lo que jugamos, en un solo lugar</h2>
+          <p>Consulta los próximos eventos y revive los torneos e interclubes que forman parte de la historia de Open Tennis.</p>
+        </div>
+        <span class="events-hero-mark" aria-hidden="true">🏆</span>
+      </section>
+
+      <section class="events-section" aria-labelledby="upcomingEventsTitle">
+        <header><div><p class="v5-eyebrow">Agenda</p><h2 id="upcomingEventsTitle">Próximos eventos</h2></div><span id="upcomingEventsCount">0</span></header>
+        <div id="upcomingEvents" class="events-list" aria-live="polite"><p>Cargando eventos…</p></div>
+      </section>
+
+      <section class="events-section" aria-labelledby="pastEventsTitle">
+        <header><div><p class="v5-eyebrow">Archivo del club</p><h2 id="pastEventsTitle">Torneos e interclubes pasados</h2></div><span id="pastEventsCount">0</span></header>
+        <div id="pastEvents" class="events-list" aria-live="polite"><p>Cargando archivo…</p></div>
+      </section>
+    </main>
+  </div>
+
+  <nav id="appBottomNav" class="app-bottom-nav" aria-label="Navegación principal">
+    <a href="index.html" data-page="index.html"><span class="nav-icon" aria-hidden="true">🏠</span><span class="nav-label">Inicio</span></a>
+    <a href="partidos.html" data-page="partidos.html"><span class="nav-icon" aria-hidden="true">🎾</span><span class="nav-label">Partidos</span></a>
+    <a href="tablas.html" data-page="tablas.html"><span class="nav-icon" aria-hidden="true">📊</span><span class="nav-label">Tablas</span></a>
+    <a href="eventos.html" data-page="eventos.html" aria-label="Torneos e interclubes"><span class="nav-icon" aria-hidden="true">🏆</span><span class="nav-label">Eventos</span></a>
+    <a href="reglas.html" data-page="reglas.html"><span class="nav-icon" aria-hidden="true">📘</span><span class="nav-label">Reglas</span></a>
+    <a href="marcador.html" data-page="marcador.html"><span class="nav-icon" aria-hidden="true">🔢</span><span class="nav-label">Marcador</span></a>
+  </nav>
+
+  <script>
+    (function loadEventsPage() {
+      const source = window.OPEN_TENNIS_CACHE
+        ? window.OPEN_TENNIS_CACHE.getText("data/actividades-2026.json?v=8")
+        : fetch("data/actividades-2026.json?v=8").then(response => response.text());
+
+      source.then(value => {
+        const view = window.OPEN_TENNIS_EVENTS_PAGE.render(value, new Date());
+        document.getElementById("upcomingEvents").innerHTML = view.upcomingHtml;
+        document.getElementById("pastEvents").innerHTML = view.pastHtml;
+        document.getElementById("upcomingEventsCount").textContent = view.upcomingCount;
+        document.getElementById("pastEventsCount").textContent = view.pastCount;
+      }).catch(() => {
+        document.getElementById("upcomingEvents").innerHTML = '<div class="events-empty"><strong>No se pudieron cargar los eventos.</strong><p>Intenta nuevamente en unos minutos.</p></div>';
+        document.getElementById("pastEvents").innerHTML = "";
+      });
+    })();
+  </script>
+</body>
+</html>

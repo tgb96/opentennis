@@ -1,10 +1,11 @@
-const CACHE_NAME = 'open-tennis-v56-extra-date';
+const CACHE_NAME = 'open-tennis-v57-events-hub';
 
 const CORE_ASSETS = [
   './',
   './index.html',
   './partidos.html',
   './tablas.html',
+  './eventos.html',
   './resultados-2025.html',
   './reglas.html',
   './marcador.html',
@@ -18,6 +19,7 @@ const CORE_ASSETS = [
   './assets/js/personalization.js',
   './assets/js/season-events.js',
   './assets/js/club-events.js',
+  './assets/js/events-page.js',
   './data/resultados-2025.json',
   './data/incidencias-2026.json',
   './data/actividades-2026.json',
