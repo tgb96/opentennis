@@ -21,11 +21,22 @@ test("el marcador permanece accesible desde toda la navegación pública", () =>
   }
 });
 
-test("Torneos e interclubes tiene una pestaña accesible desde toda la aplicación", () => {
+test("Torneos e interclubes usa la pestaña abreviada Torneos", () => {
   for (const file of publicPages) {
     const html = fs.readFileSync(path.join(root, file), "utf8");
-    assert.match(html, /<a href="eventos\.html" data-page="eventos\.html"[^>]*>[\s\S]*?<span class="nav-label">Eventos<\/span>[\s\S]*?<\/a>/, file);
+    assert.match(html, /<a href="eventos\.html" data-page="eventos\.html"[^>]*>[\s\S]*?<span class="nav-label">Torneos<\/span>[\s\S]*?<\/a>/, file);
   }
+});
+
+test("el reglamento sale del menú principal y queda dentro de Partidos", () => {
+  for (const file of publicPages) {
+    const html = fs.readFileSync(path.join(root, file), "utf8");
+    assert.doesNotMatch(html, /data-page="reglas\.html"/, file);
+  }
+  const matches = fs.readFileSync(path.join(root, "partidos.html"), "utf8");
+  const rules = fs.readFileSync(path.join(root, "reglas.html"), "utf8");
+  assert.match(matches, /class="championship-rules-link" href="reglas\.html"/);
+  assert.match(rules, /class="rules-return-link" href="partidos\.html"/);
 });
 
 test("las tarjetas de partidos no recuperan el botón Abrir marcador", () => {
