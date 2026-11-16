@@ -871,6 +871,42 @@ function construirEtiquetaSemana(semana, fechaSemana, mapaSemanas) {
   return fecha ? `${base} · ${fecha}` : base;
 }
 
+function completarMapaSemanasCanonicas(filas, mapaSemanas) {
+  const filasPorSemana = new Map();
+
+  filas.forEach(fila => {
+    const semana = String(fila.semana || "").trim();
+    if (!semana || !fila.fechaSemana) return;
+    if (!filasPorSemana.has(semana)) filasPorSemana.set(semana, []);
+    filasPorSemana.get(semana).push(fila);
+  });
+
+  filasPorSemana.forEach((filasSemana, semana) => {
+    const oficiales = filasSemana.filter(fila =>
+      String(fila.tipoProgramacion || "oficial").trim().toLowerCase() === "oficial"
+    );
+    const candidatas = oficiales.length ? oficiales : filasSemana;
+    const frecuencias = new Map();
+
+    candidatas.forEach((fila, indice) => {
+      const fecha = String(fila.fechaSemana || "").trim();
+      if (!fecha) return;
+      const existente = frecuencias.get(fecha) || { fecha, cantidad: 0, indice };
+      existente.cantidad++;
+      frecuencias.set(fecha, existente);
+    });
+
+    const fechaCanonica = Array.from(frecuencias.values())
+      .sort((a, b) => b.cantidad - a.cantidad || a.indice - b.indice)[0];
+
+    if (fechaCanonica) {
+      mapaSemanas[semana] = construirEtiquetaSemana(semana, fechaCanonica.fecha);
+    }
+  });
+
+  return mapaSemanas;
+}
+
 function etiquetaSemana(valor, mapaSemanas) {
   const texto = String(valor || "").trim();
 
@@ -1253,12 +1289,7 @@ function observacionFinal(fila) {
     return "Adelantado el " + fecha;
   }
 
-  if (
-    estadoNormalizado === "por_coordinar" &&
-    ["pendiente", "postergado", "reprogramado"].includes(normalizar(obs))
-  ) {
-    return "Nueva fecha por coordinar";
-  }
+  if (OPEN_TENNIS_DATA.isAdministrativeStatusNote(obs)) return "";
 
   return obs;
 }
@@ -1291,7 +1322,9 @@ function prepararFila(fila, mapaSemanas) {
   fila._observacion = observacion;
   fila._resultado = resultado;
   fila._estadoClase = claseEstado(estado);
-  fila._semanaLabel = etiquetaJornadaProgramacion([fila], mapaSemanas);
+  fila._semanaLabel = normalizar(fila.tipoProgramacion) === "recuperacion"
+    ? etiquetaJornadaProgramacion([fila], mapaSemanas)
+    : etiquetaSemana(fila.semana, mapaSemanas);
   fila._busqueda = normalizar(fila.jugador1 + " " + fila.jugador2);
   fila._resultadoTablaHTML = resultado
     ? `<span class="resultado-tabla">${escapeHTML(resultado)}</span>`
@@ -1399,7 +1432,9 @@ function jugadoresHTML(j1, j2) {
 function etiquetaTipoProgramacion(fila) {
   const labels = { oficial: "Oficial", adelantado: "Adelantado", reprogramado: "Reprogramado", recuperacion: "Recuperación" };
   const type = String(fila.tipoProgramacion || "oficial").trim().toLowerCase();
-  return type !== "oficial" ? `<span class="schedule-kind">${escapeHTML(labels[type] || type)}</span>` : "";
+  return !["oficial", "reprogramado"].includes(type)
+    ? `<span class="schedule-kind">${escapeHTML(labels[type] || type)}</span>`
+    : "";
 }
 
 function accionesPartidoHTML(fila, esCalendarioPersonal = false) {
@@ -1711,10 +1746,6 @@ function leerFixture(csv) {
     const tipoProgramacion = String(cols[13] || "oficial").trim().toLowerCase();
     const ronda = String(cols[14] || "").trim();
 
-    if (fechaSemana) {
-      mapaSemanas[semana] = construirEtiquetaSemana(semana, fechaSemana, mapaSemanas);
-    }
-
     const esLibre =
       jugador1 === "-" &&
       jugador2 === "-";
@@ -1756,6 +1787,8 @@ function leerFixture(csv) {
   if (duplicados.length) {
     console.warn("Se detectaron IDs de partido duplicados en el fixture:", duplicados);
   }
+
+  completarMapaSemanasCanonicas(filas, mapaSemanas);
 
   return { filas, mapaSemanas };
 }

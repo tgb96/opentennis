@@ -38,6 +38,18 @@ test("la programación completa separa y ordena una fecha extraordinaria", () =>
   assert.match(matchesSource, /function agruparProgramacionPorJornada/);
   assert.match(matchesSource, /Fecha extra · \$\{fecha\}/);
   assert.match(matchesSource, /agruparProgramacionPorJornada\(filas, mapaSemanas\)/);
-  assert.match(matchesSource, /fila\._semanaLabel = etiquetaJornadaProgramacion\(\[fila\], mapaSemanas\)/);
+  assert.match(matchesSource, /normalizar\(fila\.tipoProgramacion\) === "recuperacion"/);
+  assert.match(matchesSource, /\? etiquetaJornadaProgramacion\(\[fila\], mapaSemanas\)/);
   assert.match(matchesSource, /tieneProgramacionExplicita/);
+});
+
+test("el calendario personal conserva la fecha canónica de cada semana", () => {
+  assert.match(matchesSource, /function completarMapaSemanasCanonicas/);
+  assert.match(matchesSource, /const oficiales = filasSemana\.filter/);
+  assert.match(matchesSource, /: etiquetaSemana\(fila\.semana, mapaSemanas\)/);
+});
+
+test("las tarjetas no repiten estados administrativos", () => {
+  assert.match(matchesSource, /isAdministrativeStatusNote\(obs\)\) return ""/);
+  assert.match(matchesSource, /!\["oficial", "reprogramado"\]\.includes\(type\)/);
 });
