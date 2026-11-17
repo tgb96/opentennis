@@ -639,7 +639,7 @@
         content.innerHTML = `
           <div class="personal-stats">
             <div><span>Categoría</span><strong>${summary.category ? escapeHtml(summary.category) : "—"}</strong></div>
-            <div><span>Posición</span><strong>${summary.ranking ? "#" + summary.ranking.position + "/" + summary.categoryTotal : "—"}</strong></div>
+            <div><span>Posición</span><strong>${summary.ranking ? summary.ranking.position + " de " + summary.categoryTotal : "—"}</strong></div>
             <div><span>Puntos</span><strong>${summary.ranking ? summary.ranking.points : "—"}</strong></div>
             <div><span>Por coordinar</span><strong>${summary.pending.length}</strong></div>
           </div>
