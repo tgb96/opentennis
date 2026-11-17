@@ -123,9 +123,17 @@
         <span><b>${Number(event.preliminaryCount || summary.byes)}</b> ${event.preliminaryCount ? "partidos previos" : "byes"}</span>
       </div>
       ${event.champion ? `<div class="events-podium">
-        <span class="events-podium-trophy" aria-hidden="true">🏆</span>
-        <span><small>Campeón</small><strong>${escapeHtml(event.champion)}</strong></span>
-        ${event.runnerUp ? `<span><small>Finalista</small><strong>${escapeHtml(event.runnerUp)}</strong></span>` : ""}
+        <strong class="events-podium-title">Resultado del torneo</strong>
+        <div class="events-podium-row is-champion">
+          <b class="events-podium-place">1</b>
+          <span class="events-podium-medal" aria-hidden="true">🏆</span>
+          <span class="events-podium-person"><small>Campeón</small><strong>${escapeHtml(event.champion)}</strong></span>
+        </div>
+        ${event.runnerUp ? `<div class="events-podium-row is-runner-up">
+          <b class="events-podium-place">2</b>
+          <span class="events-podium-medal" aria-hidden="true">🥈</span>
+          <span class="events-podium-person"><small>Finalista</small><strong>${escapeHtml(event.runnerUp)}</strong></span>
+        </div>` : ""}
       </div>` : ""}
       ${event.historicalNote ? `<p class="events-historical-note">ℹ️ ${escapeHtml(event.historicalNote)}</p>` : ""}
       ${bracketHtml(event)}

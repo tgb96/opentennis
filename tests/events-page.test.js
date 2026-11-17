@@ -59,6 +59,11 @@ test("el primer torneo conserva cruces y campeón sin incorporarse al Cara a Car
   assert.match(view.html, /Primer torneo del club/);
   assert.match(view.html, /José Astete/);
   assert.match(view.html, /Nicolás Collao/);
+  assert.match(view.html, /events-podium-title">Resultado del torneo/);
+  assert.match(view.html, /events-podium-row is-champion/);
+  assert.match(view.html, /events-podium-place">1/);
+  assert.match(view.html, /events-podium-row is-runner-up/);
+  assert.match(view.html, /events-podium-place">2/);
   assert.match(view.html, /Fase previa/);
   assert.match(view.html, /Octavos de final/);
   assert.match(view.html, /Cuartos de final/);

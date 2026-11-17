@@ -58,11 +58,16 @@
 .events-tournament-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; min-width:0; gap:8px; }
 .events-tournament-stats span { display:grid; gap:2px; padding:11px; border-radius:12px; color:#667169; background:#f4eee5; font-size:10px; text-align:center; text-transform:uppercase; }
 .events-tournament-stats b { color:#123d2f; font-size:20px; }
-.events-podium { display:grid; grid-template-columns:auto minmax(0,1fr) minmax(0,1fr); align-items:center; gap:12px; margin-top:12px; padding:15px; border:1px solid #e3bd5d; border-radius:16px; background:linear-gradient(135deg,#fff4ca,#f4d889); box-shadow:0 8px 18px rgba(141,94,0,.12); }
-.events-podium-trophy { display:grid; width:46px; height:46px; place-items:center; border-radius:14px; color:#694400; background:rgba(255,255,255,.56); font-size:25px; }
-.events-podium > span:not(.events-podium-trophy) { display:grid; gap:2px; min-width:0; }
-.events-podium small { color:#886218; font-size:9px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
-.events-podium strong { overflow:hidden; color:#473000; font-size:14px; text-overflow:ellipsis; white-space:nowrap; }
+.events-podium { display:grid; gap:7px; margin-top:12px; padding:13px; border:1px solid #e3bd5d; border-radius:16px; background:#fffaf0; box-shadow:0 8px 18px rgba(141,94,0,.09); }
+.events-podium-title { padding:1px 4px 4px; color:#0b4938; font:700 18px/1 Oswald,sans-serif; letter-spacing:.035em; text-transform:uppercase; }
+.events-podium-row { display:grid; grid-template-columns:34px 42px minmax(0,1fr); min-height:60px; align-items:center; gap:8px; padding:8px 11px; border-radius:13px; }
+.events-podium-row.is-champion { background:linear-gradient(110deg,#f7d46b,#fff0b3); }
+.events-podium-row.is-runner-up { background:#eeece6; }
+.events-podium-place { color:#0b2f25; font:700 26px/1 Oswald,sans-serif; text-align:center; }
+.events-podium-medal { display:grid; width:40px; height:40px; place-items:center; border-radius:50%; background:rgba(255,255,255,.68); font-size:21px; }
+.events-podium-person { display:grid; min-width:0; gap:2px; }
+.events-podium small { color:#a54a26; font-size:9px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.events-podium-person strong { overflow:hidden; color:#0b2f25; font-size:15px; text-overflow:ellipsis; white-space:nowrap; }
 .events-historical-note { margin:12px 0 0; padding:11px 12px; border:1px solid #cbded4; border-radius:12px; color:#385b4d; background:#eef7f2; font-size:11px; line-height:1.45; }
 .events-bracket-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:18px; }
 .events-bracket-heading > span { display:grid; gap:2px; }
@@ -107,8 +112,8 @@
   .events-type-icon { width:48px; height:48px; }
   .events-results-list li { align-items:flex-start; flex-direction:column; }
   .events-match-status { width:100%; justify-content:flex-end; }
-  .events-podium { grid-template-columns:auto minmax(0,1fr); }
-  .events-podium > span:last-child { grid-column:2; }
+  .events-podium { padding:11px; }
+  .events-podium-row { grid-template-columns:31px 39px minmax(0,1fr); padding-inline:9px; }
   .events-preliminary-grid { grid-template-columns:1fr; }
   .events-bracket { --bracket-gap:38px; --connector-half:19px; }
   .events-bracket-round { flex-basis:238px; min-width:238px; }

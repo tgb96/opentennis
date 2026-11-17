@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v66-ranking-total-label';
+const CACHE_NAME = 'open-tennis-v67-tournament-podium';
 
 const CORE_ASSETS = [
   './',
