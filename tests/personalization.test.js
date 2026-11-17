@@ -18,11 +18,15 @@ test("resume próximo partido, pendientes y ranking de un jugador", () => {
     { player1: "Ana", player2: "Carla", date: "21/8/2026", status: "por_coordinar" },
     { player1: "Diana", player2: "Ana", status: "jugado", record: { date: "20/8/2026", winner: "Ana", loser: "Diana" } }
   ];
-  const summary = personal.playerSummary("Ana", matches, [{ player: "Ana", category: "B", position: 2, points: 6, played: 1 }], new Date(2026, 7, 27));
+  const summary = personal.playerSummary("Ana", matches, [
+    { player: "Bea", category: "B", position: 1, points: 9, played: 2 },
+    { player: "Ana", category: "B", position: 2, points: 6, played: 1 }
+  ], new Date(2026, 7, 27));
   assert.equal(summary.upcoming.player2, "Bea");
   assert.equal(summary.pending.length, 1);
   assert.equal(summary.recent.player1, "Diana");
   assert.equal(summary.ranking.position, 2);
+  assert.equal(summary.categoryTotal, 2);
   assert.equal(summary.played, 1);
   assert.equal(summary.wins, 1);
   assert.equal(summary.losses, 0);
