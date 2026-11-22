@@ -121,13 +121,13 @@
   }
 
   function parseRecords(csv) {
-    return parseCsv(csv).slice(1).map(row => ({
+    return parseCsv(csv).slice(1).map((row, sourceIndex) => ({
       date: String(row[0] || "").trim(), player1: String(row[1] || "").trim(),
       player2: String(row[2] || "").trim(), pending: String(row[3] || "").trim(),
       notes: String(row[4] || "").trim(), winner: String(row[13] || "").trim(),
       loser: String(row[14] || "").trim(), resultType: String(row[15] || "").trim(),
       resultWeb: String(row[16] || "").trim(), pointsPlayer1: Number(row[17] || 0),
-      pointsPlayer2: Number(row[18] || 0), matchId: String(row[22] || "").trim()
+      pointsPlayer2: Number(row[18] || 0), matchId: String(row[22] || "").trim(), sourceIndex
     })).filter(record => record.player1 && record.player2);
   }
 
@@ -219,6 +219,63 @@
   function scoreFromWebResult(result) {
     const match = String(result || "").match(/\d+\s*-\s*\d+(?:\s+\d+\s*-\s*\d+)*/);
     return match ? match[0].replace(/\s*-\s*/g, "-").replace(/\s+/g, ", ") : "Resultado registrado";
+  }
+
+  function calendarDate(value) {
+    if (!(value instanceof Date) || Number.isNaN(value.getTime())) return null;
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate(), 12);
+  }
+
+  function roundResultsWindow(now) {
+    const today = calendarDate(now instanceof Date ? now : new Date(now));
+    if (!today) return null;
+    const day = today.getDay();
+    const daysFromSaturday = day === 6 ? 0 : day === 0 ? 1 : day === 1 ? 2 : day === 2 ? 3 : null;
+    if (daysFromSaturday === null) return null;
+    const start = new Date(today);
+    start.setDate(start.getDate() - daysFromSaturday);
+    const resultsEnd = new Date(start);
+    resultsEnd.setDate(resultsEnd.getDate() + 2);
+    const expires = new Date(start);
+    expires.setDate(expires.getDate() + 3);
+    return { start, resultsEnd, expires };
+  }
+
+  function roundResults(matches, now) {
+    const windowRange = roundResultsWindow(now);
+    if (!windowRange) return [];
+    return (matches || []).filter(match => {
+      const record = match && match.record;
+      const playedDate = parseDate(record && record.date);
+      return Boolean(
+        record && record.winner && record.loser && playedDate &&
+        playedDate >= windowRange.start && playedDate <= windowRange.resultsEnd
+      );
+    }).sort((first, second) => {
+      const dateDifference = parseDate(first.record.date) - parseDate(second.record.date);
+      return dateDifference || Number(first.record.sourceIndex || 0) - Number(second.record.sourceIndex || 0);
+    });
+  }
+
+  function roundResultScore(record) {
+    const description = `${record && record.resultType || ""} ${record && record.resultWeb || ""}`;
+    if (/w\s*\/\s*o/i.test(description)) return "W/O";
+    return scoreFromWebResult(record && record.resultWeb).replace(/,\s*/g, " · ");
+  }
+
+  function roundResultsCardHtml(matches, now) {
+    const results = roundResults(matches, now);
+    if (!results.length) return "";
+    return `<section class="round-results-card" aria-labelledby="roundResultsTitle">
+      <h2 id="roundResultsTitle">Resultados de la fecha</h2>
+      <ul class="round-results-list">
+        ${results.map(match => `<li class="round-result-row">
+          <span class="round-result-category" aria-label="Categoría ${escapeHtml(match.category || "")}">${escapeHtml(match.category || "—")}</span>
+          <span class="round-result-copy"><strong>${escapeHtml(match.record.winner)}</strong> venció a ${escapeHtml(match.record.loser)}</span>
+          <strong class="round-result-score">${escapeHtml(roundResultScore(match.record))}</strong>
+        </li>`).join("")}
+      </ul>
+    </section>`;
   }
 
   function historicalWinner(match) {
@@ -554,6 +611,7 @@
     const section = document.getElementById("myOpenTennis");
     const select = document.getElementById("myPlayerSelect");
     const content = document.getElementById("myOpenTennisContent");
+    const roundResultsContainer = document.getElementById("roundResultsCard");
     try {
       let historicalData = null;
       let historicalReady = false;
@@ -579,6 +637,14 @@
         }));
       const joinedMatches = joinMatches(parseFixture(texts[0]), parseRecords(texts[1]));
       const matches = seasonEvents ? seasonEvents.applyToPersonalMatches(joinedMatches) : joinedMatches;
+      const renderRoundResults = () => {
+        if (roundResultsContainer) roundResultsContainer.innerHTML = roundResultsCardHtml(matches, new Date());
+      };
+      renderRoundResults();
+      window.setInterval(renderRoundResults, 60000);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) renderRoundResults();
+      });
       const parsedRankings = parseRankings(texts[2]);
       const rankings = seasonEvents ? seasonEvents.applyToRankings(parsedRankings) : parsedRankings;
       const players = Array.from(new Set(matches.flatMap(match => [match.player1, match.player2])))
@@ -772,5 +838,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, personalGivenName, turnTimeLabel, playerNameKey, isPersonalPlayerSelectable, adminAccessHtml, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, personalGivenName, turnTimeLabel, playerNameKey, isPersonalPlayerSelectable, adminAccessHtml, markerUrl, pageUrl, roundResultsWindow, roundResults, roundResultsCardHtml, STORAGE_KEY };
 });

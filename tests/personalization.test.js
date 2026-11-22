@@ -364,3 +364,40 @@ test("Felipe deja de estar disponible como perfil personal tras renunciar", () =
   assert.equal(personal.isPersonalPlayerSelectable("Felipe Reyes"), false);
   assert.equal(personal.isPersonalPlayerSelectable("Tomás Gómez"), true);
 });
+
+test("Resultados de la fecha aparece desde el primer resultado del sábado y se oculta el miércoles", () => {
+  const matches = [{
+    category: "A",
+    status: "jugado",
+    record: {
+      date: "21/11/2026",
+      winner: "Tomás Gómez",
+      loser: "Luis Flores",
+      resultWeb: "Ganador Tomás Gómez 4-6 6-2 10-7",
+      sourceIndex: 4
+    }
+  }];
+
+  assert.equal(personal.roundResultsCardHtml(matches, new Date(2026, 10, 20, 23, 59)), "");
+  assert.match(personal.roundResultsCardHtml(matches, new Date(2026, 10, 21, 13)), /Resultados de la fecha/i);
+  assert.match(personal.roundResultsCardHtml(matches, new Date(2026, 10, 24, 23, 59)), /Tomás Gómez/);
+  assert.equal(personal.roundResultsCardHtml(matches, new Date(2026, 10, 25, 0, 0)), "");
+});
+
+test("la tarjeta usa el relato, marcador y categoría del formato aprobado", () => {
+  const html = personal.roundResultsCardHtml([{
+    category: "A",
+    record: {
+      date: "21/11/2026",
+      winner: "Tomás Gómez",
+      loser: "Luis Flores",
+      resultWeb: "Ganador Tomás Gómez 4-6 6-2 10-7"
+    }
+  }], new Date(2026, 10, 22, 12));
+
+  assert.match(html, /round-results-card/);
+  assert.match(html, /round-result-category[^>]*>A</);
+  assert.match(html, /<strong>Tomás Gómez<\/strong> venció a Luis Flores/);
+  assert.match(html, /4-6 · 6-2 · 10-7/);
+  assert.doesNotMatch(html, /sábado|domingo|lunes|21\/11\/2026/i);
+});
