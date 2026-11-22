@@ -24,7 +24,7 @@
   const STATUS_LABELS = Object.freeze({
     [MATCH_STATUSES.PROGRAMADO]: "Programado",
     [MATCH_STATUSES.JUGADO]: "Jugado",
-    [MATCH_STATUSES.POR_COORDINAR]: "Por coordinar",
+    [MATCH_STATUSES.POR_COORDINAR]: "Pendiente",
     [MATCH_STATUSES.WO_J1]: "W/O Jugador 1",
     [MATCH_STATUSES.WO_J2]: "W/O Jugador 2",
     [MATCH_STATUSES.WO_AMBOS]: "W/O ambos",

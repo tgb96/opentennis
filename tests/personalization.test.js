@@ -63,6 +63,15 @@ test("resume próximo partido, pendientes y ranking de un jugador", () => {
   assert.equal(summary.zone.text, "Ascenso directo");
 });
 
+test("no considera pendiente un partido antes de que pase su fecha original", () => {
+  const matches = [
+    { player1: "Ana", player2: "Bea", date: "29/8/2026", originalDate: "29/8/2026", status: "por_coordinar" },
+    { player1: "Ana", player2: "Carla", date: "20/8/2026", originalDate: "20/8/2026", status: "por_coordinar" }
+  ];
+  const summary = personal.playerSummary("Ana", matches, [], new Date(2026, 7, 27));
+  assert.deepEqual(summary.pending.map(match => match.player2), ["Carla"]);
+});
+
 test("calcula récord, últimos tres resultados y zona sin contar un W/O de ambos", () => {
   const matches = [
     { player1: "Ana", player2: "Bea", status: "jugado", record: { date: "20/8/2026", winner: "Ana", loser: "Bea", resultWeb: "Ganador Ana 6-2 6-3" } },

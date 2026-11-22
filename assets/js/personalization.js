@@ -352,7 +352,11 @@
     today.setHours(0, 0, 0, 0);
     const upcoming = mine.filter(match => match.status === "programado" && parseDate(match.date) && parseDate(match.date) >= today)
       .sort((a, b) => parseDate(a.date) - parseDate(b.date))[0] || null;
-    const pending = mine.filter(match => ["por_coordinar", "suspendido"].includes(match.status));
+    const pending = mine.filter(match => {
+      if (!["por_coordinar", "suspendido"].includes(match.status)) return false;
+      const originalDate = parseDate(match.originalDate || match.date);
+      return Boolean(originalDate && originalDate < today);
+    });
     const recentResults = mine.filter(match => match.status === "jugado" && match.record && parseDate(match.record.date))
       .sort((a, b) => parseDate(b.record.date) - parseDate(a.record.date));
     const recent = recentResults[0] || null;
@@ -621,7 +625,7 @@
             <div class="home-card-heading">
               <div>
                 <span class="home-card-kicker">Necesitan acuerdo</span>
-                <h3 id="pendingHomeTitle">Partidos por coordinar</h3>
+                <h3 id="pendingHomeTitle">Partidos pendientes</h3>
               </div>
               <strong class="home-count">${summary.pending.length}</strong>
             </div>
@@ -632,11 +636,11 @@
                   <small>Semana ${escapeHtml(match.week || "—")}${match.originalDate || match.date ? ` · Fecha original ${escapeHtml(match.originalDate || match.date)}` : ""}</small>
                 </li>`).join("")}
             </ul>
-            <a class="home-card-link" href="${matchesPage}?jugador=${playerParam}&vista=pending">Ver partidos por coordinar</a>
+            <a class="home-card-link" href="${matchesPage}?jugador=${playerParam}&vista=pending">Ver partidos pendientes</a>
           </section>` : `
           <section class="home-info-card pending-card pending-clear">
             <span class="home-card-kicker">Coordinación al día</span>
-            <h3>No tienes partidos por coordinar</h3>
+            <h3>No tienes partidos pendientes</h3>
           </section>`;
         const rivals = allKnownPlayers(players, historicalData, clubEventData)
           .filter(rival => playerNameKey(rival) !== playerNameKey(player));
@@ -669,7 +673,7 @@
           <article class="next-match-card">
             <span class="personal-kicker">${next ? "Tu próximo partido" : "Tu calendario"}</span>
             <h2>${next ? escapeHtml(player) + " vs " + escapeHtml(nextRival) : "No hay una próxima fecha confirmada"}</h2>
-            <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos por coordinar."}</p>
+            <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos pendientes."}</p>
             ${next ? headToHeadHtml(player, nextRival, headToHead) : ""}
             <div class="personal-actions">
               <a href="${matchesPage}?jugador=${playerParam}">Ver mis siguientes partidos</a>

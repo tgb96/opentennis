@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=32" />
+  <link rel="stylesheet" href="assets/css/app.css?v=35" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -19,9 +19,9 @@
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
   <script src="assets/js/config.js?v=7"></script>
   <script src="assets/js/data-cache.js?v=2"></script>
-  <script src="assets/js/data-model.js?v=1"></script>
+  <script src="assets/js/data-model.js?v=3"></script>
   <script src="assets/js/season-events.js?v=4"></script>
-  <script src="assets/js/season-platform.js?v=1"></script>
+  <script src="assets/js/season-platform.js?v=2"></script>
   <script defer src="assets/js/app.js?v=34"></script>
 </head>
 <body class="partidos-page v5-page">
@@ -34,12 +34,9 @@
       <div id="modernLaddersMatches" hidden></div>
 <div class="programacion-app">
 
-  <section class="bloque match-experience" aria-labelledby="experienceTitle">
+  <section id="personalResultsBlock" class="bloque match-experience personal-results-block" aria-labelledby="experienceTitle">
     <div class="personal-heading matches-personal-heading">
-      <div>
-        <p class="v5-eyebrow">Calendario personalizado</p>
-        <h2 id="experienceTitle">Mis partidos</h2>
-      </div>
+      <h2 id="experienceTitle">Mis partidos</h2>
       <label>
         <select id="publicPlayerSelect" aria-label="Mi jugador"><option value="">Elige tu nombre</option></select>
       </label>
@@ -47,36 +44,31 @@
     <nav class="public-view-tabs" aria-label="Vistas de partidos">
       <button type="button" data-public-view="mine" aria-current="page">Mi calendario</button>
       <button type="button" data-public-view="next">Próxima fecha</button>
-      <button type="button" data-public-view="pending">Por coordinar</button>
-      <button type="button" data-public-view="results">Resultados</button>
+      <button type="button" data-public-view="pending">Pendientes</button>
     </nav>
-  </section>
+    <div class="personal-match-results">
+      <div class="desktop-view">
+        <table id="tablaBusqueda">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-  <section id="personalResultsBlock" class="bloque personal-results-block">
-    <h2 id="searchResultsTitle">Buscar partidos por jugador</h2>
-    <input id="buscador" type="text" placeholder="Buscar jugador..." autocomplete="off">
-
-    <div class="desktop-view">
-      <table id="tablaBusqueda">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
+      <div id="cardsBusqueda" class="mobile-view"></div>
     </div>
-
-    <div id="cardsBusqueda" class="mobile-view"></div>
   </section>
 
   <section class="championship-divider" aria-labelledby="championshipTitle">
     <div>
       <p class="v5-eyebrow">Consulta general</p>
       <h2 id="championshipTitle">Todo el campeonato</h2>
-      <p>Desde aquí puedes revisar los partidos por coordinar y la programación completa de todas las categorías.</p>
+      <p>Desde aquí puedes revisar los partidos pendientes y la programación completa de todas las categorías.</p>
     </div>
     <span aria-hidden="true">🎾</span>
   </section>
 
   <section class="bloque bloque-pendientes">
-    <h2>Partidos por coordinar</h2>
+    <h2>Partidos pendientes</h2>
 
     <div class="desktop-view">
       <table id="tablaPendientes">
@@ -133,16 +125,6 @@
 
 .bloque-pendientes h2 {
   color: #7d2c24;
-}
-
-#buscador {
-  width: 300px;
-  max-width: 100%;
-  padding: 11px 12px;
-  font-size: 16px;
-  border: 2px solid #333;
-  border-radius: 8px;
-  margin-bottom: 16px;
 }
 
 table {
@@ -579,10 +561,6 @@ td:first-child {
     font-size: 20px;
   }
 
-  #buscador {
-    width: 100%;
-  }
-
   .estado {
     font-size: 13px;
     padding: 4px 15px;
@@ -593,18 +571,6 @@ td:first-child {
   .observacion-box {
     width: 100%;
   }
-}
-@media (min-width: 1050px) {
-  .programacion-app { display: block !important; }
-  .programacion-app > .match-experience {
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: space-between !important;
-    gap: 28px !important;
-    min-height: 0 !important;
-  }
-  .programacion-app > .match-experience .personal-heading { flex: 1 1 auto !important; margin-bottom: 0 !important; }
-  .programacion-app > .match-experience .public-view-tabs { flex: 0 0 auto !important; }
 }
 </style>
 
@@ -627,8 +593,6 @@ const encabezados = [
   "Observaciones"
 ];
 
-const buscador = document.getElementById("buscador");
-
 const tablaBusquedaHead = document.querySelector("#tablaBusqueda thead");
 const tablaBusquedaBody = document.querySelector("#tablaBusqueda tbody");
 const cardsBusqueda = document.getElementById("cardsBusqueda");
@@ -642,8 +606,6 @@ const tablaCompletaBody = document.querySelector("#tablaCompleta tbody");
 const accordionSemanas = document.getElementById("accordionSemanas");
 const publicPlayerSelect = document.getElementById("publicPlayerSelect");
 const publicViewTabs = Array.from(document.querySelectorAll("[data-public-view]"));
-const searchResultsTitle = document.getElementById("searchResultsTitle");
-const personalResultsBlock = document.getElementById("personalResultsBlock");
 const PERSONAL_PLAYER_KEY = "openTennisPlayerV1";
 let publicRows = [];
 let publicWeeks = {};
@@ -1203,13 +1165,23 @@ function esPendienteFixture(fila) {
   );
 }
 
+function fechaOriginalPartidoYaPaso(fila) {
+  if (!fila) return false;
+  const fechaOriginal = parseFechaProgramacionSantiago(fila.fechaOficial || fila.fechaSemana);
+  return fechaOriginal !== null && fechaOriginal < inicioDiaActualSantiago();
+}
+
+function esPartidoPendienteVigente(fila) {
+  if (!fechaOriginalPartidoYaPaso(fila)) return false;
+  return ["por_coordinar", "suspendido"].includes(
+    OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila))
+  );
+}
+
 function obtenerFilasPendientes(filas) {
   return filas.filter(fila => {
     if (fila.esLibre) return false;
-
-    return ["por_coordinar", "suspendido"].includes(
-      OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila))
-    );
+    return esPartidoPendienteVigente(fila);
   });
 }
 
@@ -1247,12 +1219,14 @@ function estadoFinal(fila) {
   }
 
   if (fila.registro && esRegistroPendiente(fila.registro)) {
+    if (!fechaOriginalPartidoYaPaso(fila)) return "Programado";
     return OPEN_TENNIS_DATA.statusLabel(
       estadoCanonicoRegistro(fila.registro)
     );
   }
 
   if (esPendienteFixture(fila)) {
+    if (!fechaOriginalPartidoYaPaso(fila)) return "Programado";
     return OPEN_TENNIS_DATA.statusLabel(
       estadoCanonicoFixture(fila)
     );
@@ -1573,8 +1547,7 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
     if (vistaPersonal && usaJugadorSeleccionado && !filaCorrespondeJugador(fila, busqueda)) continue;
     if (vistaPersonal && !usaJugadorSeleccionado && !fila._busqueda.includes(busqueda)) continue;
     if (vista === "next" && !esProximoJugador) continue;
-    if (vista === "pending" && !["por_coordinar", "suspendido"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
-    if (vista === "results" && !["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)))) continue;
+    if (vista === "pending" && !esPartidoPendienteVigente(fila)) continue;
 
     if (semanaAnterior && fila.semana !== semanaAnterior) {
       filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, esProximoJugador, esEsteSabadoJugador);
@@ -1977,38 +1950,11 @@ function activarAccordionMobile(contenedor = accordionSemanas) {
   });
 }
 
-function activarBuscador(filas, mapaSemanas) {
-  let rafId = 0;
-  let ultimoValor = "";
-
-  buscador.addEventListener("input", e => {
-    ultimoValor = e.target.value;
-
-    if (rafId) {
-      cancelAnimationFrame(rafId);
-    }
-
-    rafId = requestAnimationFrame(() => {
-      publicView = "mine";
-      actualizarTabsPublicas();
-      renderBusqueda(filas, mapaSemanas, ultimoValor, publicView);
-      rafId = 0;
-    });
-  });
-}
-
 function actualizarTabsPublicas() {
   publicViewTabs.forEach(button => {
     if (button.dataset.publicView === publicView) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   });
-  const labels = { mine: "Mi calendario", next: "Próximo partido", pending: "Partidos por coordinar", results: "Mis resultados" };
-  searchResultsTitle.textContent = labels[publicView] || "Partidos";
-}
-
-function actualizarDensidadResultadosPersonales() {
-  if (!personalResultsBlock) return;
-  personalResultsBlock.classList.toggle("has-selected-player", Boolean(publicPlayerSelect.value));
 }
 
 function jugadorPersonalDisponible(player) {
@@ -2029,20 +1975,17 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
   if (storedPlayer && !jugadorPersonalDisponible(storedPlayer)) localStorage.removeItem(PERSONAL_PLAYER_KEY);
   const requested = new URLSearchParams(location.search).get("jugador") || (jugadorPersonalDisponible(storedPlayer) ? storedPlayer : "");
   const requestedView = new URLSearchParams(location.search).get("vista") || "";
-  if (["mine", "next", "pending", "results"].includes(requestedView)) {
+  if (["mine", "next", "pending"].includes(requestedView)) {
     publicView = requestedView;
   }
   if (players.includes(requested)) {
     publicPlayerSelect.value = requested;
-    buscador.value = requested;
   }
 
   publicPlayerSelect.addEventListener("change", () => {
     const player = publicPlayerSelect.value;
     if (player) localStorage.setItem(PERSONAL_PLAYER_KEY, player);
-    buscador.value = player;
     publicView = "mine";
-    actualizarDensidadResultadosPersonales();
     actualizarTabsPublicas();
     renderBusqueda(filas, mapaSemanas, player, publicView);
   });
@@ -2054,7 +1997,6 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
     document.getElementById("tablaBusqueda").closest(".bloque").scrollIntoView({ behavior: "smooth", block: "start" });
   }));
 
-  actualizarDensidadResultadosPersonales();
   actualizarTabsPublicas();
   renderBusqueda(filas, mapaSemanas, publicPlayerSelect.value, publicView);
 }
@@ -2147,7 +2089,6 @@ async function iniciar() {
     renderCompletaMobile(filas, mapaSemanas);
     activarAccordionMobile(accordionPendientes);
     activarAccordionMobile(accordionSemanas);
-    activarBuscador(filas, mapaSemanas);
   } catch (error) {
     mensajeTabla(
       "No se pudo cargar la programación.",

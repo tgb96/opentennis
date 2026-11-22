@@ -58,7 +58,7 @@
   }
 
   function formatDate(value) {
-    if (!value) return "Fecha por coordinar";
+    if (!value) return "Fecha pendiente";
     const parts = String(value).split("-");
     if (parts.length !== 3) return value;
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -79,8 +79,8 @@
         const first = players[match.player1Id] ? players[match.player1Id].name : "Por definir";
         const second = players[match.player2Id] ? players[match.player2Id].name : "Por definir";
         const moved = match.date && match.officialDate && match.date !== match.officialDate;
-        const currentDate = match.status === "jugado" ? `Jugado el ${formatDate(match.date)}` : match.status === "por_coordinar" ? "Por coordinar" : moved ? `Nueva fecha ${formatDate(match.date)}` : "";
-        const status = /^cancelado|^anulado/.test(match.status || "") ? "Sin efecto" : match.score || (match.status === "jugado" ? "Jugado" : match.status === "por_coordinar" ? "Por coordinar" : "Programado");
+        const currentDate = match.status === "jugado" ? `Jugado el ${formatDate(match.date)}` : match.status === "por_coordinar" ? "Pendiente" : moved ? `Nueva fecha ${formatDate(match.date)}` : "";
+        const status = /^cancelado|^anulado/.test(match.status || "") ? "Sin efecto" : match.score || (match.status === "jugado" ? "Jugado" : match.status === "por_coordinar" ? "Pendiente" : "Programado");
         return `<article class="modern-match ${match.status === "jugado" ? "is-played" : ""}"><span><small>${escapeHtml(categories[match.categoryId] || match.categoryId)} · Cancha ${escapeHtml(match.court || "—")} · ${escapeHtml(match.turn || "Horario por definir")}</small><strong>${escapeHtml(first)} <i>vs</i> ${escapeHtml(second)}</strong>${currentDate ? `<em>${escapeHtml(currentDate)}</em>` : ""}</span><b>${escapeHtml(status)}</b></article>`;
       }).join("")}</div>
     </section>`).join("")}</div>`;

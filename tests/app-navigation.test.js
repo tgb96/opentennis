@@ -81,17 +81,27 @@ test("las tarjetas no repiten estados administrativos", () => {
   assert.match(matchesSource, /!\["oficial", "reprogramado"\]\.includes\(type\)/);
 });
 
-test("Partidos elimina rótulos repetidos cuando ya existe un jugador seleccionado", () => {
+test("Partidos reúne selector, vistas y calendario en una sola tarjeta compacta", () => {
   assert.match(matchesSource, /select id="publicPlayerSelect" aria-label="Mi jugador"/);
   assert.doesNotMatch(matchesSource, /<label>Mi jugador/);
-  assert.match(matchesSource, /id="personalResultsBlock" class="bloque personal-results-block"/);
-  assert.match(matchesSource, /classList\.toggle\("has-selected-player", Boolean\(publicPlayerSelect\.value\)\)/);
+  assert.match(matchesSource, /id="personalResultsBlock" class="bloque match-experience personal-results-block"/);
+  assert.match(matchesSource, /class="personal-match-results"/);
+  assert.doesNotMatch(matchesSource, /Calendario personalizado|id="buscador"|searchResultsTitle/);
+  assert.doesNotMatch(matchesSource, /data-public-view="results"/);
+  assert.match(matchesSource, /data-public-view="pending">Pendientes</);
 });
 
 test("Partidos excluye de Mi jugador a quienes se retiraron", () => {
   assert.match(matchesSource, /\.filter\(jugadorPersonalDisponible\)/);
   assert.match(matchesSource, /withdrawalForPlayer\(player\)/);
   assert.match(matchesSource, /localStorage\.removeItem\(PERSONAL_PLAYER_KEY\)/);
+});
+
+test("solo llama pendiente a un partido cuando ya pasó su fecha original", () => {
+  assert.match(matchesSource, /function fechaOriginalPartidoYaPaso\(fila\)/);
+  assert.match(matchesSource, /fila\.fechaOficial \|\| fila\.fechaSemana/);
+  assert.match(matchesSource, /fechaOriginal < inicioDiaActualSantiago\(\)/);
+  assert.match(matchesSource, /vista === "pending" && !esPartidoPendienteVigente\(fila\)/);
 });
 
 test("el historial del próximo rival conserva contraste dentro de la tarjeta verde", () => {
