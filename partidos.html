@@ -2011,16 +2011,23 @@ function actualizarDensidadResultadosPersonales() {
   personalResultsBlock.classList.toggle("has-selected-player", Boolean(publicPlayerSelect.value));
 }
 
+function jugadorPersonalDisponible(player) {
+  return !(window.OPEN_TENNIS_EVENTS && typeof window.OPEN_TENNIS_EVENTS.withdrawalForPlayer === "function" && window.OPEN_TENNIS_EVENTS.withdrawalForPlayer(player));
+}
+
 function configurarExperienciaPersonal(filas, mapaSemanas) {
   publicRows = filas;
   publicWeeks = mapaSemanas;
   publicRowsById = new Map(filas.map(fila => [fila.matchId, fila]));
   const players = Array.from(new Set(filas.flatMap(fila => [fila.jugador1, fila.jugador2]).filter(name => name && name !== "-")))
+    .filter(jugadorPersonalDisponible)
     .sort((a, b) => a.localeCompare(b, "es"));
   publicPlayerSelect.innerHTML = '<option value="">Elige tu nombre</option>' + players
     .map(player => `<option value="${escapeHTML(player)}">${escapeHTML(player)}</option>`).join("");
 
-  const requested = new URLSearchParams(location.search).get("jugador") || localStorage.getItem(PERSONAL_PLAYER_KEY) || "";
+  const storedPlayer = localStorage.getItem(PERSONAL_PLAYER_KEY) || "";
+  if (storedPlayer && !jugadorPersonalDisponible(storedPlayer)) localStorage.removeItem(PERSONAL_PLAYER_KEY);
+  const requested = new URLSearchParams(location.search).get("jugador") || (jugadorPersonalDisponible(storedPlayer) ? storedPlayer : "");
   const requestedView = new URLSearchParams(location.search).get("vista") || "";
   if (["mine", "next", "pending", "results"].includes(requestedView)) {
     publicView = requestedView;

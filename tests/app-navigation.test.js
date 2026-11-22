@@ -83,3 +83,9 @@ test("Partidos elimina rótulos repetidos cuando ya existe un jugador selecciona
   assert.match(matchesSource, /id="personalResultsBlock" class="bloque personal-results-block"/);
   assert.match(matchesSource, /classList\.toggle\("has-selected-player", Boolean\(publicPlayerSelect\.value\)\)/);
 });
+
+test("Partidos excluye de Mi jugador a quienes se retiraron", () => {
+  assert.match(matchesSource, /\.filter\(jugadorPersonalDisponible\)/);
+  assert.match(matchesSource, /withdrawalForPlayer\(player\)/);
+  assert.match(matchesSource, /localStorage\.removeItem\(PERSONAL_PLAYER_KEY\)/);
+});

@@ -70,6 +70,10 @@
     return PLAYER_NAME_ALIASES[key] || key;
   }
 
+  function isPersonalPlayerSelectable(player) {
+    return !(seasonEvents && typeof seasonEvents.withdrawalForPlayer === "function" && seasonEvents.withdrawalForPlayer(player));
+  }
+
   function shortPlayerName(value) {
     const parts = String(value || "").trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "";
@@ -558,7 +562,9 @@
       const matches = seasonEvents ? seasonEvents.applyToPersonalMatches(joinedMatches) : joinedMatches;
       const parsedRankings = parseRankings(texts[2]);
       const rankings = seasonEvents ? seasonEvents.applyToRankings(parsedRankings) : parsedRankings;
-      const players = Array.from(new Set(matches.flatMap(match => [match.player1, match.player2]))).sort((a, b) => a.localeCompare(b, "es"));
+      const players = Array.from(new Set(matches.flatMap(match => [match.player1, match.player2])))
+        .filter(isPersonalPlayerSelectable)
+        .sort((a, b) => a.localeCompare(b, "es"));
       select.innerHTML = '<option value="">Elige tu nombre</option>' + players.map(player => '<option value="' + player.replace(/"/g, "&quot;") + '">' + player + '</option>').join("");
       let selectedHeadToHeadRival = "";
 
@@ -730,6 +736,7 @@
 
       select.addEventListener("change", () => render(select.value));
       const saved = localStorage.getItem(STORAGE_KEY) || "";
+      if (saved && !isPersonalPlayerSelectable(saved)) localStorage.removeItem(STORAGE_KEY);
       if (players.includes(saved)) select.value = saved;
       render(select.value);
       section.classList.remove("loading");
@@ -749,5 +756,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, playerNameKey, adminAccessHtml, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, playerNameKey, isPersonalPlayerSelectable, adminAccessHtml, markerUrl, pageUrl, STORAGE_KEY };
 });

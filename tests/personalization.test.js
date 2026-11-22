@@ -340,3 +340,8 @@ test("muestra acceso al administrador solo al seleccionar Tomás y no concede pe
   assert.equal(personal.adminAccessHtml("Felipe Reyes"), "");
   assert.equal(personal.adminAccessHtml(""), "");
 });
+
+test("Felipe deja de estar disponible como perfil personal tras renunciar", () => {
+  assert.equal(personal.isPersonalPlayerSelectable("Felipe Reyes"), false);
+  assert.equal(personal.isPersonalPlayerSelectable("Tomás Gómez"), true);
+});
