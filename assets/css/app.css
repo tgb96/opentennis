@@ -3172,3 +3172,24 @@ body:not(.index-page) .app {
 .home-withdrawal-card p { margin: 0; line-height: 1.5; }
 .next-h2h-matches small,
 .h2h-explorer-matches small { display: block; margin-top: 2px; color: #8b4a32; font-size: .72rem; font-weight: 700; }
+
+/* Cara a Cara agrupado por competencia */
+.h2h-explorer-competitions,
+.next-h2h-competitions { display:grid; gap:10px; margin-top:12px; }
+.h2h-competition-group { overflow:hidden; border:1px solid #d9e1dc; border-radius:12px; background:#fff; }
+.h2h-competition-group h4 { display:flex; align-items:center; gap:6px; margin:0; padding:8px 11px; color:#fff; background:linear-gradient(135deg,#176044,#0c4534); font-family:"Oswald",sans-serif; font-size:12px; font-weight:700; letter-spacing:.045em; line-height:1.2; text-transform:uppercase; }
+.h2h-competition-group.is-tournament { border-color:#e8c46f; }
+.h2h-competition-group.is-tournament h4 { color:#4f3507; background:linear-gradient(135deg,#f7d67a,#eeb94a); }
+.h2h-competition-group .h2h-explorer-matches,
+.h2h-competition-group .next-h2h-matches { gap:0; margin:0; padding:0; border:0; }
+.h2h-competition-group .h2h-explorer-matches li,
+.h2h-competition-group .next-h2h-matches li { padding:9px 11px; }
+.h2h-competition-group .h2h-explorer-matches li + li,
+.h2h-competition-group .next-h2h-matches li + li { border-top:1px solid #eee6da; }
+.h2h-competition-group.is-tournament time { color:#a05a08; }
+
+@media (max-width:480px) {
+  .h2h-competition-group h4 { font-size:11px; }
+  .h2h-competition-group .h2h-explorer-matches li,
+  .h2h-competition-group .next-h2h-matches li { grid-template-columns:auto minmax(0,1fr); gap:7px; padding:8px 9px; }
+}

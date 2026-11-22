@@ -150,7 +150,9 @@ test("suma el historial 2025 frente al próximo rival", () => {
     date: "26/12/2025",
     winner: "Felipe Reyes",
     score: "6-3, 3-6, 10-8",
-    retirement: false
+    retirement: false,
+    competitionType: "ladder",
+    competitionLabel: "Escalerilla 2025"
   });
 });
 
@@ -194,7 +196,9 @@ test("registra el retiro de Eduardo frente a Mauricio sin inventar el segundo se
     date: "12/01/2026",
     winner: "Mauricio Galaz",
     score: "7-6",
-    retirement: true
+    retirement: true,
+    competitionType: "ladder",
+    competitionLabel: "Escalerilla 2025"
   });
   assert.match(html, /12\/01\/2026/);
   assert.match(html, /Ganó Mauricio 7-6 \(retiro\)/);
@@ -243,6 +247,37 @@ test("el comparador cara a cara muestra marcador y todos los encuentros", () => 
   assert.match(html, /08\/08\/2026/);
   assert.match(html, />2025</);
   assert.ok(html.indexOf("08/08/2026") < html.indexOf(">2025<"));
+});
+
+test("agrupa el Cara a Cara por escalerilla y torneo con el estilo elegido", () => {
+  const clubEvents = {
+    events: [{
+      type: "tournament",
+      countsForH2H: true,
+      h2hLabel: "Torneo Singles · Abril–Mayo 2026",
+      rounds: [{ matches: [
+        { player1: "Nicolás Collao", player2: "José Astete", winner: "José Astete", score: "7-5, 7-6", date: "09/05/2026" },
+        { player1: "Nicolás Collao", player2: "Juan Muñoz", winner: "Nicolás Collao" }
+      ] }]
+    }]
+  };
+  const ladderMatches = [{
+    status: "jugado",
+    player1: "José Astete",
+    player2: "Nicolás Collao",
+    record: { date: "14/11/2026", winner: "José Astete", resultWeb: "Ganador José Astete 6-4 6-2" }
+  }];
+  const summary = personal.headToHeadSummary("José Astete", "Nicolás Collao", ladderMatches, null, null, clubEvents);
+  const html = personal.headToHeadExplorerHtml("José Astete", "Nicolás Collao", summary);
+
+  assert.equal(summary.total, 2);
+  assert.equal(summary.playerWins, 2);
+  assert.match(html, /Escalerilla 2026/);
+  assert.match(html, /Torneo Singles · Abril–Mayo 2026/);
+  assert.match(html, /is-ladder/);
+  assert.match(html, /is-tournament/);
+  assert.match(html, /09\/05\/2026/);
+  assert.doesNotMatch(html, /Juan Muñoz/);
 });
 
 test("muestra cada marcador histórico desde la perspectiva del ganador", () => {

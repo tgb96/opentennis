@@ -223,7 +223,24 @@
       .join(", ");
   }
 
-  function headToHeadSummary(player, rival, matches, historicalData, eventSource) {
+  function tournamentEncountersForPlayers(clubEventData, player, rival) {
+    const events = clubEventData && Array.isArray(clubEventData.events) ? clubEventData.events : [];
+    return events.flatMap(event => {
+      if (event.type !== "tournament" || event.countsForH2H !== true || !Array.isArray(event.rounds)) return [];
+      return event.rounds.flatMap(round => (round.matches || [])
+        .filter(match => samePlayers(match, player, rival) && match.winner && match.score)
+        .map(match => ({
+          season: String((match.date || event.eventDate || "").match(/\d{4}/)?.[0] || "2026"),
+          date: match.date || "",
+          winner: match.winner,
+          score: match.score,
+          competitionType: "tournament",
+          competitionLabel: event.h2hLabel || event.shortTitle || event.title || "Torneo"
+        })));
+    });
+  }
+
+  function headToHeadSummary(player, rival, matches, historicalData, eventSource, clubEventData) {
     if (!player || !rival) return { total: 0, playerWins: 0, rivalWins: 0, encounters: [], last: null };
 
     const encounters = [];
@@ -237,7 +254,9 @@
           date: match.fecha || match.date || "",
           winner,
           score: historicalScore(match, winner),
-          retirement: String(match.estado || "").toLowerCase() === "retiro"
+          retirement: String(match.estado || "").toLowerCase() === "retiro",
+          competitionType: "ladder",
+          competitionLabel: `Escalerilla ${String(historical.temporada || "2025")}`
         });
       });
     }
@@ -248,9 +267,13 @@
         season: String(match.season || "2026"),
         date: match.record.date || "",
         winner: match.record.winner,
-        score: scoreFromWebResult(match.record.resultWeb)
+        score: scoreFromWebResult(match.record.resultWeb),
+        competitionType: "ladder",
+        competitionLabel: `Escalerilla ${String(match.season || "2026")}`
       });
     });
+
+    tournamentEncountersForPlayers(clubEventData, player, rival).forEach(encounter => encounters.push(encounter));
 
     if (eventSource) {
       eventSource.archivedForPlayers(player, rival).forEach(match => {
@@ -260,7 +283,9 @@
           winner: match.winner,
           score: match.score,
           classification: false,
-          note: "Resultado jugado, sin efecto clasificatorio"
+          note: "Resultado jugado, sin efecto clasificatorio",
+          competitionType: "ladder",
+          competitionLabel: "Escalerilla 2026"
         });
       });
     }
@@ -286,7 +311,7 @@
     };
   }
 
-  function allKnownPlayers(currentPlayers, historicalData) {
+  function allKnownPlayers(currentPlayers, historicalData, clubEventData) {
     const playersByKey = new Map();
     (currentPlayers || []).forEach(player => {
       if (playerNameKey(player)) playersByKey.set(playerNameKey(player), String(player).trim());
@@ -301,6 +326,17 @@
         });
       });
     }
+
+    const clubEventList = clubEventData && Array.isArray(clubEventData.events) ? clubEventData.events : [];
+    clubEventList.forEach(event => {
+      if (event.type !== "tournament" || event.countsForH2H !== true) return;
+      (event.rounds || []).flatMap(round => round.matches || []).forEach(match => {
+        [match.player1, match.player2].forEach(player => {
+          const key = playerNameKey(player);
+          if (key && !playersByKey.has(key)) playersByKey.set(key, String(player).trim());
+        });
+      });
+    });
 
     return Array.from(playersByKey.values()).sort((first, second) => first.localeCompare(second, "es"));
   }
@@ -405,18 +441,40 @@
         <i>—</i>
         <strong><b>${summary.rivalWins}</b> ${escapeHtml(rival)}</strong>
       </div>
-      <ol class="next-h2h-matches" aria-label="Encuentros registrados">
-        ${encounters.map(encounter => {
-          const dateLabel = encounter.date || encounter.season;
-          const winner = playerNameKey(encounter.winner) === playerNameKey(player)
-            ? shortPlayerName(player)
-            : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
-          const retirementLabel = encounter.retirement ? " (retiro)" : "";
-          const note = encounter.note ? `<small>${escapeHtml(encounter.note)}</small>` : "";
-          return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}${note}</span></li>`;
-        }).join("")}
-      </ol>
+      ${headToHeadCompetitionGroupsHtml(player, rival, encounters, "next")}
     </div>`;
+  }
+
+  function encounterResultHtml(player, rival, encounter) {
+    const dateLabel = encounter.date || encounter.season;
+    const winner = playerNameKey(encounter.winner) === playerNameKey(player)
+      ? shortPlayerName(player)
+      : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
+    const retirementLabel = encounter.retirement ? " (retiro)" : "";
+    const note = encounter.note ? `<small>${escapeHtml(encounter.note)}</small>` : "";
+    return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}${note}</span></li>`;
+  }
+
+  function headToHeadCompetitionGroupsHtml(player, rival, encounters, variant) {
+    const groups = [];
+    encounters.forEach(encounter => {
+      const label = encounter.competitionLabel || `Escalerilla ${encounter.season || ""}`.trim();
+      const key = `${encounter.competitionType || "ladder"}|${label}`;
+      let group = groups.find(item => item.key === key);
+      if (!group) {
+        group = { key, label, type: encounter.competitionType || "ladder", encounters: [] };
+        groups.push(group);
+      }
+      group.encounters.push(encounter);
+    });
+    const prefix = variant === "next" ? "next-h2h" : "h2h-explorer";
+    return `<div class="${prefix}-competitions">${groups.map(group => `
+      <section class="h2h-competition-group is-${escapeHtml(group.type)}">
+        <h4>${group.type === "tournament" ? '<span aria-hidden="true">🏆</span>' : ""}${escapeHtml(group.label)}</h4>
+        <ol class="${prefix}-matches" aria-label="${escapeHtml(group.label)}">
+          ${group.encounters.map(encounter => encounterResultHtml(player, rival, encounter)).join("")}
+        </ol>
+      </section>`).join("")}</div>`;
   }
 
   function headToHeadExplorerHtml(player, rival, summary) {
@@ -438,17 +496,7 @@
       <i>—</i>
       <strong><b>${summary.rivalWins}</b> ${escapeHtml(shortPlayerName(rival))}</strong>
     </div>
-    <ol class="h2h-explorer-matches" aria-label="Historial de enfrentamientos">
-      ${encounters.map(encounter => {
-        const dateLabel = encounter.date || encounter.season;
-        const winner = playerNameKey(encounter.winner) === playerNameKey(player)
-          ? shortPlayerName(player)
-          : (playerNameKey(encounter.winner) === playerNameKey(rival) ? shortPlayerName(rival) : shortPlayerName(encounter.winner));
-        const retirementLabel = encounter.retirement ? " (retiro)" : "";
-        const note = encounter.note ? `<small>${escapeHtml(encounter.note)}</small>` : "";
-        return `<li><time>${escapeHtml(dateLabel)}</time><span>Ganó ${escapeHtml(winner)} ${escapeHtml(encounter.score)}${retirementLabel}${note}</span></li>`;
-      }).join("")}
-    </ol>`;
+    ${headToHeadCompetitionGroupsHtml(player, rival, encounters, "explorer")}`;
   }
 
   function recentResultHtml(match, player) {
@@ -535,7 +583,7 @@
         const summary = playerSummary(player, matches, rankings, new Date());
         const next = summary.upcoming;
         const nextRival = next ? opponent(next, player) : "";
-        const headToHead = next ? (historicalReady ? headToHeadSummary(player, nextRival, matches, historicalData, seasonEvents) : null) : null;
+        const headToHead = next ? (historicalReady && clubEventReady ? headToHeadSummary(player, nextRival, matches, historicalData, seasonEvents, clubEventData) : null) : null;
         const playerParam = encodeURIComponent(player);
         const matchesPage = pageUrl("partidos.html");
         const tablesPage = pageUrl("tablas.html");
@@ -611,13 +659,13 @@
                 </div>`).join("")}
             </div>
           </section>` : "";
-        const rivals = allKnownPlayers(players, historicalData)
+        const rivals = allKnownPlayers(players, historicalData, clubEventData)
           .filter(rival => playerNameKey(rival) !== playerNameKey(player));
         if (!rivals.some(rival => playerNameKey(rival) === playerNameKey(selectedHeadToHeadRival))) {
           selectedHeadToHeadRival = rivals.find(rival => playerNameKey(rival) === playerNameKey(nextRival)) || rivals[0] || "";
         }
-        const explorerSummary = selectedHeadToHeadRival && historicalReady
-          ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData, seasonEvents)
+        const explorerSummary = selectedHeadToHeadRival && historicalReady && clubEventReady
+          ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData, seasonEvents, clubEventData)
           : null;
         const headToHeadExplorer = `
           <section class="home-info-card head-to-head-card" aria-labelledby="headToHeadHomeTitle">
@@ -668,8 +716,8 @@
         if (rivalSelect && explorerResult) {
           rivalSelect.addEventListener("change", () => {
             selectedHeadToHeadRival = rivalSelect.value;
-            const selectedSummary = historicalReady
-              ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData, seasonEvents)
+            const selectedSummary = historicalReady && clubEventReady
+              ? headToHeadSummary(player, selectedHeadToHeadRival, matches, historicalData, seasonEvents, clubEventData)
               : null;
             explorerResult.innerHTML = headToHeadExplorerHtml(player, selectedHeadToHeadRival, selectedSummary);
           });

@@ -19,8 +19,9 @@
       "champion": "José Astete",
       "runnerUp": "Nicolás Collao",
       "finalResult": "Campeón: José Astete",
-      "countsForH2H": false,
-      "historicalNote": "Archivo histórico. Como no se conservan todos los marcadores, sus partidos no se incorporan al Cara a Cara.",
+      "countsForH2H": true,
+      "h2hLabel": "Torneo Singles · Abril–Mayo 2026",
+      "historicalNote": "Los 15 partidos con marcador confirmado se incorporan al Cara a Cara. Los dos cruces sin marcador permanecen solo en el cuadro histórico.",
       "participants": [
         "Aníbal Valenzuela", "Claudio Aedo", "Daniel Vega", "Diego Cervantes", "Diego Fossa", "Felipe Reyes",
         "Hernán Bravo", "Ignacio de la Fuente", "Jaime Valdebenito", "José Astete", "Juan Muñoz", "Marcelo López",

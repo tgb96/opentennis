@@ -45,10 +45,10 @@ test("los cuadros admiten cualquier cantidad de participantes con byes automáti
   });
 });
 
-test("el primer torneo conserva cruces y campeón sin incorporarse al Cara a Cara", () => {
+test("el primer torneo conserva cruces y aporta al Cara a Cara solo con marcadores confirmados", () => {
   const tournament = data.events.find(event => event.id === "torneo-singles-abril-mayo-2026");
   assert.ok(tournament);
-  assert.equal(tournament.countsForH2H, false);
+  assert.equal(tournament.countsForH2H, true);
   assert.equal(tournament.participants.length, 18);
   assert.equal(tournament.rounds.length, 5);
   assert.equal(tournament.champion, "José Astete");
@@ -82,7 +82,7 @@ test("el primer torneo conserva cruces y campeón sin incorporarse al Cara a Car
   assert.match(view.html, /6-1, 6-3/);
   assert.match(view.html, /W\/O/);
   assert.match(view.html, /Marcador no disponible/);
-  assert.match(view.html, /no se incorporan al Cara a Cara/);
+  assert.match(view.html, /15 partidos con marcador confirmado se incorporan al Cara a Cara/);
   assert.match(view.html, /events-preliminary-grid/);
   assert.match(view.html, /events-bracket-round/);
   assert.match(view.html, /events-connector-in/);
