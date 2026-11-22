@@ -3207,6 +3207,16 @@ body.index-page .home-personal-grid.home-personal-flow { grid-template-columns:1
 .h2h-competition-group .next-h2h-matches li + li { border-top:1px solid #eee6da; }
 .h2h-competition-group.is-tournament time { color:#a05a08; }
 
+/* El historial del próximo rival vive sobre una tarjeta oscura. */
+.next-h2h .h2h-competition-group { border-color:rgba(255,255,255,.2); background:rgba(5,45,34,.46); }
+.next-h2h .h2h-competition-group h4 { color:#fff; background:rgba(6,59,44,.88); }
+.next-h2h .h2h-competition-group.is-tournament { border-color:rgba(247,214,122,.48); background:rgba(76,54,10,.28); }
+.next-h2h .h2h-competition-group.is-tournament h4 { color:#fff4d2; background:rgba(154,103,13,.74); }
+.next-h2h .h2h-competition-group .next-h2h-matches li { color:#f2f7f4; }
+.next-h2h .h2h-competition-group .next-h2h-matches li + li { border-top-color:rgba(255,255,255,.14); }
+.next-h2h .h2h-competition-group .next-h2h-matches time { color:#ffc39b; }
+.next-h2h .h2h-competition-group .next-h2h-matches small { color:#ffd0b0; }
+
 @media (max-width:480px) {
   .h2h-competition-group h4 { font-size:11px; }
   .h2h-competition-group .h2h-explorer-matches li,

@@ -11,6 +11,10 @@ const matchesSource = fs.readFileSync(
   path.join(__dirname, "..", "partidos.html"),
   "utf8"
 );
+const appCssSource = fs.readFileSync(
+  path.join(__dirname, "..", "assets", "css", "app.css"),
+  "utf8"
+);
 const publicPages = [
   "index.html", "partidos.html", "tablas.html", "eventos.html", "torneo.html",
   "competencia.html", "resultados-2025.html", "reglas.html", "reglas-2027.html", "marcador.html"
@@ -88,4 +92,9 @@ test("Partidos excluye de Mi jugador a quienes se retiraron", () => {
   assert.match(matchesSource, /\.filter\(jugadorPersonalDisponible\)/);
   assert.match(matchesSource, /withdrawalForPlayer\(player\)/);
   assert.match(matchesSource, /localStorage\.removeItem\(PERSONAL_PLAYER_KEY\)/);
+});
+
+test("el historial del próximo rival conserva contraste dentro de la tarjeta verde", () => {
+  assert.match(appCssSource, /\.next-h2h \.h2h-competition-group \{[^}]*background:rgba\(5,45,34/);
+  assert.match(appCssSource, /\.next-h2h \.h2h-competition-group \.next-h2h-matches li \{ color:#f2f7f4; \}/);
 });
