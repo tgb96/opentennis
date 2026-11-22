@@ -13,9 +13,12 @@ test("el regreso al club comparte encabezado sin una segunda barra", () => {
   assert.equal((html.match(/class="club-return-link"/g) || []).length, 1);
 });
 
-test("un resultado nuevo propone hoy aunque el partido estuviera atrasado", () => {
+test("un resultado nuevo propone hoy aunque exista un registro pendiente con fecha antigua", () => {
   const client = fs.readFileSync(path.join(__dirname, "..", "admin/apps-script/Client.html"), "utf8");
-  assert.match(client, /var suggestedDate = isNewFinalResult \? todayForInput\(\) : match\.date;/);
+  assert.match(client, /var hasSavedFinalResult = finalStatuses\.indexOf\(match\.status\) >= 0;/);
+  assert.match(client, /var suggestedDate = isFinalSelection && !hasSavedFinalResult/);
+  assert.match(client, /\? todayForInput\(\)/);
+  assert.doesNotMatch(client, /!match\.record && \["jugado"/);
   assert.match(client, /timeZone: "America\/Santiago"/);
   assert.doesNotMatch(client, /scheduledDateIsFuture/);
 });

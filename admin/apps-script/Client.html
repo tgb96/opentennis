@@ -202,9 +202,13 @@
       setText(elements.dialogMeta, [match.category ? "Categoría " + match.category : "", match.week ? "Semana " + match.week : "", match.court ? "Cancha " + match.court : ""].filter(Boolean).join(" · "));
       setText(elements.dialogTitle, match.player1 + " vs " + match.player2); elements.matchId.value = match.matchId;
       elements.status.value = presetStatus || (match.status === "programado" ? "jugado" : match.status);
-      var isNewFinalResult = !match.record && ["jugado", "retiro_j1", "retiro_j2", "wo_j1", "wo_j2", "wo_ambos"].indexOf(elements.status.value) >= 0;
-      var suggestedDate = isNewFinalResult ? todayForInput() : match.date;
-      elements.date.value = dateForInput((match.record && match.record.date) || suggestedDate || state.dashboard.today);
+      var finalStatuses = ["jugado", "retiro_j1", "retiro_j2", "wo_j1", "wo_j2", "wo_ambos"];
+      var isFinalSelection = finalStatuses.indexOf(elements.status.value) >= 0;
+      var hasSavedFinalResult = finalStatuses.indexOf(match.status) >= 0;
+      var suggestedDate = isFinalSelection && !hasSavedFinalResult
+        ? todayForInput()
+        : ((match.record && match.record.date) || match.date);
+      elements.date.value = dateForInput(suggestedDate || state.dashboard.today);
       elements.scheduleType.value = match.scheduleType || "oficial"; elements.court.value = match.court || ""; elements.turn.value = match.turn || ""; elements.notes.value = visibleNotes(match);
       setText(elements.originalSchedule, ["Programación oficial", match.originalDate || match.date, match.originalCourt ? "Cancha " + match.originalCourt : "", match.originalTurn || "", match.round || ""].filter(Boolean).join(" · "));
       updatePlayerLabels(match); var record = match.record || {};
