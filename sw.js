@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v68-h2h-competitions';
+const CACHE_NAME = 'open-tennis-v69-global-refresh';
 
 const CORE_ASSETS = [
   './',

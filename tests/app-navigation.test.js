@@ -11,6 +11,10 @@ const matchesSource = fs.readFileSync(
   path.join(__dirname, "..", "partidos.html"),
   "utf8"
 );
+const publicPages = [
+  "index.html", "partidos.html", "tablas.html", "eventos.html", "torneo.html",
+  "competencia.html", "resultados-2025.html", "reglas.html", "reglas-2027.html", "marcador.html"
+];
 
 test("el doble atrás se limita a la aplicación instalada en Android", () => {
   assert.match(appSource, /isStandalone\(\) && isAndroid/);
@@ -25,6 +29,25 @@ test("el segundo atrás no recorre todo el historial previo", () => {
 test("la navegación interna reemplaza la entrada base de la PWA", () => {
   assert.match(appSource, /window\.location\.replace\(destination\)/);
   assert.match(appSource, /pendingNavigation = destination\.href/);
+});
+
+test("todas las páginas públicas muestran el actualizador general", () => {
+  publicPages.forEach(file => {
+    const html = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
+    assert.match(html, /assets\/js\/app\.js\?v=33/, file);
+  });
+  assert.match(appSource, /id = 'appGlobalRefresh'/);
+  assert.match(appSource, /Actualizar toda la aplicación/);
+});
+
+test("la actualización general conserva preferencias y renueva solo las copias de la app", () => {
+  assert.match(appSource, /key\.startsWith\(DATA_CACHE_PREFIX\)/);
+  assert.match(appSource, /key\.startsWith\('open-tennis-'\)/);
+  assert.match(appSource, /key !== ACTIVE_CACHE_NAME/);
+  assert.match(appSource, /registration\.update\(\)/);
+  assert.match(appSource, /window\.fetch\(checkUrl\.href, \{ cache: 'no-store' \}\)/);
+  assert.doesNotMatch(appSource, /localStorage\.clear\(\)/);
+  assert.doesNotMatch(appSource, /registration\.unregister\(\)/);
 });
 
 test("la próxima fecha se recalcula al retomar la aplicación o cambiar el día", () => {

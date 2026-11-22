@@ -9,7 +9,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=29', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js?v=30', { updateViaCache: 'none' })
         .then(registration => registration.update())
         .catch(() => {});
     });
@@ -58,6 +58,116 @@
     handleDataStatus(window.OPEN_TENNIS_CACHE.getStatus());
   }
   if (navigator.onLine === false) connectivityNotice(true);
+
+  const setupGlobalRefresh = () => {
+    const DATA_CACHE_PREFIX = 'openTennisDataCacheV2:';
+    const ACTIVE_CACHE_NAME = 'open-tennis-v69-global-refresh';
+    const button = document.createElement('button');
+    const status = document.createElement('div');
+    let refreshing = false;
+
+    button.id = 'appGlobalRefresh';
+    button.className = 'app-global-refresh';
+    button.type = 'button';
+    button.setAttribute('aria-label', 'Actualizar toda la aplicación');
+    button.setAttribute('title', 'Actualizar toda la aplicación');
+    button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 1 0-2.3 5.7M20 5v6h-6"/></svg><span>Actualizar</span>';
+
+    status.id = 'appRefreshStatus';
+    status.className = 'app-refresh-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+
+    const styles = document.createElement('style');
+    styles.textContent = `
+      .app-global-refresh{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1200;display:flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 13px;border:1px solid rgba(255,255,255,.34);border-radius:999px;color:#fff;background:rgba(7,61,46,.94);box-shadow:0 6px 18px rgba(5,43,33,.24);font:800 11px/1 Inter,Arial,sans-serif;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .18s ease,background .18s ease,opacity .18s ease}
+      .app-global-refresh:hover,.app-global-refresh:focus-visible{background:#b94a25;transform:translateY(-1px);outline:3px solid rgba(242,140,0,.25);outline-offset:2px}
+      .app-global-refresh:disabled{cursor:wait;opacity:.82;transform:none}
+      .app-global-refresh svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .app-global-refresh.is-updating svg{animation:app-refresh-spin .75s linear infinite}
+      .app-refresh-status{position:fixed;top:calc(60px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1200;max-width:min(290px,calc(100vw - 20px));padding:9px 12px;border-radius:12px;color:#fff;background:rgba(7,48,37,.94);box-shadow:0 8px 22px rgba(0,0,0,.2);font:700 12px/1.35 Inter,Arial,sans-serif;opacity:0;pointer-events:none;transform:translateY(-5px);transition:opacity .18s ease,transform .18s ease}
+      .app-refresh-status.is-visible{opacity:1;transform:translateY(0)}
+      .app-refresh-status.is-error{background:#a83e2d}
+      @keyframes app-refresh-spin{to{transform:rotate(360deg)}}
+      @media(max-width:640px){.app-global-refresh{width:42px;padding:0}.app-global-refresh span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
+      @media(min-width:900px){.app-global-refresh{top:88px;right:12px;width:42px;padding:0}.app-global-refresh span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.app-refresh-status{top:138px;right:12px}}
+      @media(prefers-reduced-motion:reduce){.app-global-refresh,.app-refresh-status{transition:none}.app-global-refresh.is-updating svg{animation:none}}
+    `;
+
+    const showStatus = (message, isError) => {
+      status.textContent = message;
+      status.classList.toggle('is-error', Boolean(isError));
+      status.classList.add('is-visible');
+    };
+
+    const clearStoredDataCopies = () => {
+      try {
+        for (let index = localStorage.length - 1; index >= 0; index--) {
+          const key = localStorage.key(index);
+          if (key && key.startsWith(DATA_CACHE_PREFIX)) localStorage.removeItem(key);
+        }
+        sessionStorage.removeItem('openTennisDataReloadAt');
+      } catch (error) {
+        // La recarga y la limpieza del service worker siguen siendo suficientes.
+      }
+    };
+
+    const clearOutdatedAppCaches = async () => {
+      if (!('caches' in window)) return;
+      const keys = await window.caches.keys();
+      await Promise.all(keys
+        .filter(key => key.startsWith('open-tennis-') && key !== ACTIVE_CACHE_NAME)
+        .map(key => window.caches.delete(key)));
+    };
+
+    const updateServiceWorker = async () => {
+      if (!('serviceWorker' in navigator)) return;
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(registration => registration.update().catch(() => null)));
+    };
+
+    button.addEventListener('click', async () => {
+      if (refreshing) return;
+      if (navigator.onLine === false) {
+        showStatus('Sin conexión. Conservamos la información disponible.', true);
+        window.setTimeout(() => status.classList.remove('is-visible'), 3200);
+        return;
+      }
+
+      refreshing = true;
+      button.disabled = true;
+      button.classList.add('is-updating');
+      showStatus('Actualizando toda la aplicación…', false);
+
+      try {
+        const checkUrl = new URL(window.location.href);
+        checkUrl.searchParams.set('_comprobar', String(Date.now()));
+        const response = await window.fetch(checkUrl.href, { cache: 'no-store' });
+        if (!response.ok) throw new Error('No se pudo confirmar la conexión');
+
+        clearStoredDataCopies();
+        await updateServiceWorker();
+        await clearOutdatedAppCaches();
+
+        showStatus('Información actualizada. Recargando…', false);
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.delete('_comprobar');
+        nextUrl.searchParams.set('actualizado', String(Date.now()));
+        window.setTimeout(() => window.location.replace(nextUrl.href), 220);
+      } catch (error) {
+        refreshing = false;
+        button.disabled = false;
+        button.classList.remove('is-updating');
+        showStatus('No se pudo actualizar. Mantuvimos la información actual.', true);
+        window.setTimeout(() => status.classList.remove('is-visible'), 3800);
+      }
+    });
+
+    document.head.appendChild(styles);
+    document.body.append(button, status);
+  };
+
+  setupGlobalRefresh();
 
   const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   const navigationCurrent = current === 'torneo.html'
