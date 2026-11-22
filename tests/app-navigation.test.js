@@ -89,6 +89,20 @@ test("Partidos reúne selector, vistas y calendario en una sola tarjeta compacta
   assert.doesNotMatch(matchesSource, /Calendario personalizado|id="buscador"|searchResultsTitle/);
   assert.doesNotMatch(matchesSource, /data-public-view="results"/);
   assert.match(matchesSource, /data-public-view="pending">Pendientes</);
+  assert.doesNotMatch(matchesSource, /<h1 class="page-title">Partidos y resultados<\/h1>/);
+});
+
+test("el calendario personal simplifica cada partido según su estado", () => {
+  assert.match(matchesSource, /function programacionPersonalHTML\(fila, mapaSemanas\)/);
+  assert.match(matchesSource, /if \(estado !== "programado"\) return `<div class="card-top">\$\{semanaOriginal\}<\/div>`/);
+  assert.match(matchesSource, /function estadoPersonalHTML\(fila\)/);
+  assert.match(matchesSource, /includes\(estado\)\) return ""/);
+  assert.match(matchesSource, /crearFilaPersonalHTML\(fila, mapaSemanas/);
+  const personalCardSource = matchesSource.slice(
+    matchesSource.indexOf("function crearCardBusquedaHTML"),
+    matchesSource.indexOf("function crearCardBusqueda(fila")
+  );
+  assert.doesNotMatch(personalCardSource, /Categoría/);
 });
 
 test("Partidos excluye de Mi jugador a quienes se retiraron", () => {

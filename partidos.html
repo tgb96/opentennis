@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=35" />
+  <link rel="stylesheet" href="assets/css/app.css?v=36" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -30,7 +30,6 @@
       <a class="brand" href="index.html" aria-label="Open Tennis Huechuraba inicio"><img class="brand-logo" src="assets/icons/icon-512.png" alt="" aria-hidden="true"><span class="brand-text"><span class="brand-main">Open Tennis</span><span class="brand-sub">Huechuraba · 2026</span></span></a>
     </aside>
     <main class="main app-main">
-      <h1 class="page-title">Partidos y resultados</h1>
       <div id="modernLaddersMatches" hidden></div>
 <div class="programacion-app">
 
@@ -1425,6 +1424,52 @@ function accionesPartidoHTML(fila, esCalendarioPersonal = false) {
   </div>`;
 }
 
+function partesTurnoPersonal(turno) {
+  const texto = String(turno || "").trim();
+  const numero = (texto.match(/^\s*(\d+)/) || [])[1] || "";
+  const horario = (texto.match(/\(([^)]+)\)/) || [])[1] || (/\d{1,2}:\d{2}/.test(texto) ? texto.replace(/^\s*\d+\s*/, "").trim() : "");
+  return { numero, horario };
+}
+
+function programacionPersonalHTML(fila, mapaSemanas) {
+  const estado = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
+  const semanaOriginal = escapeHTML(construirEtiquetaSemana(
+    fila.semana,
+    fila.fechaOficial || fila.fechaSemana,
+    mapaSemanas
+  ));
+  if (estado !== "programado") return `<div class="card-top">${semanaOriginal}</div>`;
+
+  const turno = partesTurnoPersonal(fila.turno);
+  const detalleTurno = [turno.numero ? `Turno ${escapeHTML(turno.numero)}` : "", turno.horario ? escapeHTML(turno.horario) : ""]
+    .filter(Boolean).join(" · ");
+  return `<div class="card-top">${semanaOriginal} · Cancha ${escapeHTML(fila.cancha)}</div>${detalleTurno ? `<div class="card-meta">${detalleTurno}</div>` : ""}`;
+}
+
+function estadoPersonalHTML(fila) {
+  const estado = OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila));
+  if (["jugado", "wo_j1", "wo_j2", "wo_ambos"].includes(estado)) return "";
+  return `<span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}`;
+}
+
+function crearEncabezadoPersonal(thead) {
+  thead.innerHTML = `<tr><th>Programación original</th><th>Partido</th><th>Detalle</th></tr>`;
+}
+
+function crearFilaPersonalHTML(fila, mapaSemanas, destacarProximo = fila._esSemanaProxima) {
+  return `<tr class="${destacarProximo ? "fila-semana-proxima" : ""}">
+    <td>${programacionPersonalHTML(fila, mapaSemanas)}</td>
+    <td>${jugadoresHTML(fila.jugador1, fila.jugador2)}</td>
+    <td>
+      ${estadoPersonalHTML(fila)}
+      ${fila._resultadoTablaHTML || ""}
+      ${fila._fechaTablaHTML || ""}
+      ${fila._observacionTablaHTML || ""}
+      ${accionesPartidoHTML(fila, true)}
+    </td>
+  </tr>`;
+}
+
 function crearCardBusquedaHTML(
   fila,
   mapaSemanas,
@@ -1434,10 +1479,9 @@ function crearCardBusquedaHTML(
 ) {
   return `
     <div class="card-partido${destacarProximo ? " semana-proxima-card" : ""}${esEsteSabado ? " este-sabado-card" : ""}">
-      <div class="card-top">${escapeHTML(fila._semanaLabel || etiquetaSemana(fila.semana, mapaSemanas))} · Cancha ${escapeHTML(fila.cancha)}</div>
-      <div class="card-meta">Turno ${escapeHTML(fila.turno)} · Categoría ${escapeHTML(fila.categoria)}</div>
+      ${programacionPersonalHTML(fila, mapaSemanas)}
       <div class="card-jugadores">${jugadoresHTML(fila.jugador1, fila.jugador2)}</div>
-      <span class="estado ${fila._estadoClase || claseEstado(estadoFinal(fila))}">${escapeHTML(estadoFinal(fila))}</span>${etiquetaTipoProgramacion(fila)}
+      ${estadoPersonalHTML(fila)}
       ${fila._resultadoBoxHTML || ""}
       ${fila._antecedenteBoxHTML || ""}
       ${fila._fechaBoxHTML || ""}
@@ -1529,7 +1573,6 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
   let filasHTML = "";
   let cardsHTML = "";
   let encontrados = 0;
-  let semanaAnterior = "";
 
   for (let i = 0; i < filas.length; i++) {
     const fila = filas[i];
@@ -1549,11 +1592,7 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
     if (vista === "next" && !esProximoJugador) continue;
     if (vista === "pending" && !esPartidoPendienteVigente(fila)) continue;
 
-    if (semanaAnterior && fila.semana !== semanaAnterior) {
-      filasHTML += crearSeparadorHTML(fila.semana, "naranja", mapaSemanas, esProximoJugador, esEsteSabadoJugador);
-    }
-
-    filasHTML += crearFilaTablaHTML(fila, mapaSemanas, esProximoJugador);
+    filasHTML += crearFilaPersonalHTML(fila, mapaSemanas, esProximoJugador);
     cardsHTML += crearCardBusquedaHTML(
       fila,
       mapaSemanas,
@@ -1563,7 +1602,6 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
     );
 
     encontrados++;
-    semanaAnterior = fila.semana;
   }
 
   if (encontrados === 0) {
@@ -1571,7 +1609,7 @@ function renderBusqueda(filas, mapaSemanas, filtro = "", vista = "mine") {
     return;
   }
 
-  crearEncabezado(tablaBusquedaHead);
+  crearEncabezadoPersonal(tablaBusquedaHead);
   tablaBusquedaBody.innerHTML = filasHTML;
   cardsBusqueda.innerHTML = cardsHTML;
 }

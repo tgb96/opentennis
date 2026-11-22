@@ -83,6 +83,21 @@
       : parts[0];
   }
 
+  function personalGivenName(value) {
+    const parts = String(value || "").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "";
+    return normalize(parts[0]) === "maria" && normalize(parts[1]) === "jose"
+      ? `${parts[0]} ${parts[1]}`
+      : parts[0];
+  }
+
+  function turnTimeLabel(value) {
+    const text = String(value || "").trim();
+    const parenthesized = text.match(/\(([^)]+)\)/);
+    if (parenthesized) return parenthesized[1].trim();
+    return /\d{1,2}:\d{2}/.test(text) ? text.replace(/^\d+\s*/, "").trim() : "";
+  }
+
   function parseDate(value) {
     const match = String(value || "").match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
     return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 12) : null;
@@ -622,11 +637,8 @@
           </section>`;
         const pendingHtml = summary.pending.length ? `
           <section class="home-info-card pending-card" aria-labelledby="pendingHomeTitle">
-            <div class="home-card-heading">
-              <div>
-                <span class="home-card-kicker">Necesitan acuerdo</span>
-                <h3 id="pendingHomeTitle">Partidos pendientes</h3>
-              </div>
+            <div class="home-card-heading pending-card-heading">
+              <h3 id="pendingHomeTitle">Partidos pendientes</h3>
               <strong class="home-count">${summary.pending.length}</strong>
             </div>
             <ul class="pending-match-list">
@@ -672,11 +684,11 @@
           ${eventView.featuredHtml}
           <article class="next-match-card">
             <span class="personal-kicker">${next ? "Tu próximo partido" : "Tu calendario"}</span>
-            <h2>${next ? escapeHtml(player) + " vs " + escapeHtml(nextRival) : "No hay una próxima fecha confirmada"}</h2>
-            <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)} · ${escapeHtml(next.turn)}` : "Puedes revisar tus partidos pendientes."}</p>
+            <h2>${next ? escapeHtml(personalGivenName(player)) + " vs " + escapeHtml(nextRival) : "No hay una próxima fecha confirmada"}</h2>
+            <p>${next ? `Semana ${escapeHtml(next.week)} · ${escapeHtml(next.date)} · Cancha ${escapeHtml(next.court)}${turnTimeLabel(next.turn) ? ` · ${escapeHtml(turnTimeLabel(next.turn))}` : ""}` : "Puedes revisar tus partidos pendientes."}</p>
             ${next ? headToHeadHtml(player, nextRival, headToHead) : ""}
             <div class="personal-actions">
-              <a href="${matchesPage}?jugador=${playerParam}">Ver mis siguientes partidos</a>
+              <a href="${matchesPage}?jugador=${playerParam}&vista=mine">Ver mis partidos</a>
             </div>
           </article>
           <div class="home-personal-grid home-personal-flow">
@@ -760,5 +772,5 @@
   }
 
   if (typeof window !== "undefined") window.addEventListener("DOMContentLoaded", boot);
-  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, playerNameKey, isPersonalPlayerSelectable, adminAccessHtml, markerUrl, pageUrl, STORAGE_KEY };
+  return { parseCsv, parseFixture, parseRecords, parseRankings, parseHistoricalResults, joinMatches, playerSummary, playerZone, headToHeadSummary, headToHeadHtml, headToHeadExplorerHtml, allKnownPlayers, shortPlayerName, personalGivenName, turnTimeLabel, playerNameKey, isPersonalPlayerSelectable, adminAccessHtml, markerUrl, pageUrl, STORAGE_KEY };
 });

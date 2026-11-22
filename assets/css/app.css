@@ -2738,6 +2738,8 @@ body:not(.index-page) .app {
 .recent-result small { margin-top:2px; color:#737b76; font-size:10px; }
 .recent-results-empty { margin:8px 0 0; color:#6d756f; font-size:12px; }
 .home-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.pending-card-heading { align-items:center; }
+.pending-card-heading h3 { margin:0; }
 .home-card-kicker { color:#a74b27; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
 .home-count { display:grid; place-items:center; min-width:34px; height:34px; padding:0 9px; border-radius:999px; color:#fff; background:#b94d2c; font-size:16px; }
 .home-heading-link,.home-card-link { color:#174d3a; font-size:12px; font-weight:850; text-decoration:none; }
@@ -3219,6 +3221,7 @@ body.index-page .home-personal-grid.home-personal-flow { grid-template-columns:1
   margin-bottom:18px;
   padding:14px 16px;
 }
+.partidos-page .app-main { padding-top:18px !important; }
 .partidos-page .matches-personal-heading {
   display:flex;
   align-items:center;
@@ -3241,6 +3244,7 @@ body.index-page .home-personal-grid.home-personal-flow { grid-template-columns:1
 .partidos-page .personal-match-results { grid-column:1 / -1; min-width:0; padding-top:9px; border-top:1px solid #eadfce; }
 
 @media (max-width:760px) {
+  .partidos-page .app-main { padding-top:8px !important; }
   .partidos-page .match-experience { display:block !important; padding:12px; }
   .partidos-page .matches-personal-heading { flex-direction:row; gap:8px; margin-bottom:9px; }
   .partidos-page .matches-personal-heading h2 { font-size:18px; }

@@ -33,6 +33,16 @@ test("el resumen personal reúne los cuatro datos pedidos y elimina redundancias
   assert.doesNotMatch(seasonTemplate, />Por coordinar</);
 });
 
+test("el próximo partido abrevia solo al jugador seleccionado y conserva el horario", () => {
+  assert.equal(personal.personalGivenName("Tomás Gómez"), "Tomás");
+  assert.equal(personal.personalGivenName("María José Valladares"), "María José");
+  assert.equal(personal.personalGivenName("Jose Astete"), "Jose");
+  assert.equal(personal.turnTimeLabel("3 (15:30-17:00)"), "15:30-17:00");
+  assert.match(personalSource, /Ver mis partidos<\/a>/);
+  assert.doesNotMatch(personalSource, /Ver mis siguientes partidos/);
+  assert.doesNotMatch(personalSource, /Necesitan acuerdo/);
+});
+
 test("lee rankings por categoría", () => {
   const rows = personal.parseRankings("CATEGORIA A,,,\nN°,Jugador,Puntos,Jugados\n1,Ana,9,3\n,,,\nCATEGORIA D,,,\n1,Bea,6,2");
   assert.deepEqual(rows, [
