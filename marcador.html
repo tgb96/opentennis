@@ -1944,7 +1944,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
-  <link rel="stylesheet" href="assets/css/scoreboard.css?v=15" />
+  <link rel="stylesheet" href="assets/css/scoreboard.css?v=16" />
   <script defer src="assets/js/app.js?v=34"></script>
 </head>
 
@@ -2113,7 +2113,7 @@
 
             <div class="set-box" id="setBox3">
               <div class="set-box-title">
-                <span>Set 3 · Super tie-break</span>
+                <span>Set 3 · STB</span>
                 <span class="badge" id="set3Status">En espera</span>
               </div>
               <div class="set-score-line">
@@ -3507,14 +3507,24 @@
         .toLowerCase();
 
       if (normalized.startsWith("maria jose ")) {
-        const last = parts[parts.length - 1];
-        return `María José ${last ? last[0] + "." : ""}`.trim();
+        return "María José";
       }
 
-      const first = parts[0];
-      const last = parts[parts.length - 1];
-      const lastInitial = last && last !== first ? `${last[0]}.` : "";
-      return `${first} ${lastInitial}`.trim();
+      return parts[0];
+    }
+
+    function fitMatchBannerTitle() {
+      const title = document.querySelector(".match-banner-names");
+      if (!title) return;
+
+      title.style.removeProperty("font-size");
+      let size = Number.parseFloat(getComputedStyle(title).fontSize) || 30;
+      const minimum = 11;
+
+      while (title.scrollWidth > title.clientWidth && size > minimum) {
+        size -= 1;
+        title.style.setProperty("font-size", `${size}px`, "important");
+      }
     }
 
     function getCompactStatusText(text, state) {
@@ -3557,6 +3567,7 @@
 
       document.getElementById("bannerNameA").textContent = labelA;
       document.getElementById("bannerNameB").textContent = labelB;
+      requestAnimationFrame(fitMatchBannerTitle);
       document.getElementById("serveStrip").textContent = state.matchWinner === null
         ? `🎾 Saca ${getPlayerLabel(state, currentServer)}`
         : "✅ Partido terminado";
@@ -3661,6 +3672,7 @@
       });
 
       document.getElementById("statusPriorityLine").innerHTML = priorityParts.join("");
+      document.getElementById("statusPriorityLine").classList.toggle("has-side-change", sideChangeStatus === "primary");
       document.getElementById("statusLine").innerHTML = statusParts.join("");
 
       const finalCard = document.getElementById("finalCard");

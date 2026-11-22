@@ -88,3 +88,15 @@ test("el marcador destaca sacador y cambio de lado sin mezclar información secu
   assert.match(html, /Cambio de lado en este game/);
   assert.doesNotMatch(html, /id="changeAlert"/);
 });
+
+test("el marcador reserva nombres completos para el título y primeros nombres para el tanteo", () => {
+  const html = fs.readFileSync(path.join(root, "marcador.html"), "utf8");
+  const css = fs.readFileSync(path.join(root, "assets", "css", "scoreboard.css"), "utf8");
+  assert.match(html, /function fitMatchBannerTitle\(\)/);
+  assert.match(css, /\.match-banner-names\s*\{[^}]*white-space:\s*nowrap !important;/s);
+  assert.match(html, /if \(normalized\.startsWith\("maria jose "\)\)\s*\{\s*return "María José";/s);
+  assert.match(html, /return parts\[0\];/);
+  assert.doesNotMatch(html, /lastInitial/);
+  assert.match(html, /Set 3 · STB/);
+  assert.match(css, /\.status-priority\.has-side-change/);
+});
