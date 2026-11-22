@@ -3,6 +3,35 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const personal = require("../assets/js/personalization.js");
+const personalSource = fs.readFileSync(path.join(__dirname, "..", "assets", "js", "personalization.js"), "utf8");
+
+test("el Inicio ordena verticalmente el resumen, calendario, pendientes, Cara a Cara, reglamento y administrador", () => {
+  const rendering = personalSource.slice(personalSource.indexOf("content.innerHTML = `", personalSource.indexOf("const headToHeadExplorer")));
+  const summaryIndex = rendering.indexOf("${seasonHtml}");
+  const nextIndex = rendering.indexOf('<article class="next-match-card">');
+  const pendingIndex = rendering.indexOf("${pendingHtml}");
+  const headToHeadIndex = rendering.indexOf("${headToHeadExplorer}");
+  const rulesIndex = rendering.indexOf("${rulesShortcutHtml()}");
+  const adminIndex = rendering.indexOf("${adminAccessHtml(player)}");
+
+  assert.ok(summaryIndex >= 0 && summaryIndex < nextIndex);
+  assert.ok(nextIndex < pendingIndex);
+  assert.ok(pendingIndex < headToHeadIndex);
+  assert.ok(headToHeadIndex < rulesIndex);
+  assert.ok(rulesIndex < adminIndex);
+  assert.doesNotMatch(rendering, /personal-stats|rankingHtml|category-card/);
+});
+
+test("el resumen personal reúne los cinco datos pedidos y elimina puntos y por coordinar", () => {
+  const seasonTemplate = personalSource.slice(personalSource.indexOf("const seasonHtml"), personalSource.indexOf("const pendingHtml"));
+  assert.match(seasonTemplate, />Categoría</);
+  assert.match(seasonTemplate, />Posición</);
+  assert.match(seasonTemplate, />Jugados \/ total</);
+  assert.match(seasonTemplate, />Faltan</);
+  assert.match(seasonTemplate, />Récord</);
+  assert.doesNotMatch(seasonTemplate, />Puntos</);
+  assert.doesNotMatch(seasonTemplate, />Por coordinar</);
+});
 
 test("lee rankings por categoría", () => {
   const rows = personal.parseRankings("CATEGORIA A,,,\nN°,Jugador,Puntos,Jugados\n1,Ana,9,3\n,,,\nCATEGORIA D,,,\n1,Bea,6,2");

@@ -2711,7 +2711,7 @@ body:not(.index-page) .app {
 .home-personal-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px; }
 .home-info-card { padding:16px; border:1px solid #ead8bd; border-radius:18px; background:#fffdf7; }
 .home-info-card h3 { margin:3px 0 0; color:#0b2f25; font:700 19px/1.15 Oswald,sans-serif; }
-.season-card { grid-column:1 / -1; }
+.season-card { grid-column:1 / -1; margin-bottom:12px; }
 .season-heading { align-items:center; }
 .player-zone { display:inline-flex; align-items:center; justify-content:center; min-height:30px; padding:6px 10px; border:1px solid transparent; border-radius:999px; font-size:11px; font-weight:900; text-align:center; }
 .player-zone.zone-leader { color:#775000; border-color:#e6c45a; background:#fff1bd; }
@@ -2720,6 +2720,7 @@ body:not(.index-page) .app {
 .player-zone.zone-relegation { color:#9a3328; border-color:#e0afa7; background:#f9e4df; }
 .player-zone.zone-neutral { color:#486157; border-color:#cad8cf; background:#eef3ef; }
 .season-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:14px; }
+.season-metrics-expanded { grid-template-columns:repeat(5,minmax(0,1fr)); }
 .season-metrics > div { padding:12px 13px; border-radius:14px; background:#edf3ee; }
 .season-metrics span { display:block; color:#68766d; font-size:10px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
 .season-metrics strong { display:block; margin-top:4px; color:#0b2f25; font-size:23px; }
@@ -2770,6 +2771,8 @@ body:not(.index-page) .app {
   .home-personal-grid { grid-template-columns:1fr; }
   .recent-results-list { grid-template-columns:1fr; }
   .season-heading { align-items:flex-start; }
+  .season-metrics-expanded { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .season-metrics-expanded > div:last-child { grid-column:1 / -1; }
   .player-zone { max-width:48%; }
   body.index-page .v6-home-main .v5-hero-card { display:none !important; }
   body.index-page { overflow-y:auto !important; }
@@ -3168,6 +3171,8 @@ body:not(.index-page) .app {
   border-color: #d29b72;
   background: #fff3e8;
 }
+body.index-page .home-personal-grid.home-personal-flow { grid-template-columns:1fr !important; }
+.home-rules-in-profile { margin-top:0; }
 .home-withdrawal-card h3 { margin: 4px 0 8px; color: #8b341f; }
 .home-withdrawal-card p { margin: 0; line-height: 1.5; }
 .next-h2h-matches small,

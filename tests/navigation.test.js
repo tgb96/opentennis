@@ -31,17 +31,19 @@ test("Torneos e interclubes usa la pestaña abreviada Torneos", () => {
   }
 });
 
-test("el reglamento sale del menú principal y queda como acceso pequeño en Inicio", () => {
+test("el reglamento sale del menú principal y queda después del Cara a Cara en Inicio", () => {
   for (const file of publicPages) {
     const html = fs.readFileSync(path.join(root, file), "utf8");
     assert.doesNotMatch(html, /data-page="reglas\.html"/, file);
   }
   const matches = fs.readFileSync(path.join(root, "partidos.html"), "utf8");
   const home = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const personalization = fs.readFileSync(path.join(root, "assets", "js", "personalization.js"), "utf8");
   const rules = fs.readFileSync(path.join(root, "reglas.html"), "utf8");
   assert.doesNotMatch(matches, /championship-rules-link/);
-  assert.match(home, /class="home-rules-shortcut" href="reglas\.html"/);
-  assert.match(home, /Reglamento de la Escalerilla 2026/);
+  assert.doesNotMatch(home, /class="home-rules-shortcut"/);
+  assert.match(personalization, /class="home-rules-shortcut home-rules-in-profile"/);
+  assert.match(personalization, /Reglamento de la Escalerilla 2026/);
   assert.match(rules, /class="rules-return-link" href="index\.html"/);
 });
 

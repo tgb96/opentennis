@@ -413,19 +413,6 @@
       .replace(/'/g, "&#039;");
   }
 
-  function categoryPreview(rows, player) {
-    if (rows.length <= 6) return rows;
-    const key = normalize(player);
-    const selectedIndex = rows.findIndex(row => normalize(row.player) === key);
-    const indexes = new Set([0, 1, 2]);
-    if (selectedIndex >= 0) {
-      indexes.add(Math.max(0, selectedIndex - 1));
-      indexes.add(selectedIndex);
-      indexes.add(Math.min(rows.length - 1, selectedIndex + 1));
-    }
-    return Array.from(indexes).sort((a, b) => a - b).map(index => rows[index]);
-  }
-
   function headToHeadHtml(player, rival, summary) {
     if (!summary) {
       return `<div class="next-h2h is-loading"><span>Historial entre ustedes</span><p>Cargando historial…</p></div>`;
@@ -530,6 +517,14 @@
     </section>`;
   }
 
+  function rulesShortcutHtml() {
+    return `<a class="home-rules-shortcut home-rules-in-profile" href="${pageUrl("reglas.html")}" aria-label="Abrir Reglamento de la Escalerilla 2026">
+      <span class="home-rules-icon" aria-hidden="true">📘</span>
+      <span><small>Documento oficial</small><strong>Reglamento de la Escalerilla 2026</strong></span>
+      <span class="home-rules-arrow" aria-hidden="true">›</span>
+    </a>`;
+  }
+
   async function boot() {
     if (typeof document === "undefined" || !document.getElementById("myOpenTennis")) return;
     const config = window.OPEN_TENNIS_CONFIG;
@@ -576,7 +571,7 @@
       function render(player) {
         const eventView = clubEventView(player);
         if (!player) {
-          content.innerHTML = `${eventView.featuredHtml}<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>${eventView.dialogHtml}`;
+          content.innerHTML = `${eventView.featuredHtml}<p class="personal-empty">Elige tu nombre una sola vez para ver tu próximo rival, posición y pendientes.</p>${rulesShortcutHtml()}${eventView.dialogHtml}`;
           return;
         }
         localStorage.setItem(STORAGE_KEY, player);
@@ -586,8 +581,7 @@
         const headToHead = next ? (historicalReady && clubEventReady ? headToHeadSummary(player, nextRival, matches, historicalData, seasonEvents, clubEventData) : null) : null;
         const playerParam = encodeURIComponent(player);
         const matchesPage = pageUrl("partidos.html");
-        const tablesPage = pageUrl("tablas.html");
-        const tableRows = categoryPreview(summary.categoryRanking, player);
+        const remainingMatches = Math.max(0, summary.total - summary.played);
         const withdrawal = seasonEvents ? seasonEvents.withdrawalForPlayer(player) : null;
         const withdrawalHtml = withdrawal ? `
           <section class="home-info-card home-withdrawal-card" aria-label="Situación de la temporada">
@@ -604,8 +598,11 @@
               </div>
               <span class="player-zone ${escapeHtml(summary.zone.className)}">${escapeHtml(summary.zone.icon)} ${escapeHtml(summary.zone.text)}</span>
             </div>
-            <div class="season-metrics">
+            <div class="season-metrics season-metrics-expanded">
+              <div><span>Categoría</span><strong>${summary.category ? escapeHtml(summary.category) : "—"}</strong></div>
+              <div><span>Posición</span><strong>${summary.ranking ? summary.ranking.position + " de " + summary.categoryTotal : "—"}</strong></div>
               <div><span>Jugados / total</span><strong>${summary.played} / ${summary.total}</strong></div>
+              <div><span>Faltan</span><strong>${remainingMatches}</strong></div>
               <div><span>Récord</span><strong>${summary.wins}-${summary.losses}</strong></div>
             </div>
             <div class="recent-results-block">
@@ -637,28 +634,6 @@
             <span class="home-card-kicker">Coordinación al día</span>
             <h3>No tienes partidos por coordinar</h3>
           </section>`;
-        const rankingHtml = summary.categoryRanking.length ? `
-          <section class="home-info-card category-card" aria-labelledby="categoryHomeTitle">
-            <div class="home-card-heading">
-              <div>
-                <span class="home-card-kicker">Tu categoría</span>
-                <h3 id="categoryHomeTitle">Tabla Categoría ${escapeHtml(summary.category)}</h3>
-              </div>
-              <a class="home-heading-link" href="${tablesPage}?jugador=${playerParam}">Ver completa</a>
-            </div>
-            <div class="mini-ranking" role="table" aria-label="Resumen de la tabla de la categoría ${escapeHtml(summary.category)}">
-              <div class="mini-ranking-head" role="row">
-                <span role="columnheader">Pos.</span><span role="columnheader">Jugador</span><span role="columnheader">Pts.</span><span role="columnheader">PJ</span>
-              </div>
-              ${tableRows.map(row => `
-                <div class="mini-ranking-row${normalize(row.player) === normalize(player) ? " is-player" : ""}" role="row">
-                  <span role="cell">#${row.position}</span>
-                  <strong role="cell">${escapeHtml(row.player)}</strong>
-                  <span role="cell">${row.points}</span>
-                  <span role="cell">${row.played}</span>
-                </div>`).join("")}
-            </div>
-          </section>` : "";
         const rivals = allKnownPlayers(players, historicalData, clubEventData)
           .filter(rival => playerNameKey(rival) !== playerNameKey(player));
         if (!rivals.some(rival => playerNameKey(rival) === playerNameKey(selectedHeadToHeadRival))) {
@@ -685,12 +660,7 @@
             </div>
           </section>`;
         content.innerHTML = `
-          <div class="personal-stats">
-            <div><span>Categoría</span><strong>${summary.category ? escapeHtml(summary.category) : "—"}</strong></div>
-            <div><span>Posición</span><strong>${summary.ranking ? summary.ranking.position + " de " + summary.categoryTotal : "—"}</strong></div>
-            <div><span>Puntos</span><strong>${summary.ranking ? summary.ranking.points : "—"}</strong></div>
-            <div><span>Por coordinar</span><strong>${summary.pending.length}</strong></div>
-          </div>
+          ${seasonHtml}
           ${eventView.featuredHtml}
           <article class="next-match-card">
             <span class="personal-kicker">${next ? "Tu próximo partido" : "Tu calendario"}</span>
@@ -701,12 +671,11 @@
               <a href="${matchesPage}?jugador=${playerParam}">Ver mis siguientes partidos</a>
             </div>
           </article>
-          <div class="home-personal-grid">
-            ${seasonHtml}
+          <div class="home-personal-grid home-personal-flow">
             ${pendingHtml}
-            ${rankingHtml}
-            ${headToHeadExplorer}
             ${withdrawalHtml}
+            ${headToHeadExplorer}
+            ${rulesShortcutHtml()}
             ${adminAccessHtml(player)}
           </div>
           ${eventView.dialogHtml}`;

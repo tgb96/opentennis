@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v69-global-refresh';
+const CACHE_NAME = 'open-tennis-v70-home-order';
 
 const CORE_ASSETS = [
   './',
