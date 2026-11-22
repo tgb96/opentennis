@@ -38,10 +38,10 @@
           "name": "Octavos de final",
           "matches": [
             { "id": "ts26-r16-1", "date": "20/04/2026", "player1": "Oscar Morales", "player2": "Aníbal Valenzuela", "winner": "Oscar Morales", "score": "W/O" },
-            { "id": "ts26-r16-2", "player1": "Rodrigo Vega", "player2": "Matías Arellano", "winner": "Rodrigo Vega" },
+            { "id": "ts26-r16-2", "player1": "Rodrigo Vega", "player2": "Matías Arellano", "winner": "Rodrigo Vega", "score": "6-3, 6-3" },
             { "id": "ts26-r16-3", "player1": "Nicolás Collao", "player2": "Juan Muñoz", "winner": "Nicolás Collao" },
             { "id": "ts26-r16-4", "date": "18/04/2026", "player1": "Diego Fossa", "player2": "Felipe Reyes", "winner": "Diego Fossa", "score": "6-0, 6-1" },
-            { "id": "ts26-r16-5", "player1": "Hernán Bravo", "player2": "José Astete", "winner": "José Astete" },
+            { "id": "ts26-r16-5", "player1": "Hernán Bravo", "player2": "José Astete", "winner": "José Astete", "score": "6-3, 6-1" },
             { "id": "ts26-r16-6", "date": "20/04/2026", "player1": "Paulo Barrera", "player2": "Diego Cervantes", "winner": "Diego Cervantes", "score": "6-0, 6-3" },
             { "id": "ts26-r16-7", "date": "18/04/2026", "player1": "Jaime Valdebenito", "player2": "Marcelo López", "winner": "Jaime Valdebenito", "score": "6-3, 6-2" },
             { "id": "ts26-r16-8", "date": "25/04/2026", "player1": "Daniel Vega", "player2": "Claudio Aedo", "winner": "Daniel Vega", "score": "6-0, 6-3" }
@@ -51,8 +51,8 @@
           "name": "Cuartos de final",
           "matches": [
             { "id": "ts26-qf-1", "date": "20/04/2026", "player1": "Oscar Morales", "player2": "Rodrigo Vega", "winner": "Rodrigo Vega", "score": "6-1, 6-2" },
-            { "id": "ts26-qf-2", "date": "25/04/2026", "player1": "Nicolás Collao", "player2": "Diego Fossa", "winner": "Nicolás Collao" },
-            { "id": "ts26-qf-3", "date": "25/04/2026", "player1": "José Astete", "player2": "Diego Cervantes", "winner": "José Astete" },
+            { "id": "ts26-qf-2", "date": "25/04/2026", "player1": "Nicolás Collao", "player2": "Diego Fossa", "winner": "Nicolás Collao", "score": "6-3, 6-3" },
+            { "id": "ts26-qf-3", "date": "25/04/2026", "player1": "José Astete", "player2": "Diego Cervantes", "winner": "José Astete", "score": "6-0, 6-2" },
             { "id": "ts26-qf-4", "date": "25/04/2026", "player1": "Jaime Valdebenito", "player2": "Daniel Vega", "winner": "Jaime Valdebenito", "score": "6-1, 6-3" }
           ]
         },
@@ -60,13 +60,13 @@
           "name": "Semifinales",
           "matches": [
             { "id": "ts26-sf-1", "date": "02/05/2026", "player1": "Rodrigo Vega", "player2": "Nicolás Collao", "winner": "Nicolás Collao", "score": "6-3, 6-3" },
-            { "id": "ts26-sf-2", "date": "02/05/2026", "player1": "José Astete", "player2": "Jaime Valdebenito", "winner": "José Astete" }
+            { "id": "ts26-sf-2", "date": "02/05/2026", "player1": "José Astete", "player2": "Jaime Valdebenito", "winner": "José Astete", "score": "7-6, 6-2" }
           ]
         },
         {
           "name": "Final",
           "matches": [
-            { "id": "ts26-final", "date": "09/05/2026", "player1": "Nicolás Collao", "player2": "José Astete", "winner": "José Astete" }
+            { "id": "ts26-final", "date": "09/05/2026", "player1": "Nicolás Collao", "player2": "José Astete", "winner": "José Astete", "score": "7-5, 7-6" }
           ]
         }
       ]

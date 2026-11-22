@@ -54,6 +54,14 @@ test("el primer torneo conserva cruces y campeón sin incorporarse al Cara a Car
   assert.equal(tournament.champion, "José Astete");
   assert.equal(tournament.runnerUp, "Nicolás Collao");
 
+  const matches = tournament.rounds.flatMap(round => round.matches);
+  assert.equal(matches.find(match => match.id === "ts26-r16-2").score, "6-3, 6-3");
+  assert.equal(matches.find(match => match.id === "ts26-r16-5").score, "6-3, 6-1");
+  assert.equal(matches.find(match => match.id === "ts26-qf-2").score, "6-3, 6-3");
+  assert.equal(matches.find(match => match.id === "ts26-qf-3").score, "6-0, 6-2");
+  assert.equal(matches.find(match => match.id === "ts26-sf-2").score, "7-6, 6-2");
+  assert.equal(matches.find(match => match.id === "ts26-final").score, "7-5, 7-6");
+
   const view = eventsPage.renderDetail(data, tournament.id, "", "2026-11-16");
   assert.equal(view.title, "Torneo Singles Abril-Mayo 2026");
   assert.match(view.html, /Primer torneo del club/);
