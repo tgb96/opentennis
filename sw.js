@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-tennis-v70-home-order';
+const CACHE_NAME = 'open-tennis-v71-compact-home-matches';
 
 const CORE_ASSETS = [
   './',

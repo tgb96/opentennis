@@ -39,7 +39,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/app.css?v=31" />
+  <link rel="stylesheet" href="assets/css/app.css?v=32" />
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
@@ -232,9 +232,9 @@
   <script src="assets/js/season-events.js?v=4"></script>
   <script src="assets/js/club-events.js?v=11"></script>
   <script src="assets/js/player-identities.js?v=1"></script>
-  <script defer src="assets/js/app.js?v=33"></script>
+  <script defer src="assets/js/app.js?v=34"></script>
   <script defer src="assets/js/pwa-install.js?v=5"></script>
-  <script defer src="assets/js/personalization.js?v=25"></script>
+  <script defer src="assets/js/personalization.js?v=26"></script>
 </head>
 
 <body class="index-page v5-page">
@@ -258,7 +258,7 @@
       </div>
     </section>
 
-    <section id="myOpenTennis" class="my-open-tennis loading" aria-labelledby="myOpenTennisTitle">
+    <section id="myOpenTennis" class="my-open-tennis loading" aria-label="Mi Open Tennis">
       <div class="home-brand" aria-label="Open Tennis Huechuraba">
         <img src="assets/icons/icon-512.png" alt="Logo Open Tennis Huechuraba">
         <div>
@@ -266,12 +266,9 @@
           <span>Huechuraba · Escalerilla 2026</span>
         </div>
       </div>
-      <div class="personal-heading">
-        <div>
-          <h2 id="myOpenTennisTitle">Mi Open Tennis</h2>
-        </div>
-        <label>Mi jugador
-          <select id="myPlayerSelect"><option>Cargando jugadores…</option></select>
+      <div class="personal-heading personal-heading-compact">
+        <label>
+          <select id="myPlayerSelect" aria-label="Mi jugador"><option>Cargando jugadores…</option></select>
         </label>
       </div>
       <div id="myOpenTennisContent" aria-live="polite">

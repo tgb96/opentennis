@@ -34,7 +34,7 @@ test("la navegación interna reemplaza la entrada base de la PWA", () => {
 test("todas las páginas públicas muestran el actualizador general", () => {
   publicPages.forEach(file => {
     const html = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
-    assert.match(html, /assets\/js\/app\.js\?v=33/, file);
+    assert.match(html, /assets\/js\/app\.js\?v=34/, file);
   });
   assert.match(appSource, /id = 'appGlobalRefresh'/);
   assert.match(appSource, /Actualizar toda la aplicación/);
@@ -75,4 +75,11 @@ test("el calendario personal conserva la fecha canónica de cada semana", () => 
 test("las tarjetas no repiten estados administrativos", () => {
   assert.match(matchesSource, /isAdministrativeStatusNote\(obs\)\) return ""/);
   assert.match(matchesSource, /!\["oficial", "reprogramado"\]\.includes\(type\)/);
+});
+
+test("Partidos elimina rótulos repetidos cuando ya existe un jugador seleccionado", () => {
+  assert.match(matchesSource, /select id="publicPlayerSelect" aria-label="Mi jugador"/);
+  assert.doesNotMatch(matchesSource, /<label>Mi jugador/);
+  assert.match(matchesSource, /id="personalResultsBlock" class="bloque personal-results-block"/);
+  assert.match(matchesSource, /classList\.toggle\("has-selected-player", Boolean\(publicPlayerSelect\.value\)\)/);
 });

@@ -2684,6 +2684,7 @@ body:not(.index-page) .app {
 .home-rules-shortcut strong { overflow:hidden; color:#174d3a; font:700 15px/1.15 Oswald,sans-serif; text-overflow:ellipsis; white-space:nowrap; }
 .home-rules-arrow { color:#a74b27; font-size:25px; line-height:1; }
 .personal-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.personal-heading-compact { justify-content:flex-end; margin-bottom:10px; }
 .personal-heading h2 { margin:0; color:#0b2f25; font:700 26px/1.1 Oswald, sans-serif; }
 .personal-heading label { display:grid; gap:5px; color:#536158; font-size:12px; font-weight:800; }
 .personal-heading select { max-width:220px; padding:10px 12px; border:1px solid #b8c4bc; border-radius:12px; background:white; font:inherit; }
@@ -2720,7 +2721,7 @@ body:not(.index-page) .app {
 .player-zone.zone-relegation { color:#9a3328; border-color:#e0afa7; background:#f9e4df; }
 .player-zone.zone-neutral { color:#486157; border-color:#cad8cf; background:#eef3ef; }
 .season-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:14px; }
-.season-metrics-expanded { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.season-metrics-expanded { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .season-metrics > div { padding:12px 13px; border-radius:14px; background:#edf3ee; }
 .season-metrics span { display:block; color:#68766d; font-size:10px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
 .season-metrics strong { display:block; margin-top:4px; color:#0b2f25; font-size:23px; }
@@ -2760,6 +2761,11 @@ body:not(.index-page) .app {
 .match-actions button { min-height:40px; padding:8px 10px; border:1px solid #c6d0c9; border-radius:11px; color:#173f31; background:#fff; font:800 12px/1.1 Inter,sans-serif; cursor:pointer; }
 .schedule-kind { display:inline-flex; margin-left:6px; padding:3px 7px; border-radius:999px; background:#e8f0ea; color:#275541; font-size:11px; font-weight:800; }
 .match-experience { padding:16px; border-radius:20px; background:#fffaf0; box-shadow:0 10px 28px rgba(11,47,37,.08); }
+.partidos-page .matches-personal-heading h2 { font-size:20px; }
+.partidos-page .matches-personal-heading .v5-eyebrow { margin-bottom:3px; font-size:9px; }
+.partidos-page .personal-results-block.has-selected-player > #searchResultsTitle,
+.partidos-page .personal-results-block.has-selected-player > #buscador { display:none !important; }
+.partidos-page .personal-results-block.has-selected-player { padding-top:12px !important; }
 .public-view-tabs { display:flex; gap:7px; overflow:auto; padding:2px 0 5px; scrollbar-width:none; }
 .public-view-tabs button { flex:0 0 auto; min-height:42px; padding:9px 12px; border:1px solid #c8d2cb; border-radius:999px; color:#214c3a; background:white; font:800 12px Inter,sans-serif; }
 .public-view-tabs button[aria-current="page"] { color:white; border-color:#0b2f25; background:#0b2f25; }
@@ -2772,7 +2778,6 @@ body:not(.index-page) .app {
   .recent-results-list { grid-template-columns:1fr; }
   .season-heading { align-items:flex-start; }
   .season-metrics-expanded { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .season-metrics-expanded > div:last-child { grid-column:1 / -1; }
   .player-zone { max-width:48%; }
   body.index-page .v6-home-main .v5-hero-card { display:none !important; }
   body.index-page { overflow-y:auto !important; }
@@ -2783,13 +2788,22 @@ body:not(.index-page) .app {
     min-height:100dvh !important;
     padding:14px 14px calc(96px + env(safe-area-inset-bottom)) !important;
   }
-  .my-open-tennis { margin-top:0; padding:18px; border:1px solid rgba(11,47,37,.08); border-radius:28px; box-shadow:0 14px 38px rgba(11,47,37,.14); }
-  .home-brand { display:flex; align-items:center; gap:12px; margin:-2px -2px 18px; padding:0 0 16px; border-bottom:1px solid #ead8bd; }
-  .home-brand img { width:58px !important; height:58px !important; object-fit:contain; filter:drop-shadow(0 7px 10px rgba(11,47,37,.16)); }
+  .my-open-tennis { margin-top:0; padding:16px; border:1px solid rgba(11,47,37,.08); border-radius:28px; box-shadow:0 14px 38px rgba(11,47,37,.14); }
+  .home-brand { display:flex; align-items:center; gap:10px; margin:-2px -2px 12px; padding:0 0 12px; border-bottom:1px solid #ead8bd; }
+  .home-brand img { width:52px !important; height:52px !important; object-fit:contain; filter:drop-shadow(0 7px 10px rgba(11,47,37,.16)); }
   .home-brand div { display:grid; gap:3px; }
   .home-brand strong { color:#0b2f25; font:700 25px/1 Oswald,sans-serif; text-transform:uppercase; letter-spacing:.02em; }
   .home-brand span { color:#9a4a29; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
   .personal-heading h2 { font-size:25px; }
+  .personal-heading-compact { margin-bottom:8px; }
+  body.index-page .season-card { padding:13px 14px; margin-bottom:10px; }
+  body.index-page .season-metrics { gap:6px; margin-top:10px; }
+  body.index-page .season-metrics > div { padding:9px 10px; }
+  body.index-page .season-metrics strong { margin-top:2px; font-size:21px; }
+  body.index-page .recent-results-block { margin-top:10px; }
+  body.index-page .recent-results-list { gap:5px; margin-top:6px; }
+  body.index-page .recent-result { grid-template-columns:27px minmax(0,1fr); gap:7px; padding:6px 8px; }
+  body.index-page .recent-result > strong { width:27px; height:27px; border-radius:8px; font-size:12px; }
   .v6-home-main .v5-install-card { margin-top:12px; }
 }
 

@@ -9,7 +9,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=30', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js?v=31', { updateViaCache: 'none' })
         .then(registration => registration.update())
         .catch(() => {});
     });
@@ -61,7 +61,7 @@
 
   const setupGlobalRefresh = () => {
     const DATA_CACHE_PREFIX = 'openTennisDataCacheV2:';
-    const ACTIVE_CACHE_NAME = 'open-tennis-v69-global-refresh';
+    const ACTIVE_CACHE_NAME = 'open-tennis-v71-compact-home-matches';
     const button = document.createElement('button');
     const status = document.createElement('div');
     let refreshing = false;

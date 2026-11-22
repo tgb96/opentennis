@@ -22,13 +22,13 @@ test("el Inicio ordena verticalmente el resumen, calendario, pendientes, Cara a 
   assert.doesNotMatch(rendering, /personal-stats|rankingHtml|category-card/);
 });
 
-test("el resumen personal reúne los cinco datos pedidos y elimina puntos y por coordinar", () => {
+test("el resumen personal reúne los cuatro datos pedidos y elimina redundancias", () => {
   const seasonTemplate = personalSource.slice(personalSource.indexOf("const seasonHtml"), personalSource.indexOf("const pendingHtml"));
   assert.match(seasonTemplate, />Categoría</);
   assert.match(seasonTemplate, />Posición</);
   assert.match(seasonTemplate, />Jugados \/ total</);
-  assert.match(seasonTemplate, />Faltan</);
   assert.match(seasonTemplate, />Récord</);
+  assert.doesNotMatch(seasonTemplate, />Faltan</);
   assert.doesNotMatch(seasonTemplate, />Puntos</);
   assert.doesNotMatch(seasonTemplate, />Por coordinar</);
 });

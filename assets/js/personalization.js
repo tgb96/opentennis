@@ -581,7 +581,6 @@
         const headToHead = next ? (historicalReady && clubEventReady ? headToHeadSummary(player, nextRival, matches, historicalData, seasonEvents, clubEventData) : null) : null;
         const playerParam = encodeURIComponent(player);
         const matchesPage = pageUrl("partidos.html");
-        const remainingMatches = Math.max(0, summary.total - summary.played);
         const withdrawal = seasonEvents ? seasonEvents.withdrawalForPlayer(player) : null;
         const withdrawalHtml = withdrawal ? `
           <section class="home-info-card home-withdrawal-card" aria-label="Situación de la temporada">
@@ -602,7 +601,6 @@
               <div><span>Categoría</span><strong>${summary.category ? escapeHtml(summary.category) : "—"}</strong></div>
               <div><span>Posición</span><strong>${summary.ranking ? summary.ranking.position + " de " + summary.categoryTotal : "—"}</strong></div>
               <div><span>Jugados / total</span><strong>${summary.played} / ${summary.total}</strong></div>
-              <div><span>Faltan</span><strong>${remainingMatches}</strong></div>
               <div><span>Récord</span><strong>${summary.wins}-${summary.losses}</strong></div>
             </div>
             <div class="recent-results-block">

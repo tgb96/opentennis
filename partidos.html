@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/app.css?v=30" />
+  <link rel="stylesheet" href="assets/css/app.css?v=32" />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -22,7 +22,7 @@
   <script src="assets/js/data-model.js?v=1"></script>
   <script src="assets/js/season-events.js?v=4"></script>
   <script src="assets/js/season-platform.js?v=1"></script>
-  <script defer src="assets/js/app.js?v=33"></script>
+  <script defer src="assets/js/app.js?v=34"></script>
 </head>
 <body class="partidos-page v5-page">
   <div class="layout app-shell">
@@ -35,13 +35,13 @@
 <div class="programacion-app">
 
   <section class="bloque match-experience" aria-labelledby="experienceTitle">
-    <div class="personal-heading">
+    <div class="personal-heading matches-personal-heading">
       <div>
         <p class="v5-eyebrow">Calendario personalizado</p>
         <h2 id="experienceTitle">Mis partidos</h2>
       </div>
-      <label>Mi jugador
-        <select id="publicPlayerSelect"><option value="">Elige tu nombre</option></select>
+      <label>
+        <select id="publicPlayerSelect" aria-label="Mi jugador"><option value="">Elige tu nombre</option></select>
       </label>
     </div>
     <nav class="public-view-tabs" aria-label="Vistas de partidos">
@@ -52,7 +52,7 @@
     </nav>
   </section>
 
-  <section class="bloque">
+  <section id="personalResultsBlock" class="bloque personal-results-block">
     <h2 id="searchResultsTitle">Buscar partidos por jugador</h2>
     <input id="buscador" type="text" placeholder="Buscar jugador..." autocomplete="off">
 
@@ -643,6 +643,7 @@ const accordionSemanas = document.getElementById("accordionSemanas");
 const publicPlayerSelect = document.getElementById("publicPlayerSelect");
 const publicViewTabs = Array.from(document.querySelectorAll("[data-public-view]"));
 const searchResultsTitle = document.getElementById("searchResultsTitle");
+const personalResultsBlock = document.getElementById("personalResultsBlock");
 const PERSONAL_PLAYER_KEY = "openTennisPlayerV1";
 let publicRows = [];
 let publicWeeks = {};
@@ -2005,6 +2006,11 @@ function actualizarTabsPublicas() {
   searchResultsTitle.textContent = labels[publicView] || "Partidos";
 }
 
+function actualizarDensidadResultadosPersonales() {
+  if (!personalResultsBlock) return;
+  personalResultsBlock.classList.toggle("has-selected-player", Boolean(publicPlayerSelect.value));
+}
+
 function configurarExperienciaPersonal(filas, mapaSemanas) {
   publicRows = filas;
   publicWeeks = mapaSemanas;
@@ -2029,6 +2035,7 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
     if (player) localStorage.setItem(PERSONAL_PLAYER_KEY, player);
     buscador.value = player;
     publicView = "mine";
+    actualizarDensidadResultadosPersonales();
     actualizarTabsPublicas();
     renderBusqueda(filas, mapaSemanas, player, publicView);
   });
@@ -2040,6 +2047,7 @@ function configurarExperienciaPersonal(filas, mapaSemanas) {
     document.getElementById("tablaBusqueda").closest(".bloque").scrollIntoView({ behavior: "smooth", block: "start" });
   }));
 
+  actualizarDensidadResultadosPersonales();
   actualizarTabsPublicas();
   renderBusqueda(filas, mapaSemanas, publicPlayerSelect.value, publicView);
 }
