@@ -92,6 +92,14 @@ test("Partidos reúne selector, vistas y calendario en una sola tarjeta compacta
   assert.doesNotMatch(matchesSource, /<h1 class="page-title">Partidos y resultados<\/h1>/);
 });
 
+test("Tablas abre directamente en la temporada sin encabezados redundantes", () => {
+  const tablesSource = fs.readFileSync(path.join(__dirname, "..", "tablas.html"), "utf8");
+  assert.match(tablesSource, /class="tablas-page tablas-2026-page v5-page"/);
+  assert.doesNotMatch(tablesSource, /<h1 class="page-title">Tablas de posiciones<\/h1>/);
+  assert.doesNotMatch(tablesSource, /Toca cualquier jugador de la tabla/);
+  assert.match(appCssSource, /\.tablas-2026-page \.app-main\s*\{[^}]*padding-top:\s*10px !important;/s);
+});
+
 test("el calendario personal simplifica cada partido según su estado", () => {
   assert.match(matchesSource, /function programacionPersonalHTML\(fila, mapaSemanas\)/);
   assert.match(matchesSource, /if \(estado !== "programado"\) return `<div class="card-top">\$\{semanaOriginal\}<\/div>`/);

@@ -2740,6 +2740,17 @@ body:not(.index-page) .app {
 .home-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
 .pending-card-heading { align-items:center; }
 .pending-card-heading h3 { margin:0; }
+
+/* Tablas 2026: la temporada abre directamente la página, sin encabezados redundantes. */
+.tablas-2026-page .app-main {
+  padding-top: 10px !important;
+}
+
+@media (min-width: 1000px) {
+  .tablas-2026-page .app-main {
+    padding-top: 18px !important;
+  }
+}
 .home-card-kicker { color:#a74b27; font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
 .home-count { display:grid; place-items:center; min-width:34px; height:34px; padding:0 9px; border-radius:999px; color:#fff; background:#b94d2c; font-size:16px; }
 .home-heading-link,.home-card-link { color:#174d3a; font-size:12px; font-weight:850; text-decoration:none; }
