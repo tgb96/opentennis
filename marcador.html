@@ -1944,7 +1944,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
-  <link rel="stylesheet" href="assets/css/scoreboard.css?v=14" />
+  <link rel="stylesheet" href="assets/css/scoreboard.css?v=15" />
   <script defer src="assets/js/app.js?v=34"></script>
 </head>
 
@@ -2024,13 +2024,13 @@
 
         <div class="big-score">
           <div class="player-control" id="playerBoxA">
-            <div class="player-name" id="playerNameA">Jugador A</div>
+            <div class="player-name"><span id="playerNameA">Jugador A</span><span class="server-ball" id="serverBallA" aria-label="Está sacando" title="Está sacando">🎾</span></div>
             <div class="game-points" id="gamePointsA">0</div>
             <button class="point-btn" id="pointA" type="button">Punto Jugador A</button>
           </div>
 
           <div class="player-control" id="playerBoxB">
-            <div class="player-name" id="playerNameB">Jugador B</div>
+            <div class="player-name"><span id="playerNameB">Jugador B</span><span class="server-ball" id="serverBallB" aria-label="Está sacando" title="Está sacando">🎾</span></div>
             <div class="game-points" id="gamePointsB">0</div>
             <button class="point-btn" id="pointB" type="button">Punto Jugador B</button>
           </div>
@@ -2038,8 +2038,8 @@
 
         <section class="status-card" id="statusCard">
           <div class="status-title">Estado del partido</div>
-          <div class="status-line" id="statusLine"></div>
-          <div class="change-alert" id="changeAlert">🔄 Cambio de lado ahora</div>
+          <div class="status-priority" id="statusPriorityLine" aria-live="polite"></div>
+          <div class="status-line status-secondary" id="statusLine"></div>
         </section>
 
         <section class="final-card" id="finalCard">
@@ -2502,30 +2502,32 @@
       state.server = state.server === 0 ? 1 : 0;
     }
 
-    function getSideChangeMessage(state) {
-      if (state.matchWinner !== null) return "";
+    function getSideChangeStatus(state) {
+      if (state.matchWinner !== null) return "none";
 
       if (state.currentSet === 2) {
         const pts = state.sets[2].superTiebreakPoints[0] + state.sets[2].superTiebreakPoints[1];
-        if (pts > 0 && pts % 6 === 0) return "Cambio de lado ahora";
-        return "";
+        if (pts > 0 && pts % 6 === 0) return "primary";
+        if (pts > 6) return "secondary";
+        return "none";
       }
 
       if (state.inTiebreak) {
         const tb = state.sets[state.currentSet].tiebreakPoints;
         const pts = tb[0] + tb[1];
-        if (pts > 0 && pts % 6 === 0) return "Cambio de lado ahora";
-        return "";
+        if (pts > 0 && pts % 6 === 0) return "primary";
+        if (pts > 6) return "secondary";
+        return "none";
       }
 
       const games = state.sets[state.currentSet].games;
       const totalGames = games[0] + games[1];
 
       if (totalGames > 0 && totalGames % 2 === 1) {
-        return "Cambio de lado ahora";
+        return state.points[0] + state.points[1] === 0 ? "primary" : "secondary";
       }
 
-      return "";
+      return "none";
     }
 
     function wouldWinRegularGame(points, player) {
@@ -3541,7 +3543,7 @@
       const compactLabelB = getCompactPlayerName(labelB);
       const currentServer = getCurrentServer(state);
       const regularPoints = formatRegularPoints(state.points);
-      const sideMessage = getSideChangeMessage(state);
+      const sideChangeStatus = getSideChangeStatus(state);
       const liveMoments = getLiveMoments(state);
       const setsWon = getSetsWon(state);
 
@@ -3564,6 +3566,8 @@
 
       document.getElementById("playerBoxA").classList.toggle("serving", currentServer === 0 && state.matchWinner === null);
       document.getElementById("playerBoxB").classList.toggle("serving", currentServer === 1 && state.matchWinner === null);
+      document.getElementById("serverBallA").classList.toggle("visible", currentServer === 0 && state.matchWinner === null);
+      document.getElementById("serverBallB").classList.toggle("visible", currentServer === 1 && state.matchWinner === null);
 
       let scoreA = "0";
       let scoreB = "0";
@@ -3631,9 +3635,11 @@
         tb2.style.display = "none";
       }
 
+      const priorityParts = state.matchWinner === null
+        ? [`<span class="priority-badge server-priority">🎾 Saca ${escapeHtml(getCompactPlayerName(getPlayerLabel(state, currentServer)))}</span>`]
+        : [];
       const statusParts = [
-        `<span class="badge green">Set actual: ${state.currentSet + 1}</span>`,
-        `<span class="badge orange">Saca: ${getCompactPlayerName(getPlayerLabel(state, currentServer))}</span>`
+        `<span class="badge green">Set actual: ${state.currentSet + 1}</span>`
       ];
 
       if (state.inTiebreak) {
@@ -3644,16 +3650,18 @@
         statusParts.push(`<span class="badge blue">Super tie-break activo</span>`);
       }
 
-      if (sideMessage === "Cambio de lado ahora") {
-        statusParts.push(`<span class="badge orange">Cambio de lado</span>`);
+      if (sideChangeStatus === "primary") {
+        priorityParts.push(`<span class="priority-badge side-priority">🔄 Cambio de lado ahora</span>`);
+      } else if (sideChangeStatus === "secondary") {
+        statusParts.push(`<span class="badge orange">Cambio de lado en este game</span>`);
       }
 
       liveMoments.forEach(m => {
         statusParts.push(`<span class="badge ${m.type}">${escapeHtml(getCompactStatusText(m.text, state))}</span>`);
       });
 
+      document.getElementById("statusPriorityLine").innerHTML = priorityParts.join("");
       document.getElementById("statusLine").innerHTML = statusParts.join("");
-      document.getElementById("changeAlert").classList.remove("visible");
 
       const finalCard = document.getElementById("finalCard");
 

@@ -69,7 +69,22 @@ test("el marcador permite escribir nombres que no estén en el listado oficial",
 
 test("el marcador explica que es una guía y no registra resultados oficiales", () => {
   const html = fs.readFileSync(path.join(root, "marcador.html"), "utf8");
+  const css = fs.readFileSync(path.join(root, "assets", "css", "scoreboard.css"), "utf8");
   assert.match(html, /Guía para arbitrar partidos/);
   assert.match(html, /no está conectado con los resultados oficiales del club/);
   assert.match(html, /class="scoreboard-info" role="note"/);
+  assert.match(css, /body\.match-active \.scoreboard-info/);
+});
+
+test("el marcador destaca sacador y cambio de lado sin mezclar información secundaria", () => {
+  const html = fs.readFileSync(path.join(root, "marcador.html"), "utf8");
+  assert.match(html, /id="serverBallA"[^>]*>🎾<\/span>/);
+  assert.match(html, /id="serverBallB"[^>]*>🎾<\/span>/);
+  assert.match(html, /id="statusPriorityLine"/);
+  assert.match(html, /function getSideChangeStatus\(state\)/);
+  assert.match(html, /return state\.points\[0\] \+ state\.points\[1\] === 0 \? "primary" : "secondary"/);
+  assert.match(html, /priority-badge server-priority/);
+  assert.match(html, /priority-badge side-priority/);
+  assert.match(html, /Cambio de lado en este game/);
+  assert.doesNotMatch(html, /id="changeAlert"/);
 });
