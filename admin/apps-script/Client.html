@@ -50,6 +50,12 @@
       return String(value || "").toLowerCase().normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
     }
+    function matchesPlayerQuery(match, query) {
+      var terms = normalize(query).split(" ").filter(Boolean);
+      if (!terms.length) return true;
+      var players = normalize((match.player1 || "") + " " + (match.player2 || ""));
+      return terms.every(function(term) { return players.indexOf(term) >= 0; });
+    }
     function setText(element, value) { element.textContent = String(value == null ? "" : value); }
     function createElement(tag, className, text) {
       var element = document.createElement(tag);
@@ -117,15 +123,15 @@
       if (state.view === "alert") return state.alertMatchIds.indexOf(match.matchId) >= 0;
       if (state.view === "pending") return PENDING_STATUSES.indexOf(match.status) >= 0;
       if (state.view === "upcoming") return match.status === "programado";
-      if (state.view === "recent") return PLAYED_STATUSES.indexOf(match.status) >= 0;
       return true;
     }
     function visibleMatches() {
       var query = normalize(state.query), category = normalize(state.category);
       var matches = (state.dashboard.matches || []).filter(function(match) {
-        return matchBelongsToView(match) && (!query || normalize(match.player1 + " " + match.player2).indexOf(query) >= 0) && (!category || normalize(match.category) === category);
+        var belongsToView = query ? true : matchBelongsToView(match);
+        var isAlreadyRegistered = PLAYED_STATUSES.indexOf(match.status) >= 0;
+        return belongsToView && (!query || !isAlreadyRegistered) && matchesPlayerQuery(match, query) && (!category || normalize(match.category) === category);
       });
-      if (state.view === "recent") matches.reverse();
       return matches;
     }
 
@@ -139,7 +145,7 @@
       var players = createElement("div", "match-players"); players.appendChild(createElement("span", "", match.player1)); players.appendChild(createElement("span", "versus", "VS")); players.appendChild(createElement("span", "", match.player2));
       main.appendChild(top); main.appendChild(players);
       if (match.scheduleType && match.scheduleType !== "oficial") main.appendChild(createElement("span", "schedule-badge", match.scheduleTypeLabel));
-      var detail = match.resultWeb || visibleNotes(match) || (match.status === "por_coordinar" ? "Nueva fecha por coordinar" : (match.date ? "Fecha: " + match.date : "Toca para registrar"));
+      var detail = match.resultWeb || visibleNotes(match) || (match.status === "por_coordinar" ? "Pendiente de nueva fecha" : (match.date ? "Fecha: " + match.date : "Toca para registrar"));
       if (detail) main.appendChild(createElement("div", "match-result", detail)); card.appendChild(main);
       var actions = createElement("div", "quick-actions");
       if (PLAYED_STATUSES.indexOf(match.status) >= 0) addQuickAction(actions, "Corregir resultado", match.matchId, match.status.indexOf("retiro_") === 0 ? match.status : "jugado");
@@ -347,7 +353,7 @@
         } else if (payload.status === "programado") {
           setText(elements.previewTitle, "Quedará programado para " + (payload.date || "una nueva fecha")); setText(elements.previewResult, [payload.court ? "Cancha " + payload.court : "", payload.turn].filter(Boolean).join(" · ") || "Completa cancha y turno."); setText(elements.previewRanking, "No modifica puntos ni ranking.");
         } else if (payload.status === "por_coordinar") {
-          setText(elements.previewTitle, "El partido quedará por coordinar"); setText(elements.previewResult, "Los jugadores deberán acordar una nueva fecha."); setText(elements.previewRanking, "No modifica puntos ni ranking.");
+          setText(elements.previewTitle, "El partido quedará pendiente"); setText(elements.previewResult, "Los jugadores deberán acordar una nueva fecha."); setText(elements.previewRanking, "No modifica puntos ni ranking.");
         } else { setText(elements.previewTitle, "El partido quedará suspendido"); setText(elements.previewResult, "Conservará la fecha informada y quedará pendiente de definición."); setText(elements.previewRanking, "No modifica puntos ni ranking."); }
       } catch (error) { setText(elements.previewTitle, "Completa un marcador válido"); setText(elements.previewResult, error.message); setText(elements.previewRanking, "La estimación de puntos aparecerá antes de guardar."); }
     }
@@ -438,7 +444,11 @@
       }).getAdminDashboard();
     }
 
-    elements.search.addEventListener("input", function() { state.query = elements.search.value; renderMatches(); });
+    elements.search.addEventListener("input", function() {
+      state.query = elements.search.value;
+      if (normalize(state.query)) setView("all");
+      else renderMatches();
+    });
     elements.category.addEventListener("change", function() { state.category = elements.category.value; renderMatches(); });
     elements.tabs.forEach(function(tab) { tab.addEventListener("click", function() { setView(tab.dataset.view); }); });
     elements.showWeek.addEventListener("click", function() { setView("week"); }); elements.status.addEventListener("change", updateFormMode);

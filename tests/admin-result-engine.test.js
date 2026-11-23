@@ -189,9 +189,9 @@ test("conserva una observación real de un partido jugado", () => {
   );
 });
 
-test("separa por coordinar del tipo reprogramado", () => {
+test("separa el estado pendiente del tipo reprogramado", () => {
   assert.equal(context.adminNormalizeStatus_("Pendiente"), "por_coordinar");
-  assert.equal(context.adminStatusLabel_("por_coordinar"), "Por coordinar");
+  assert.equal(context.adminStatusLabel_("por_coordinar"), "Pendiente");
   assert.equal(context.adminScheduleTypeLabel_("reprogramado"), "Reprogramado");
 });
 

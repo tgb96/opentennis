@@ -29,13 +29,13 @@ const dashboard = {
       matchId: "2026-s9-a-diego-fossa-nicolas-collao",
       week: "9", court: "1", turn: "19:00", category: "A",
       player1: "Diego Fossa", player2: "Nicolás Collao", date: "26/8/2026",
-      status: "por_coordinar", statusLabel: "Por coordinar", notes: "Nueva fecha por confirmar", resultWeb: "", scheduleType: "oficial", scheduleTypeLabel: "Oficial", originalDate: "26/8/2026", originalCourt: "1", originalTurn: "19:00", round: "Única", record: null
+      status: "por_coordinar", statusLabel: "Pendiente", notes: "Nueva fecha por confirmar", resultWeb: "", scheduleType: "oficial", scheduleTypeLabel: "Oficial", originalDate: "26/8/2026", originalCourt: "1", originalTurn: "19:00", round: "Única", record: null
     },
     {
       matchId: "2026-s9-b-daniel-vega-cristhian-linares",
       week: "9", court: "2", turn: "20:30", category: "B",
       player1: "Daniel Vega", player2: "Cristhian Linares", date: "27/8/2026",
-      status: "por_coordinar", statusLabel: "Por coordinar", notes: "", resultWeb: "", scheduleType: "oficial", scheduleTypeLabel: "Oficial", originalDate: "27/8/2026", originalCourt: "2", originalTurn: "20:30", round: "Única", record: null
+      status: "por_coordinar", statusLabel: "Pendiente", notes: "", resultWeb: "", scheduleType: "oficial", scheduleTypeLabel: "Oficial", originalDate: "27/8/2026", originalCourt: "2", originalTurn: "20:30", round: "Única", record: null
     },
     {
       matchId: "2026-s10-c-jose-astete-pablo-arias",

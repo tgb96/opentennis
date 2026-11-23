@@ -85,7 +85,7 @@ function adminStatusLabel_(status) {
   var labels = {};
   labels[ADMIN_STATUSES.PROGRAMADO] = "Programado";
   labels[ADMIN_STATUSES.JUGADO] = "Jugado";
-  labels[ADMIN_STATUSES.POR_COORDINAR] = "Por coordinar";
+  labels[ADMIN_STATUSES.POR_COORDINAR] = "Pendiente";
   labels[ADMIN_STATUSES.RETIRO_J1] = "Retiro Jugador 1";
   labels[ADMIN_STATUSES.RETIRO_J2] = "Retiro Jugador 2";
   labels[ADMIN_STATUSES.WO_J1] = "W/O Jugador 1";

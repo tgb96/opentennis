@@ -738,7 +738,7 @@ function adminBuildAlerts_(matches, integrity, todayValue) {
       id: "overdue",
       severity: "warning",
       title: overdue.length + " partido(s) mantienen una fecha vencida",
-      detail: "Revisa si corresponde registrar el resultado o dejarlos por coordinar.",
+      detail: "Revisa si corresponde registrar el resultado o dejarlos pendientes.",
       count: overdue.length,
       matchIds: overdue.map(function(match) { return match.matchId; })
     });

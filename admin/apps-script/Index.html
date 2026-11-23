@@ -39,7 +39,7 @@
     <div id="dashboardContent">
     <section class="summary" aria-label="Resumen">
       <article class="summary-card pending">
-        <span>Por coordinar</span>
+        <span>Partidos pendientes</span>
         <strong id="pendingCount">0</strong>
       </article>
       <article class="summary-card upcoming">
@@ -96,8 +96,8 @@
 
     <section class="controls" aria-label="Buscar y filtrar">
       <label class="search-field">
-        <span class="sr-only">Buscar jugador</span>
-        <input id="searchInput" type="search" placeholder="Buscar jugador…" autocomplete="off">
+        <span class="sr-only">Buscar uno o dos jugadores</span>
+        <input id="searchInput" type="search" placeholder="Buscar uno o dos jugadores…" autocomplete="off">
       </label>
       <label>
         <span class="sr-only">Filtrar categoría</span>
@@ -113,9 +113,8 @@
 
     <nav class="tabs" aria-label="Vista de partidos">
       <button type="button" data-view="week" aria-current="page">Esta semana</button>
-      <button type="button" data-view="pending">Por coordinar</button>
+      <button type="button" data-view="pending">Pendientes</button>
       <button type="button" data-view="upcoming">Programados</button>
-      <button type="button" data-view="recent">Resultados</button>
       <button type="button" data-view="all">Todos</button>
     </nav>
 
@@ -274,7 +273,7 @@
           <span>¿Qué ocurrió?</span>
           <select id="statusInput" required>
             <option value="jugado">Registrar resultado</option>
-            <option value="por_coordinar">Quedó por coordinar</option>
+            <option value="por_coordinar">Partido pendiente</option>
             <option value="programado">Ya acordaron una nueva fecha</option>
             <option value="suspendido">Se inició y quedó suspendido</option>
             <option value="retiro_j1">Retiro Jugador 1</option>
@@ -399,7 +398,7 @@
       <div class="dialog-body">
         <input id="schedule2027MatchId" type="hidden">
         <div id="schedule2027Official" class="notice"></div>
-        <label class="field"><span>Estado</span><select id="schedule2027Status"><option value="programado">Programado</option><option value="por_coordinar">Por coordinar</option><option value="suspendido">Suspendido</option></select></label>
+        <label class="field"><span>Estado</span><select id="schedule2027Status"><option value="programado">Programado</option><option value="por_coordinar">Pendiente</option><option value="suspendido">Suspendido</option></select></label>
         <label class="field"><span>Tipo</span><select id="schedule2027ScheduleType"><option value="oficial">Oficial</option><option value="adelantado">Adelantado</option><option value="reprogramado">Reprogramado</option><option value="recuperacion">Recuperación</option></select></label>
         <label class="field"><span>Nueva fecha</span><input id="schedule2027EditDate" type="date"></label>
         <div class="schedule-grid"><label class="field"><span>Cancha</span><input id="schedule2027EditCourt"></label><label class="field"><span>Turno</span><input id="schedule2027EditTurn"></label></div>
