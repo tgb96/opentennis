@@ -59,6 +59,25 @@ test("la próxima fecha se recalcula al retomar la aplicación o cambiar el día
   assert.match(matchesSource, /visibilitychange/);
   assert.match(matchesSource, /window\.addEventListener\("focus"/);
   assert.match(matchesSource, /obtenerSemanaProxima\(publicRows\)/);
+  assert.match(matchesSource, /normalizeStatus\(estadoFinal\(fila\)\) !== "programado"/);
+});
+
+test("programación y resultados se renuevan como un solo conjunto coherente", () => {
+  assert.match(matchesSource, /OPEN_TENNIS_CACHE\.loadMany\(\[FIXTURE_URL, REGISTRO_URL\]\)/);
+  const tablesSource = fs.readFileSync(path.join(__dirname, "..", "tablas.html"), "utf8");
+  assert.match(tablesSource, /OPEN_TENNIS_CACHE\.loadMany\(fuentes\)/);
+  assert.match(tablesSource, /OPEN_TENNIS_PERSONAL\.headToHeadSummary/);
+  assert.match(tablesSource, /OPEN_TENNIS_PERSONAL\.headToHeadExplorerHtml/);
+  assert.match(tablesSource, /\.sort\(\(a, b\) => parseFechaPartido\(a\.fechaSemana\) - parseFechaPartido\(b\.fechaSemana\)\)\[0\]/);
+});
+
+test("Partidos consume la resolución central sin reconstruir el W\/O", () => {
+  const retirementBlock = matchesSource.slice(
+    matchesSource.indexOf("function aplicarResolucionRetiro"),
+    matchesSource.indexOf("function filaParaProgramacion")
+  );
+  assert.match(retirementBlock, /classificationRecordForMatch\(fila\)/);
+  assert.doesNotMatch(retirementBlock, /Ganador .* por W\/O 6-0 6-0/);
 });
 
 test("la programación completa separa y ordena una fecha extraordinaria", () => {

@@ -18,9 +18,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
   <script src="assets/js/config.js?v=7"></script>
-  <script src="assets/js/data-cache.js?v=2"></script>
+  <script src="assets/js/data-cache.js?v=3"></script>
   <script src="assets/js/data-model.js?v=3"></script>
-  <script src="assets/js/season-events.js?v=4"></script>
+  <script src="assets/js/season-events.js?v=5"></script>
   <script src="assets/js/season-platform.js?v=2"></script>
   <script defer src="assets/js/app.js?v=34"></script>
 </head>
@@ -934,6 +934,7 @@ function obtenerSemanaProxima(filas) {
 
   for (let i = 0; i < filas.length; i++) {
     const fila = filas[i];
+    if (fila.esLibre || OPEN_TENNIS_DATA.normalizeStatus(estadoFinal(fila)) !== "programado") continue;
     const fechaProgramada = parseFechaProgramacionSantiago(fila.fechaSemana);
 
     if (fechaProgramada === null || fechaProgramada < hoySantiago) continue;
@@ -1906,18 +1907,18 @@ function aplicarResolucionRetiro(filas) {
   const events = window.OPEN_TENNIS_EVENTS;
   if (!events) return;
   filas.forEach(fila => {
-    const resolution = events.resolutionForMatch(fila);
-    if (!resolution) return;
+    const record = events.classificationRecordForMatch(fila);
+    if (!record) return;
     fila.registro = {
-      matchId: fila.matchId,
-      fecha: events.WITHDRAWAL.date,
+      matchId: record.matchId,
+      fecha: record.date,
       jugador1: fila.jugador1,
       jugador2: fila.jugador2,
       pendiente: "",
-      observaciones: "Resolución directiva · renuncia al club",
-      tipoResultado: "W/O",
-      resultadoWeb: `Ganador ${resolution.winner} por W/O 6-0 6-0`,
-      ganador: resolution.winner,
+      observaciones: record.notes,
+      tipoResultado: record.resultType,
+      resultadoWeb: record.resultWeb,
+      ganador: record.winner,
       claveExacta: claveExacta(fila.jugador1, fila.jugador2),
       claveOrdenada: claveOrdenada(fila.jugador1, fila.jugador2)
     };
@@ -2106,10 +2107,9 @@ async function iniciar() {
   accordionSemanas.innerHTML = `<div class="mensaje">Cargando programación completa...</div>`;
 
   try {
-    const [fixtureCSV, registroCSV] = await Promise.all([
-      textoFetch(FIXTURE_URL),
-      textoFetch(REGISTRO_URL)
-    ]);
+    const [fixtureCSV, registroCSV] = window.OPEN_TENNIS_CACHE
+      ? (await window.OPEN_TENNIS_CACHE.loadMany([FIXTURE_URL, REGISTRO_URL])).texts
+      : await Promise.all([textoFetch(FIXTURE_URL), textoFetch(REGISTRO_URL)]);
 
     const { filas, mapaSemanas } = leerFixture(fixtureCSV);
     const registros = leerRegistro(registroCSV);

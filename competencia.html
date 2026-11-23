@@ -13,12 +13,12 @@
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#0b2f25">
   <script src="assets/js/config.js?v=7"></script>
-  <script src="assets/js/data-cache.js?v=2"></script>
+  <script src="assets/js/data-cache.js?v=3"></script>
   <script src="assets/js/data-model.js?v=3"></script>
-  <script src="assets/js/season-events.js?v=4"></script>
+  <script src="assets/js/season-events.js?v=5"></script>
   <script src="assets/js/club-events.js?v=11"></script>
   <script src="assets/js/player-identities.js?v=1"></script>
-  <script src="assets/js/personalization.js?v=23"></script>
+  <script src="assets/js/personalization.js?v=31"></script>
   <script src="assets/js/season-platform.js?v=2"></script>
   <script defer src="assets/js/app.js?v=34"></script>
 </head>
@@ -51,12 +51,18 @@
         const personal = window.OPEN_TENNIS_PERSONAL;
         const config = window.OPEN_TENNIS_CONFIG;
         try {
-          const urls = [config.FIXTURE_URL, config.REGISTRO_URL, "data/resultados-2025.json?v=6"];
+          const urls = [
+            config.FIXTURE_URL,
+            config.REGISTRO_URL,
+            "data/resultados-2025.json?v=6",
+            "data/actividades-2026.json?v=9"
+          ];
           const texts = window.OPEN_TENNIS_CACHE
             ? (await window.OPEN_TENNIS_CACHE.loadMany(urls)).texts
             : await Promise.all(urls.map(url => fetch(url).then(response => response.text())));
           let currentMatches = personal.joinMatches(personal.parseFixture(texts[0]), personal.parseRecords(texts[1]));
           if (window.OPEN_TENNIS_EVENTS) currentMatches = window.OPEN_TENNIS_EVENTS.applyToPersonalMatches(currentMatches);
+          const clubEventData = texts[3] ? JSON.parse(texts[3]) : { events: [] };
           const playersById = Object.fromEntries((data.players || []).map(player => [player.id, player]));
           const modernMatches = (data.matches || []).filter(match => match.status === "jugado" && match.countsForH2h).map(match => {
             const first = playersById[match.player1Id] && playersById[match.player1Id].name;
@@ -82,7 +88,7 @@
             selected = players.find(player => player.id === playerSelect.value);
             rival = players.find(player => player.id === rivalSelect.value);
             if (!selected || !rival) { result.innerHTML = '<p class="h2h-explorer-empty">Selecciona dos jugadores.</p>'; return; }
-            const summary = personal.headToHeadSummary(selected.name, rival.name, currentMatches.concat(modernMatches), texts[2], window.OPEN_TENNIS_EVENTS);
+            const summary = personal.headToHeadSummary(selected.name, rival.name, currentMatches.concat(modernMatches), texts[2], window.OPEN_TENNIS_EVENTS, clubEventData);
             result.innerHTML = personal.headToHeadExplorerHtml(selected.name, rival.name, summary);
           }
           playerSelect.addEventListener("change", () => { rival = null; updateRivals(); updateResult(); });

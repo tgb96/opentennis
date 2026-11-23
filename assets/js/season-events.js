@@ -76,6 +76,31 @@
     return WITHDRAWAL.pendingMatchIds.includes(id);
   }
 
+  function classificationRecordForMatch(match) {
+    const resolution = resolutionForMatch(match);
+    if (!resolution || !match) return null;
+    const player1 = match.player1 || match.jugador1;
+    const player2 = match.player2 || match.jugador2;
+    const player1Wins = key(player1) !== key(WITHDRAWAL.player);
+    return {
+      date: WITHDRAWAL.date,
+      player1,
+      player2,
+      pending: "",
+      notes: "Resolución directiva · renuncia al club",
+      winner: resolution.winner,
+      loser: WITHDRAWAL.player,
+      resultType: "W/O",
+      resultWeb: `Ganador ${resolution.winner} por W/O 6-0 6-0`,
+      pointsPlayer1: player1Wins ? 3 : 0,
+      pointsPlayer2: player1Wins ? 0 : 3,
+      matchId: matchIdOf(match),
+      set1: player1Wins ? ["6", "0"] : ["0", "6"],
+      set2: player1Wins ? ["6", "0"] : ["0", "6"],
+      setsWon: player1Wins ? [2, 0] : [0, 2]
+    };
+  }
+
   function archivedForPlayers(player, rival) {
     const wanted = [key(player), key(rival)].sort().join("|");
     return WITHDRAWAL.archived.filter(item => [key(item.player1), key(item.player2)].sort().join("|") === wanted);
@@ -83,25 +108,11 @@
 
   function applyToPersonalMatches(matches) {
     return (matches || []).map(match => {
-      const resolution = resolutionForMatch(match);
-      if (!resolution) return match;
-      const player1Wins = key(match.player1) !== key(WITHDRAWAL.player);
+      const classificationRecord = classificationRecordForMatch(match);
+      if (!classificationRecord) return match;
       return Object.assign({}, match, {
         status: "jugado",
-        record: Object.assign({}, match.record || {}, {
-          date: WITHDRAWAL.date,
-          player1: match.player1,
-          player2: match.player2,
-          pending: "",
-          notes: "Resolución directiva por renuncia al club",
-          winner: resolution.winner,
-          loser: WITHDRAWAL.player,
-          resultType: "W/O",
-          resultWeb: `Ganador ${resolution.winner} por W/O 6-0 6-0`,
-          pointsPlayer1: player1Wins ? 3 : 0,
-          pointsPlayer2: player1Wins ? 0 : 3,
-          matchId: match.matchId
-        })
+        record: Object.assign({}, match.record || {}, classificationRecord)
       });
     });
   }
@@ -161,21 +172,18 @@
     });
 
     return source.map(record => {
-      const resolution = resolutionForMatch(record);
-      if (!resolution) return record;
-      const player1 = record.jugador1 || record.player1;
-      const player2 = record.jugador2 || record.player2;
-      const player1Wins = key(player1) !== key(WITHDRAWAL.player);
+      const classificationRecord = classificationRecordForMatch(record);
+      if (!classificationRecord) return record;
       return Object.assign({}, record, {
-        fecha: WITHDRAWAL.date, pendiente: "", _pendiente: "",
-        observaciones: "Resolución directiva · renuncia al club",
-        s1j1: player1Wins ? "6" : "0", s1j2: player1Wins ? "0" : "6",
-        s2j1: player1Wins ? "6" : "0", s2j2: player1Wins ? "0" : "6",
-        stbj1: "", stbj2: "", setsJ1: player1Wins ? 2 : 0, setsJ2: player1Wins ? 0 : 2,
-        ganador: resolution.winner, perdedor: WITHDRAWAL.player, tipo: "W/O",
-        resultadoWeb: `Ganador ${resolution.winner} por W/O 6-0 6-0`,
-        ptsJ1: player1Wins ? 3 : 0, ptsJ2: player1Wins ? 0 : 3,
-        _ganador: key(resolution.winner)
+        fecha: classificationRecord.date, pendiente: "", _pendiente: "",
+        observaciones: classificationRecord.notes,
+        s1j1: classificationRecord.set1[0], s1j2: classificationRecord.set1[1],
+        s2j1: classificationRecord.set2[0], s2j2: classificationRecord.set2[1],
+        stbj1: "", stbj2: "", setsJ1: classificationRecord.setsWon[0], setsJ2: classificationRecord.setsWon[1],
+        ganador: classificationRecord.winner, perdedor: classificationRecord.loser, tipo: classificationRecord.resultType,
+        resultadoWeb: classificationRecord.resultWeb,
+        ptsJ1: classificationRecord.pointsPlayer1, ptsJ2: classificationRecord.pointsPlayer2,
+        _ganador: key(classificationRecord.winner)
       });
     });
   }
@@ -184,5 +192,5 @@
     return key(player) === key(WITHDRAWAL.player) ? WITHDRAWAL : null;
   }
 
-  return { WITHDRAWAL, RANKING_A, key, resolutionForMatch, archivedForMatch, archivedForPlayers, isReleasedSlot, applyToPersonalMatches, applyToRankings, applyToTableRecords, withdrawalForPlayer };
+  return { WITHDRAWAL, RANKING_A, key, resolutionForMatch, classificationRecordForMatch, archivedForMatch, archivedForPlayers, isReleasedSlot, applyToPersonalMatches, applyToRankings, applyToTableRecords, withdrawalForPlayer };
 });

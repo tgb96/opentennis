@@ -106,3 +106,49 @@ test("avisa cuando una copia visible quedó desactualizada", async () => {
   assert.equal(notices.at(-1).hadCompleteCache, true);
   assert.deepEqual(cache.getStatus(), notices.at(-1));
 });
+
+test("no mezcla fuentes guardadas en actualizaciones distintas", async () => {
+  let calls = 0;
+  const runtime = {
+    localStorage: fakeStorage(),
+    fetch: async url => {
+      calls++;
+      return response(`${url}-v${calls}`);
+    }
+  };
+  const cache = cacheModule.createDataCache(runtime);
+  const fixtureUrl = "https://datos.test/fixture";
+  const recordsUrl = "https://datos.test/registro";
+
+  await cache.getText(fixtureUrl);
+  await cache.getText(recordsUrl);
+  const coherent = await cache.loadMany([fixtureUrl, recordsUrl]);
+
+  assert.equal(coherent.source, "network");
+  assert.equal(calls, 4);
+  assert.equal(coherent.entries[0].batchId, coherent.entries[1].batchId);
+});
+
+test("una comprobación sin cambios no rompe un conjunto coherente mayor", async () => {
+  const values = {
+    fixture: "fixture vigente",
+    registro: "registro vigente",
+    rankings: "ranking vigente"
+  };
+  const runtime = {
+    localStorage: fakeStorage(),
+    fetch: async url => response(values[url])
+  };
+  const cache = cacheModule.createDataCache(runtime);
+  const urls = ["fixture", "registro", "rankings"];
+
+  const initial = await cache.loadMany(urls);
+  const partial = await cache.loadMany(urls.slice(0, 2));
+  await partial.refresh;
+  const complete = await cache.loadMany(urls);
+
+  assert.equal(complete.source, "cache");
+  assert.equal(complete.entries[0].batchId, initial.entries[0].batchId);
+  assert.equal(complete.entries[2].batchId, initial.entries[2].batchId);
+  await complete.refresh;
+});

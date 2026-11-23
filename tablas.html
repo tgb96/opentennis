@@ -18,9 +18,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Open Tennis">
   <script src="assets/js/config.js?v=7"></script>
-  <script src="assets/js/data-cache.js?v=2"></script>
+  <script src="assets/js/data-cache.js?v=3"></script>
   <script src="assets/js/data-model.js?v=3"></script>
-  <script src="assets/js/season-events.js?v=4"></script>
+  <script src="assets/js/season-events.js?v=5"></script>
+  <script src="assets/js/club-events.js?v=11"></script>
+  <script src="assets/js/player-identities.js?v=1"></script>
+  <script src="assets/js/personalization.js?v=31"></script>
   <script src="assets/js/season-platform.js?v=2"></script>
   <link rel="prefetch" href="resultados-2025.html" as="document" />
   <script defer src="assets/js/app.js?v=34"></script>
@@ -902,6 +905,7 @@
   const OPEN_TENNIS_CONFIG = window.OPEN_TENNIS_CONFIG;
   const OPEN_TENNIS_DATA = window.OPEN_TENNIS_DATA;
   const OPEN_TENNIS_EVENTS = window.OPEN_TENNIS_EVENTS;
+  const OPEN_TENNIS_PERSONAL = window.OPEN_TENNIS_PERSONAL;
   const RANKINGS_URL = OPEN_TENNIS_CONFIG.RANKINGS_URL;
   const REGISTRO_URL = OPEN_TENNIS_CONFIG.REGISTRO_URL;
   const FIXTURE_URL = OPEN_TENNIS_CONFIG.FIXTURE_URL;
@@ -932,6 +936,9 @@
   let fixtureActual = [];
   let rankingPorJugador = new Map();
   let snapshotAnterior = {};
+  let h2hMatchesActuales = [];
+  let h2hHistorico = null;
+  let h2hEventosClub = { events: [] };
 
   function escaparHTML(valor) {
     return String(valor ?? "")
@@ -1728,10 +1735,9 @@
   }
 
   function actualizarRivales(ranking) {
-    const categoria = categoriasActuales.find(cat => cat.nombre === ranking.categoria);
-    const rivales = categoria
-      ? categoria.jugadores.filter(j => j._jugadorKey !== ranking._jugadorKey)
-      : [];
+    const rivales = Array.from(rankingPorJugador.values())
+      .filter(jugador => jugador._jugadorKey !== ranking._jugadorKey)
+      .sort((a, b) => a.jugador.localeCompare(b.jugador, "es"));
 
     rankingRivalSelect.disabled = false;
     rankingRivalSelect.innerHTML = '<option value="">Elige un rival</option>' + rivales
@@ -1742,19 +1748,22 @@
   function calcularCaraACara(jugadorA, jugadorB) {
     const keyA = normalizar(jugadorA);
     const keyB = normalizar(jugadorB);
-    const duelos = registrosActuales.filter(registro => {
-      const mismaPareja = (registro._j1 === keyA && registro._j2 === keyB) || (registro._j1 === keyB && registro._j2 === keyA);
-      return mismaPareja && registro.resultadoWeb && registro.ganador;
-    });
-    const ganadosA = duelos.filter(registro => registro._ganador === keyA).length;
-    const ganadosB = duelos.filter(registro => registro._ganador === keyB).length;
-    const ultimo = duelos.length ? duelos[duelos.length - 1] : null;
-    const proximo = fixtureActual.find(partido => {
-      const mismaPareja = (partido._j1 === keyA && partido._j2 === keyB) || (partido._j1 === keyB && partido._j2 === keyA);
-      return mismaPareja && esProximoProgramado(partido);
-    });
+    const summary = OPEN_TENNIS_PERSONAL.headToHeadSummary(
+      jugadorA,
+      jugadorB,
+      h2hMatchesActuales,
+      h2hHistorico,
+      OPEN_TENNIS_EVENTS,
+      h2hEventosClub
+    );
+    const proximo = fixtureActual
+      .filter(partido => {
+        const mismaPareja = (partido._j1 === keyA && partido._j2 === keyB) || (partido._j1 === keyB && partido._j2 === keyA);
+        return mismaPareja && esProximoProgramado(partido);
+      })
+      .sort((a, b) => parseFechaPartido(a.fechaSemana) - parseFechaPartido(b.fechaSemana))[0] || null;
 
-    return { duelos, ganadosA, ganadosB, ultimo, proximo };
+    return { ...summary, proximo };
   }
 
   function renderCaraACara() {
@@ -1768,21 +1777,14 @@
     }
 
     const h2h = calcularCaraACara(jugadorA, jugadorB);
-    const notaUltimo = h2h.ultimo
-      ? `Último duelo: ${escaparHTML(h2h.ultimo.resultadoWeb)}`
-      : "Todavía no tienen un resultado registrado entre ellos.";
     const notaProximo = h2h.proximo
-      ? ` Próximo cruce: semana ${escaparHTML(h2h.proximo.semana)}${h2h.proximo.fechaSemana ? ` · ${escaparHTML(h2h.proximo.fechaSemana)}` : ""}.`
+      ? `Próximo cruce: semana ${escaparHTML(h2h.proximo.semana)}${h2h.proximo.fechaSemana ? ` · ${escaparHTML(h2h.proximo.fechaSemana)}` : ""}.`
       : "";
 
     headToHeadProfile.innerHTML = `
-      <h3>Cara a cara · ${h2h.duelos.length} ${h2h.duelos.length === 1 ? "partido" : "partidos"}</h3>
-      <div class="head-to-head-score">
-        <div class="head-to-head-player"><span class="head-to-head-label">Jugador</span><strong>${escaparHTML(jugadorA)}</strong><span class="head-to-head-wins">${h2h.ganadosA}</span></div>
-        <span class="head-to-head-vs">VS</span>
-        <div class="head-to-head-player"><span class="head-to-head-label">Rival</span><strong>${escaparHTML(jugadorB)}</strong><span class="head-to-head-wins">${h2h.ganadosB}</span></div>
-      </div>
-      <p class="head-to-head-note">${notaUltimo}${notaProximo}</p>`;
+      <h3>Cara a Cara · ${h2h.total} ${h2h.total === 1 ? "partido" : "partidos"}</h3>
+      ${OPEN_TENNIS_PERSONAL.headToHeadExplorerHtml(jugadorA, jugadorB, h2h)}
+      ${notaProximo ? `<p class="head-to-head-note">${notaProximo}</p>` : ""}`;
     headToHeadProfile.hidden = false;
   }
 
@@ -2037,11 +2039,16 @@
     instalarEventos();
 
     try {
-      const [rankingCSV, registroCSV, fixtureCSV] = await Promise.all([
-        fetchTexto(RANKINGS_URL),
-        fetchTexto(REGISTRO_URL),
-        fetchTexto(FIXTURE_URL)
-      ]);
+      const fuentes = [
+        RANKINGS_URL,
+        REGISTRO_URL,
+        FIXTURE_URL,
+        "data/resultados-2025.json?v=6",
+        "data/actividades-2026.json?v=9"
+      ];
+      const [rankingCSV, registroCSV, fixtureCSV, historicoJSON, eventosJSON] = window.OPEN_TENNIS_CACHE
+        ? (await window.OPEN_TENNIS_CACHE.loadMany(fuentes)).texts
+        : await Promise.all(fuentes.map(fetchTexto));
 
       const filasRanking = parseCSV(rankingCSV);
       const categorias = detectarRankings(filasRanking);
@@ -2055,6 +2062,13 @@
       const fixture = leerFixture(fixtureCSV);
       const registrosLeidos = leerRegistro(registroCSV);
       const registros = OPEN_TENNIS_EVENTS ? OPEN_TENNIS_EVENTS.applyToTableRecords(registrosLeidos, fixture) : registrosLeidos;
+      h2hMatchesActuales = OPEN_TENNIS_PERSONAL.joinMatches(
+        OPEN_TENNIS_PERSONAL.parseFixture(fixtureCSV),
+        OPEN_TENNIS_PERSONAL.parseRecords(registroCSV)
+      );
+      if (OPEN_TENNIS_EVENTS) h2hMatchesActuales = OPEN_TENNIS_EVENTS.applyToPersonalMatches(h2hMatchesActuales);
+      h2hHistorico = historicoJSON ? JSON.parse(historicoJSON) : null;
+      h2hEventosClub = eventosJSON ? JSON.parse(eventosJSON) : { events: [] };
 
       prepararIndices(registros, fixture);
 

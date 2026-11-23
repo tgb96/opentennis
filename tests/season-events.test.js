@@ -30,6 +30,33 @@ test("un partido pendiente se transforma en W/O para el rival", () => {
   assert.equal(resolved.record.resultWeb, "Ganador Jose Astete por W/O 6-0 6-0");
 });
 
+test("todas las pantallas comparten el mismo registro oficial de la renuncia", () => {
+  const match = {
+    matchId: "2026-s9-a-felipe-reyes-tomas-gomez",
+    jugador1: "Felipe Reyes",
+    jugador2: "Tomás Gómez"
+  };
+  const record = events.classificationRecordForMatch(match);
+
+  assert.deepEqual({
+    date: record.date,
+    winner: record.winner,
+    loser: record.loser,
+    resultType: record.resultType,
+    resultWeb: record.resultWeb,
+    points: [record.pointsPlayer1, record.pointsPlayer2],
+    sets: [record.set1, record.set2]
+  }, {
+    date: "29/10/2026",
+    winner: "Tomás Gómez",
+    loser: "Felipe Reyes",
+    resultType: "W/O",
+    resultWeb: "Ganador Tomás Gómez por W/O 6-0 6-0",
+    points: [0, 3],
+    sets: [["0", "6"], ["0", "6"]]
+  });
+});
+
 test("los tres resultados reales quedan archivados sin alterar la clasificación", () => {
   const archived = events.archivedForPlayers("Tomás Gómez", "Felipe Reyes");
   assert.deepEqual(archived.map(match => [match.date, match.score]), [["17/10/2026", "6-0, 6-2"]]);

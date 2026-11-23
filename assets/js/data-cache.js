@@ -43,8 +43,8 @@
       }
     }
 
-    function write(url, text) {
-      const entry = { url, text: String(text), updatedAt: Date.now() };
+    function write(url, text, batchId) {
+      const entry = { url, text: String(text), updatedAt: Date.now(), batchId: batchId || "" };
       memory.set(url, entry);
       try {
         if (runtime && runtime.localStorage) {
@@ -82,7 +82,12 @@
       try {
         const texts = await Promise.all(urls.map(fetchFresh));
         const changed = texts.some((text, index) => !previousEntries[index] || previousEntries[index].text !== text);
-        const entries = texts.map((text, index) => write(urls[index], text));
+        const previousBatchIds = new Set(previousEntries.map(entry => entry && entry.batchId).filter(Boolean));
+        const previousBundleIsCoherent = previousEntries.every(Boolean) && previousBatchIds.size === 1;
+        const batchId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        const entries = !changed && previousBundleIsCoherent
+          ? previousEntries
+          : texts.map((text, index) => write(urls[index], text, batchId));
         notify({
           available: true,
           changed,
@@ -106,9 +111,11 @@
       const normalizedUrls = (urls || []).map(url => String(url));
       const previousEntries = normalizedUrls.map(read);
       const hasCompleteCache = previousEntries.every(Boolean);
+      const cachedBatchIds = new Set(previousEntries.map(entry => entry && entry.batchId).filter(Boolean));
+      const hasCoherentCache = hasCompleteCache && cachedBatchIds.size === 1;
       const refresh = refreshMany(normalizedUrls, previousEntries);
 
-      if (hasCompleteCache) {
+      if (hasCoherentCache) {
         return {
           texts: previousEntries.map(entry => entry.text),
           entries: previousEntries,
@@ -119,8 +126,20 @@
         };
       }
 
-      const fresh = await refresh;
-      return Object.assign({}, fresh, { refresh: Promise.resolve(null) });
+      try {
+        const fresh = await refresh;
+        return Object.assign({}, fresh, { refresh: Promise.resolve(null) });
+      } catch (error) {
+        if (!hasCompleteCache) throw error;
+        return {
+          texts: previousEntries.map(entry => entry.text),
+          entries: previousEntries,
+          changed: false,
+          source: "cache-fallback",
+          updatedAt: Math.max(...previousEntries.map(entry => Number(entry.updatedAt || 0))),
+          refresh: Promise.resolve(null)
+        };
+      }
     }
 
     async function getText(url) {
