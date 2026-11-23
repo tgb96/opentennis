@@ -13,6 +13,7 @@ const CORE_ASSETS = [
   './reglas-2027.html',
   './marcador.html',
   './assets/css/app.css',
+  './assets/css/desktop.css',
   './assets/css/scoreboard.css',
   './assets/js/app.js',
   './assets/js/config.js',

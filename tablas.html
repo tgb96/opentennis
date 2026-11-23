@@ -26,7 +26,7 @@
   <script src="assets/js/personalization.js?v=31"></script>
   <script src="assets/js/season-platform.js?v=2"></script>
   <link rel="prefetch" href="resultados-2025.html" as="document" />
-  <script defer src="assets/js/app.js?v=34"></script>
+  <script defer src="assets/js/app.js?v=35"></script>
 </head>
 <body class="tablas-page tablas-2026-page v5-page">
   <div class="layout app-shell">
@@ -69,7 +69,11 @@
     <div id="headToHeadProfile" class="head-to-head" hidden></div>
   </section>
 
-  <div id="rankingsContenedor"></div>
+  <div class="desktop-rankings-layout">
+    <nav id="desktopCategoryNav" class="desktop-category-nav" aria-label="Categorías de la escalerilla"></nav>
+    <div id="rankingsContenedor"></div>
+    <aside id="desktopPlayerPanel" class="desktop-player-panel is-empty" aria-live="polite">Selecciona un jugador para ver su rendimiento.</aside>
+  </div>
 
   <section class="criterios-box">
     <h3>Criterios de clasificación</h3>
@@ -916,6 +920,8 @@
   const playerProfile = document.getElementById("playerProfile");
   const headToHeadProfile = document.getElementById("headToHeadProfile");
   const playerMatchesLink = document.getElementById("playerMatchesLink");
+  const desktopCategoryNav = document.getElementById("desktopCategoryNav");
+  const desktopPlayerPanel = document.getElementById("desktopPlayerPanel");
   const PERSONAL_PLAYER_KEY = "openTennisPlayerV1";
   const RANKING_SNAPSHOT_KEY = "openTennisRankingSnapshotV1";
 
@@ -1734,6 +1740,68 @@
     categoriaSeleccionada.classList.add("has-selected-player");
   }
 
+  function esVistaEscritorio() {
+    return window.matchMedia("(min-width: 1050px)").matches;
+  }
+
+  function mostrarDetalleEscritorio(jugadorKey) {
+    if (!desktopPlayerPanel || !jugadorKey) return;
+    const ranking = rankingPorJugador.get(jugadorKey);
+    if (!ranking) return;
+    const stats = calcularStatsJugador(ranking.jugador, registrosActuales, fixtureActual);
+    const recientes = stats.historial.slice(-3).reverse();
+
+    contenedor.querySelectorAll(".fila-jugador").forEach(fila => {
+      fila.classList.toggle("is-desktop-selected", fila.dataset.playerKey === jugadorKey);
+    });
+    desktopPlayerPanel.classList.remove("is-empty");
+    desktopPlayerPanel.innerHTML = `
+      <div class="desktop-player-head"><div><h3>${escaparHTML(ranking.jugador)}</h3><p>${escaparHTML(ranking.categoria)} · Posición ${escaparHTML(ranking.posicion)}</p></div><b>${escaparHTML(ranking.puntos)} pts</b></div>
+      <div class="desktop-player-metrics">
+        <div><span>Jugados</span><strong>${escaparHTML(stats.jugados)}</strong></div>
+        <div><span>Rendimiento</span><strong>${escaparHTML(stats.rendimiento)}</strong></div>
+        <div><span>Sets</span><strong>${escaparHTML(stats.sets)}</strong></div>
+        <div><span>Games</span><strong>${escaparHTML(stats.games)}</strong></div>
+        <div><span>Racha</span><strong>${escaparHTML(stats.racha)}</strong></div>
+        <div><span>Pendientes</span><strong>${escaparHTML(stats.pendientes)}</strong></div>
+      </div>
+      <div class="desktop-player-history"><h4>Últimos partidos</h4>${recientes.length ? `<ul>${recientes.map(item => `<li>${escaparHTML(item)}</li>`).join("")}</ul>` : '<p>Sin partidos jugados.</p>'}</div>
+      <div class="desktop-player-next"><strong>Próximo partido</strong><br>${escaparHTML(stats.proximo)}</div>`;
+  }
+
+  function sincronizarCategoriaEscritorio(categoria) {
+    if (!desktopCategoryNav || !categoria) return;
+    desktopCategoryNav.querySelectorAll("button").forEach(button => {
+      button.classList.toggle("active", button.dataset.categoryKey === categoria.dataset.categoryKey);
+    });
+  }
+
+  function configurarVistaEscritorio(categorias) {
+    if (!desktopCategoryNav) return;
+    desktopCategoryNav.innerHTML = categorias.map(categoria => {
+      const key = slug(categoria.nombre);
+      return `<button type="button" data-category-key="${escaparHTML(key)}">${escaparHTML(categoria.nombre)}</button>`;
+    }).join("");
+
+    const abrirCategoria = key => {
+      const categoriasDOM = Array.from(contenedor.querySelectorAll(".categoria-ranking"));
+      const destino = categoriasDOM.find(categoria => categoria.dataset.categoryKey === key) || categoriasDOM[0];
+      if (!destino) return;
+      categoriasDOM.forEach(categoria => categoria.classList.toggle("abierta", categoria === destino));
+      sincronizarCategoriaEscritorio(destino);
+      const seleccionada = destino.querySelector(".fila-jugador.is-desktop-selected") || destino.querySelector(".fila-jugador");
+      if (seleccionada) mostrarDetalleEscritorio(seleccionada.dataset.playerKey);
+    };
+
+    desktopCategoryNav.addEventListener("click", event => {
+      const button = event.target.closest("button[data-category-key]");
+      if (button) abrirCategoria(button.dataset.categoryKey);
+    });
+
+    const categoriaAbierta = contenedor.querySelector(".categoria-ranking.abierta") || contenedor.querySelector(".categoria-ranking");
+    abrirCategoria(categoriaAbierta && categoriaAbierta.dataset.categoryKey);
+  }
+
   function actualizarRivales(ranking) {
     const rivales = Array.from(rankingPorJugador.values())
       .filter(jugador => jugador._jugadorKey !== ranking._jugadorKey)
@@ -1836,6 +1904,7 @@
 
     actualizarRivales(ranking);
     actualizarSeleccionEnTablas(jugadorKey);
+    if (esVistaEscritorio()) mostrarDetalleEscritorio(jugadorKey);
     renderCaraACara();
   }
 
@@ -1919,7 +1988,7 @@
     `).join("");
 
     return `
-      <section class="categoria-ranking ${claseCat}">
+      <section class="categoria-ranking ${claseCat}" data-category-key="${escaparHTML(categoriaSlug)}">
         <div class="categoria-titulo">
           <div>${escaparHTML(categoria.nombre)}</div>
           <span>+</span>
@@ -2002,6 +2071,11 @@
 
       const fila = event.target.closest(".fila-jugador");
       if (fila && contenedor.contains(fila)) {
+        if (esVistaEscritorio()) {
+          mostrarDetalleEscritorio(fila.dataset.playerKey);
+          localStorage.setItem(PERSONAL_PLAYER_KEY, (rankingPorJugador.get(fila.dataset.playerKey) || {}).jugador || "");
+          return;
+        }
         const id = fila.getAttribute("data-detalle");
         const detalle = id ? document.getElementById(id) : null;
         if (!detalle) return;
@@ -2084,6 +2158,7 @@
         .map(categoria => crearTablaCategoria(categoria, registros, fixture))
         .join("");
       configurarPanelJugadores(categorias, registros, fixture);
+      configurarVistaEscritorio(categorias);
 
     } catch (error) {
       contenedor.innerHTML = `

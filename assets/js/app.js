@@ -1,6 +1,65 @@
 (() => {
   'use strict';
 
+  const setupDesktopShell = () => {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'assets/css/desktop.css?v=1';
+    document.head.appendChild(stylesheet);
+
+    const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const pages = {
+      'index.html': ['Inicio', 'Tu temporada, próximos partidos y actividad del club', '2026'],
+      'partidos.html': ['Partidos', 'Calendario personal y programación de la escalerilla', '2026'],
+      'tablas.html': ['Tablas', 'Clasificación y rendimiento por categoría', '2026'],
+      'eventos.html': ['Torneos e interclubes', 'Próximas actividades y archivo deportivo del club', '2026'],
+      'marcador.html': ['Marcador', 'Herramienta de apoyo para arbitrar partidos', '2026'],
+      'reglas.html': ['Reglamento', 'Bases oficiales de la escalerilla 2026', '2026'],
+      'reglas-2027.html': ['Reglamento 2027', 'Bases para las próximas escalerillas', '2027'],
+      'resultados-2025.html': ['Temporada 2025', 'Resultados y clasificación histórica', '2025'],
+      'torneo.html': ['Torneos e interclubes', 'Ficha oficial de la actividad', '2026'],
+      'competencia.html': ['Escalerilla 2027', 'Programación, tablas y estadísticas', '2027']
+    };
+    const page = pages[file] || ['Open Tennis', 'Información oficial del club', '2026'];
+    const navigationCurrent = file === 'torneo.html'
+      ? 'eventos.html'
+      : (file === 'competencia.html' ? 'partidos.html' : file);
+    const links = [
+      ['index.html', '🏠', 'Inicio'],
+      ['partidos.html', '🎾', 'Partidos'],
+      ['tablas.html', '📊', 'Tablas'],
+      ['eventos.html', '🏆', 'Torneos'],
+      ['marcador.html', '🔢', 'Marcador']
+    ];
+
+    const sidebar = document.createElement('aside');
+    sidebar.id = 'appDesktopSidebar';
+    sidebar.className = 'desktop-sidebar';
+    sidebar.setAttribute('aria-label', 'Navegación principal de escritorio');
+    sidebar.innerHTML = `
+      <a class="desktop-brand" href="index.html" aria-label="Open Tennis Huechuraba inicio">
+        <img src="assets/icons/icon-512.png" alt="">
+        <span><strong>Open Tennis</strong><small>Huechuraba · ${page[2]}</small></span>
+      </a>
+      <nav class="app-nav desktop-side-nav">
+        ${links.map(link => `<a href="${link[0]}" data-page="${link[0]}"${link[0] === navigationCurrent ? ' class="active" aria-current="page"' : ''}><span aria-hidden="true">${link[1]}</span><strong>${link[2]}</strong></a>`).join('')}
+      </nav>
+      <div class="desktop-sidebar-foot"><span>Temporada ${page[2]}</span><strong>Datos oficiales del club</strong><small>Programación y ranking actualizados</small></div>`;
+    document.body.prepend(sidebar);
+
+    const main = file === 'index.html'
+      ? document.querySelector('.v6-home-main, .v5-home-main')
+      : document.querySelector('.app-main, main.main, .marcador-app, main');
+    if (main) {
+      const header = document.createElement('header');
+      header.className = 'desktop-page-header';
+      header.innerHTML = `<div><span>Open Tennis Huechuraba</span><h1>${page[0]}</h1><p>${page[1]}</p></div><b>Temporada ${page[2]}</b>`;
+      main.prepend(header);
+    }
+  };
+
+  setupDesktopShell();
+
   const isStandalone = () =>
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true;

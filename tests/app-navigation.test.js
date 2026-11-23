@@ -15,6 +15,10 @@ const appCssSource = fs.readFileSync(
   path.join(__dirname, "..", "assets", "css", "app.css"),
   "utf8"
 );
+const desktopCssSource = fs.readFileSync(
+  path.join(__dirname, "..", "assets", "css", "desktop.css"),
+  "utf8"
+);
 const publicPages = [
   "index.html", "partidos.html", "tablas.html", "eventos.html", "torneo.html",
   "competencia.html", "resultados-2025.html", "reglas.html", "reglas-2027.html", "marcador.html"
@@ -38,10 +42,29 @@ test("la navegación interna reemplaza la entrada base de la PWA", () => {
 test("todas las páginas públicas muestran el actualizador general", () => {
   publicPages.forEach(file => {
     const html = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
-    assert.match(html, /assets\/js\/app\.js\?v=34/, file);
+    assert.match(html, /assets\/js\/app\.js\?v=35/, file);
   });
   assert.match(appSource, /id = 'appGlobalRefresh'/);
   assert.match(appSource, /Actualizar toda la aplicación/);
+});
+
+test("la versión de computador usa navegación lateral sin cambiar la navegación móvil", () => {
+  assert.match(appSource, /id = 'appDesktopSidebar'/);
+  assert.match(appSource, /className = 'desktop-sidebar'/);
+  assert.match(appSource, /assets\/css\/desktop\.css\?v=1/);
+  assert.match(desktopCssSource, /@media \(min-width: 1050px\)/);
+  assert.match(desktopCssSource, /grid-template-columns:minmax\(300px,360px\) minmax\(560px,1fr\)/);
+  assert.match(desktopCssSource, /grid-template-columns:160px minmax\(520px,1fr\) 300px/);
+  assert.match(desktopCssSource, /#appBottomNav\.app-bottom-nav \{ display:none !important; \}/);
+  assert.match(desktopCssSource, /@media \(max-width: 1049px\)/);
+});
+
+test("Tablas crea categorías laterales y una ficha fija del jugador en computador", () => {
+  const tablesSource = fs.readFileSync(path.join(__dirname, "..", "tablas.html"), "utf8");
+  assert.match(tablesSource, /id="desktopCategoryNav"/);
+  assert.match(tablesSource, /id="desktopPlayerPanel"/);
+  assert.match(tablesSource, /function configurarVistaEscritorio/);
+  assert.match(tablesSource, /function mostrarDetalleEscritorio/);
 });
 
 test("la actualización general conserva preferencias y renueva solo las copias de la app", () => {
