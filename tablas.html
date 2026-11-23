@@ -1132,7 +1132,7 @@
   function leerRegistro(csv) {
     return parseCSV(csv)
       .slice(1)
-      .map(cols => {
+      .map((cols, indiceFuente) => {
         const jugador1 = String(cols[1] || "").trim();
         const jugador2 = String(cols[2] || "").trim();
         const ganador = String(cols[13] || "").trim();
@@ -1163,7 +1163,8 @@
           _j1: normalizar(jugador1),
           _j2: normalizar(jugador2),
           _ganador: normalizar(ganador),
-          _pendiente: normalizar(pendiente)
+          _pendiente: normalizar(pendiente),
+          _indiceFuente: indiceFuente
         };
       })
       .filter(r => r.jugador1 && r.jugador2);
@@ -1290,6 +1291,18 @@
   function parseFechaPartido(valor) {
     const match = String(valor || "").match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
     return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 12) : null;
+  }
+
+  function compararRegistrosPorFechaReal(a, b) {
+    const fechaA = parseFechaPartido(a && (a.fecha || a.date));
+    const fechaB = parseFechaPartido(b && (b.fecha || b.date));
+    const tiempoA = fechaA ? fechaA.getTime() : Number.MAX_SAFE_INTEGER;
+    const tiempoB = fechaB ? fechaB.getTime() : Number.MAX_SAFE_INTEGER;
+    if (tiempoA !== tiempoB) return tiempoA - tiempoB;
+
+    const indiceA = Number.isFinite(a && a._indiceFuente) ? a._indiceFuente : Number.MAX_SAFE_INTEGER;
+    const indiceB = Number.isFinite(b && b._indiceFuente) ? b._indiceFuente : Number.MAX_SAFE_INTEGER;
+    return indiceA - indiceB;
   }
 
   function esProximoProgramado(partido) {
@@ -1462,6 +1475,10 @@
       }
     }
 
+    // La hoja no siempre conserva el orden en que se jugaron los partidos.
+    // Historial, último resultado y racha deben depender de la fecha real.
+    jugados.sort(compararRegistrosPorFechaReal);
+
     const maxPuntos = jugados.length * 3;
     const rendimiento = maxPuntos > 0 ? Math.round((puntos / maxPuntos) * 100) : 0;
     const ultimos = jugados.slice(-3);
@@ -1484,12 +1501,23 @@
     const archivados = OPEN_TENNIS_EVENTS
       ? OPEN_TENNIS_EVENTS.WITHDRAWAL.archived.filter(partido => [normalizar(partido.player1), normalizar(partido.player2)].includes(jugadorKey))
       : [];
-    const historialArchivado = archivados.map(partido => {
+    const historialArchivado = archivados.map((partido, indice) => {
       const rival = normalizar(partido.player1) === jugadorKey ? partido.player2 : partido.player1;
       const gano = normalizar(partido.winner) === jugadorKey;
-      return `${gano ? "Ganó" : "Perdió"} vs ${nombreCorto(rival)} ${partido.score} · Resultado jugado, sin efecto clasificatorio`;
+      return {
+        date: partido.date,
+        _indiceFuente: indice,
+        texto: `${gano ? "Ganó" : "Perdió"} vs ${nombreCorto(rival)} ${partido.score} · Resultado jugado, sin efecto clasificatorio`
+      };
     });
-    const historial = historialArchivado.concat(jugados.map(r => historialPartidoTexto(jugador, r)));
+    const historial = historialArchivado
+      .concat(jugados.map(r => ({
+        fecha: r.fecha,
+        _indiceFuente: r._indiceFuente,
+        texto: historialPartidoTexto(jugador, r)
+      })))
+      .sort(compararRegistrosPorFechaReal)
+      .map(item => item.texto);
 
     const stats = {
       sets: `${setsGanados}-${setsPerdidos}`,
